@@ -79,6 +79,44 @@
       "style": {
         "navigationBarTitleText": "编辑资料"
       }
+    },
+    {
+      "path": "pages/talk/talk",
+      "style": {
+        "navigationBarTitleText": "说说",
+        "onReachBottomDistance": 80
+      }
+    },
+    {
+      "path": "pages/talk/talk-detail",
+      "style": {
+        "navigationBarTitleText": "说说详情"
+      }
+    },
+    {
+      "path": "pages/message/message",
+      "style": {
+        "navigationBarTitleText": "留言板"
+      }
+    },
+    {
+      "path": "pages/link/link",
+      "style": {
+        "navigationBarTitleText": "友情链接"
+      }
+    },
+    {
+      "path": "pages/about/about",
+      "style": {
+        "navigationBarTitleText": "关于"
+      }
+    },
+    {
+      "path": "pages/collects/collects",
+      "style": {
+        "navigationBarTitleText": "我的收藏",
+        "onReachBottomDistance": 80
+      }
     }
   ],
   "globalStyle": {

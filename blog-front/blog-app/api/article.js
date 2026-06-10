@@ -66,3 +66,28 @@ export function getCategories() {
 export function getTags() {
   return request({ url: '/tags', method: 'GET' })
 }
+
+/**
+ * 收藏文章(切换:已收藏则取消)
+ */
+export function collectArticle(id) {
+  return request({ url: `/articles/${id}/collect`, method: 'POST' })
+}
+
+/**
+ * 取消收藏
+ */
+export function uncollectArticle(id) {
+  return request({ url: `/articles/${id}/collect`, method: 'DELETE' })
+}
+
+/**
+ * 我的收藏列表
+ */
+export function getMyCollects(current = 1, size = 10) {
+  return request({
+    url: '/user/collects',
+    method: 'GET',
+    data: { current, size }
+  })
+}

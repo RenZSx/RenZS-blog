@@ -51,7 +51,11 @@
       <view class="divider" />
 
       <view class="body">
-        <rich-text :nodes="renderedHtml" />
+        <mp-html
+          :content="renderedHtml"
+          :tag-style="mdTagStyle"
+          selectable
+        />
       </view>
 
       <view class="footer-tip">- The End -</view>
@@ -100,6 +104,34 @@ const renderedHtml = computed(() => {
   if (!article.value) return ''
   return markdownToHtml(article.value.articleContent || '')
 })
+
+// mp-html 标签样式覆盖(由于 mp-html 使用自身的 nodes,内联 var(--) 在部分平台会失效,
+// 这里用具体颜色 + 注意暗色场景下文章详情整体仍是 var(--bg-card) 背景)
+const mdTagStyle = {
+  h1: 'font-size:40rpx;font-weight:700;margin:48rpx 0 24rpx;letter-spacing:-1rpx;',
+  h2: 'font-size:34rpx;font-weight:700;margin:40rpx 0 20rpx;padding-bottom:12rpx;border-bottom:2rpx solid #f0f2f5;',
+  h3: 'font-size:30rpx;font-weight:700;margin:32rpx 0 16rpx;',
+  p: 'margin:16rpx 0;line-height:1.85;',
+  a: 'color:#42b983;',
+  strong: 'font-weight:700;',
+  em: 'font-style:italic;',
+  // 行内代码:与代码块统一黑底白字 + 字号对齐正文 30rpx
+  code: 'background:#000000;color:#e8e8e8;padding:2rpx 10rpx;border-radius:6rpx;font-family:Consolas,Menlo,monospace;font-size:30rpx;',
+  // 代码块:纯黑底 + 近白字 + 字号对齐正文 30rpx,与正文阅读节奏一致
+  pre: 'background:#000000;color:#e8e8e8;padding:24rpx;border-radius:12rpx;overflow-x:auto;font-family:Consolas,Menlo,monospace;font-size:30rpx;line-height:1.85;margin:24rpx 0;white-space:pre;box-shadow:0 4rpx 12rpx rgba(0,0,0,0.12);',
+  blockquote: 'border-left:6rpx solid #42b983;padding:16rpx 20rpx;background:rgba(66,185,131,0.06);color:#606266;margin:24rpx 0;border-radius:0 12rpx 12rpx 0;',
+  img: 'max-width:100%;display:block;margin:24rpx 0;border-radius:16rpx;',
+  hr: 'border:none;height:2rpx;background:#f0f2f5;margin:48rpx 0;',
+  ul: 'margin:16rpx 0;padding-left:40rpx;',
+  ol: 'margin:16rpx 0;padding-left:40rpx;',
+  li: 'margin:8rpx 0;',
+  // 表格(GFM):横向滚动 + 斑马纹
+  table: 'border-collapse:collapse;width:100%;margin:24rpx 0;font-size:24rpx;display:table;',
+  thead: 'background:#f5f7fa;',
+  th: 'padding:12rpx 16rpx;border:2rpx solid #ebeef5;font-weight:600;color:#303133;text-align:left;',
+  td: 'padding:12rpx 16rpx;border:2rpx solid #ebeef5;color:#606266;',
+  tr: ''
+}
 
 const isLiked = computed(() => {
   if (!articleId.value) return false

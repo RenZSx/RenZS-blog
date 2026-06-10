@@ -57,6 +57,16 @@
     <!-- 菜单组 -->
     <view class="menu-section">
       <view class="menu-card">
+        <view class="menu-item" @click="goCollects">
+          <view class="menu-left">
+            <view class="menu-icon icon-bg-yellow">
+              <bx-icon name="bookmark" :size="32" color="#e6a23c" />
+            </view>
+            <text class="menu-text">我的收藏</text>
+          </view>
+          <bx-icon name="chevronRight" :size="36" color="#c0c4cc" />
+        </view>
+        <view class="menu-divider" />
         <view class="menu-item" @click="onTodo">
           <view class="menu-left">
             <view class="menu-icon icon-bg-pink">
@@ -76,13 +86,35 @@
           </view>
           <bx-icon name="chevronRight" :size="36" color="#c0c4cc" />
         </view>
-        <view class="menu-divider" />
-        <view class="menu-item" @click="onTodo">
+      </view>
+
+      <view class="menu-card">
+        <view class="menu-item" @click="goTalk">
           <view class="menu-left">
-            <view class="menu-icon icon-bg-yellow">
-              <bx-icon name="star" :size="32" color="#e6a23c" />
+            <view class="menu-icon icon-bg-green">
+              <bx-icon name="smile" :size="32" color="#42b983" />
             </view>
-            <text class="menu-text">我的收藏</text>
+            <text class="menu-text">说说</text>
+          </view>
+          <bx-icon name="chevronRight" :size="36" color="#c0c4cc" />
+        </view>
+        <view class="menu-divider" />
+        <view class="menu-item" @click="goMessage">
+          <view class="menu-left">
+            <view class="menu-icon icon-bg-blue">
+              <bx-icon name="messageSquare" :size="32" color="#409eff" />
+            </view>
+            <text class="menu-text">留言板</text>
+          </view>
+          <bx-icon name="chevronRight" :size="36" color="#c0c4cc" />
+        </view>
+        <view class="menu-divider" />
+        <view class="menu-item" @click="goLink">
+          <view class="menu-left">
+            <view class="menu-icon icon-bg-orange">
+              <bx-icon name="link" :size="32" color="#e6a23c" />
+            </view>
+            <text class="menu-text">友情链接</text>
           </view>
           <bx-icon name="chevronRight" :size="36" color="#c0c4cc" />
         </view>
@@ -99,7 +131,7 @@
           <bx-icon name="chevronRight" :size="36" color="#c0c4cc" />
         </view>
         <view class="menu-divider" />
-        <view class="menu-item" @click="onAbout">
+        <view class="menu-item" @click="goAbout">
           <view class="menu-left">
             <view class="menu-icon icon-bg-purple">
               <bx-icon name="info" :size="32" color="#8b5cf6" />
@@ -143,16 +175,32 @@ function goSettings() {
   uni.navigateTo({ url: '/pages/settings/settings' })
 }
 
-function onTodo() {
-  uni.showToast({ title: '功能开发中', icon: 'none' })
+function goCollects() {
+  if (!userStore.isLoggedIn) {
+    uni.showToast({ title: '请先登录', icon: 'none' })
+    return
+  }
+  uni.navigateTo({ url: '/pages/collects/collects' })
 }
 
-function onAbout() {
-  uni.showModal({
-    title: '关于',
-    content: '博客 App · v1.0.0\n基于 Sa-Token 鉴权',
-    showCancel: false
-  })
+function goTalk() {
+  uni.navigateTo({ url: '/pages/talk/talk' })
+}
+
+function goMessage() {
+  uni.navigateTo({ url: '/pages/message/message' })
+}
+
+function goLink() {
+  uni.navigateTo({ url: '/pages/link/link' })
+}
+
+function goAbout() {
+  uni.navigateTo({ url: '/pages/about/about' })
+}
+
+function onTodo() {
+  uni.showToast({ title: '功能开发中', icon: 'none' })
 }
 </script>
 
@@ -345,6 +393,8 @@ function onAbout() {
 .icon-bg-yellow { background: rgba(230, 162, 60, 0.12); }
 .icon-bg-gray { background: rgba(144, 147, 153, 0.12); }
 .icon-bg-purple { background: rgba(139, 92, 246, 0.12); }
+.icon-bg-green { background: rgba(66, 185, 131, 0.12); }
+.icon-bg-orange { background: rgba(255, 154, 60, 0.12); }
 
 .menu-text {
   font-size: 28rpx;
