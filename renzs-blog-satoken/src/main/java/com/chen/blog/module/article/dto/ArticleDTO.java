@@ -43,6 +43,16 @@ public class ArticleDTO {
     private String articleContent;
 
     /**
+     * 作者昵称
+     */
+    private String nickname;
+
+    /**
+     * 作者头像
+     */
+    private String avatar;
+
+    /**
      * 点赞量
      */
     private Integer likeCount;

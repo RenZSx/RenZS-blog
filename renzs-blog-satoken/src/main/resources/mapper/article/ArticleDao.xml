@@ -36,6 +36,8 @@
         <result column="article_cover" property="articleCover"/>
         <result column="article_title" property="articleTitle"/>
         <result column="article_content" property="articleContent"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar" property="avatar"/>
         <result column="type" property="type"/>
         <result column="original_url" property="originalUrl"/>
         <result column="create_time" property="createTime"/>
@@ -241,11 +243,14 @@
 	 a.update_time,
 	 a.category_id,
 	 category_name,
+	 ui.nickname,
+	 ui.avatar,
 	 t.id AS tag_id,
 	 t.tag_name
      FROM
 	 tb_article a
 	 JOIN tb_category c ON a.category_id = c.id
+	 LEFT JOIN tb_user_info ui ON a.user_id = ui.id
 	 JOIN tb_article_tag atg ON a.id = atg.article_id
 	 JOIN tb_tag t ON t.id = atg.tag_id
      WHERE

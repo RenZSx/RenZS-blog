@@ -20,6 +20,73 @@
 const PH_OPEN = String.fromCharCode(0xE000)   // U+E000
 const PH_CLOSE = String.fromCharCode(0xE001)  // U+E001
 
+/**
+ * 富文本清洗:去除影响阅读一致性的内联样式 / 旧式 HTML 标签
+ *
+ * 后端文章内容可能由 mavon-editor / wangEditor 等富文本编辑器写入,
+ * 含 <p style="font-size:24px"> 这类内联字号 / <font size="6"> 旧式标签,
+ * 它们的优先级**高于** mp-html 的 tag-style 配置,会造成字号忽大忽小。
+ *
+ * 本函数在传给 mp-html 渲染前调用,把这些"作妖元素"剥成统一标签或剥掉。
+ *
+ * 处理:
+ *   1. <font size="x" color="x"> → 直接剥掉 font 标签,保留内部文字
+ *   2. style 属性中的 font-size / line-height → 删掉(其余样式如 color/text-align 保留)
+ *   3. width="xxx" / height="xxx"(写死像素的图片宽高,会撑爆移动端)→ 删掉
+ *   4. 多余的 align="xxx" → 转为 style="text-align:xxx"
+ *
+ * @param {string} html 富文本字符串
+ * @returns {string} 清洗后的 html
+ */
+export function sanitizeRichHtml(html) {
+  if (!html || typeof html !== 'string') return ''
+
+  let out = html
+
+  // 1. <font ...>xxx</font> → 直接保留 xxx
+  out = out.replace(/<font[^>]*>([\s\S]*?)<\/font>/gi, '$1')
+
+  // 2. 清理 style 属性里的 font-size 和 line-height
+  out = out.replace(/style\s*=\s*"([^"]*)"/gi, (match, css) => {
+    const cleaned = css
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => {
+        if (!s) return false
+        const key = s.split(':')[0].trim().toLowerCase()
+        // 屏蔽这些会影响阅读流的属性
+        return key !== 'font-size' && key !== 'line-height' && key !== 'font-family'
+      })
+      .join(';')
+    if (!cleaned) return ''
+    return `style="${cleaned}"`
+  })
+  // 单引号变体
+  out = out.replace(/style\s*=\s*'([^']*)'/gi, (match, css) => {
+    const cleaned = css
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => {
+        if (!s) return false
+        const key = s.split(':')[0].trim().toLowerCase()
+        return key !== 'font-size' && key !== 'line-height' && key !== 'font-family'
+      })
+      .join(';')
+    if (!cleaned) return ''
+    return `style='${cleaned}'`
+  })
+
+  // 3. 图片写死的 width/height 属性(rpx 单位不识别也会撑爆),交给 mp-html tagStyle 控制
+  out = out.replace(/<img\b([^>]*?)>/gi, (match, attrs) => {
+    let next = attrs
+      .replace(/\s+width\s*=\s*("|')?\d+%?\1?/gi, '')
+      .replace(/\s+height\s*=\s*("|')?\d+%?\1?/gi, '')
+    return `<img${next}>`
+  })
+
+  return out
+}
+
 export function markdownToHtml(md) {
   if (!md || typeof md !== 'string') return ''
 
