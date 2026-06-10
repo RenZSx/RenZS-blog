@@ -44,6 +44,20 @@ export const useUserStore = defineStore('user', () => {
     setToken(result.tokenValue)
     token.value = result.tokenValue
     userInfo.value = result.userInfo
+
+    // 登录成功后立即启动通知 WS + 拉一次未读数(动态 import 避免循环依赖)
+    try {
+      const [{ useNoticeSocket }, { useNoticeStore }] = await Promise.all([
+        import('@/composables/useNoticeSocket'),
+        import('@/store/notice')
+      ])
+      useNoticeStore().fetchUnreadCount()
+      useNoticeSocket().start()
+    } catch (e) {
+      // 启动失败不阻塞登录流程
+      console.warn('启动通知 WS 失败:', e)
+    }
+
     return true
   }
 
@@ -53,6 +67,12 @@ export const useUserStore = defineStore('user', () => {
    * 无论后端是否成功,本地都必须清干净(避免卡死)
    */
   async function logout() {
+    // 优先断开 WS(再调后端登出)
+    try {
+      const { useNoticeSocket } = await import('@/composables/useNoticeSocket')
+      useNoticeSocket().disconnect()
+    } catch (e) { /* noop */ }
+
     try {
       await apiLogout()
     } catch (e) {
@@ -69,6 +89,17 @@ export const useUserStore = defineStore('user', () => {
     removeToken()
     token.value = ''
     userInfo.value = null
+
+    // 同步断 WS + 清通知 store
+    try {
+      // 用 import().then 不阻塞同步流程
+      import('@/composables/useNoticeSocket').then(({ useNoticeSocket }) => {
+        useNoticeSocket().disconnect()
+      })
+      import('@/store/notice').then(({ useNoticeStore }) => {
+        useNoticeStore().resetState()
+      })
+    } catch (e) { /* noop */ }
   }
 
   /**

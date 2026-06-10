@@ -1,15 +1,27 @@
 <script>
 import { useUserStore } from '@/store/user'
+import { useNoticeStore } from '@/store/notice'
 import { useThemeStore } from '@/store/theme'
+import { useNoticeSocket } from '@/composables/useNoticeSocket'
 import { watch } from 'vue'
 
 export default {
-  onLaunch() {
+  async onLaunch() {
     const userStore = useUserStore()
-    userStore.syncSession()
+    const noticeStore = useNoticeStore()
+    const { start: startWs, isConnected } = useNoticeSocket()
 
+    // 1. 校验 token,有效则同步用户信息
+    const ok = await userStore.syncSession()
+
+    // 2. 已登录:拉未读数 + 启动 WS
+    if (ok && userStore.isLoggedIn) {
+      noticeStore.fetchUnreadCount()
+      startWs()
+    }
+
+    // 3. 主题同步到 DOM (H5 端有效)
     const themeStore = useThemeStore()
-    // 把主题状态同步到 DOM(H5 端有效;App 端无 document 但页面层级会 fallback 到 page 默认色)
     const applyTheme = () => {
       if (typeof document !== 'undefined' && document.body) {
         document.body.classList.toggle('theme-dark', themeStore.isDark)
@@ -17,12 +29,28 @@ export default {
     }
     applyTheme()
     watch(() => themeStore.isDark, applyTheme)
+
+    // 4. 网络从无到有时,自动重连 WS
+    try {
+      uni.onNetworkStatusChange((res) => {
+        if (res.isConnected && userStore.isLoggedIn && !isConnected()) {
+          startWs()
+        }
+      })
+    } catch (e) { /* 平台不支持时静默 */ }
   },
   onShow() {
-    console.log('App Show')
+    // App 端从后台回到前台:检测 WS 是否仍连接,断了则重连
+    try {
+      const userStore = useUserStore()
+      const { start: startWs, isConnected } = useNoticeSocket()
+      if (userStore.isLoggedIn && !isConnected()) {
+        startWs()
+      }
+    } catch (e) { /* noop */ }
   },
   onHide() {
-    console.log('App Hide')
+    // 不主动断开 WS,保留连接;系统休眠会自动处理
   }
 }
 </script>
