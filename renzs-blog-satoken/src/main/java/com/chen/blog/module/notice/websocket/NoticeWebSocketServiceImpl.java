@@ -298,6 +298,8 @@ public class NoticeWebSocketServiceImpl {
          *
          * <p>纯 Header 鉴权后,WebSocket 不再回退 Cookie 解析(浏览器/原生 WebSocket API 无法自定义 Header,
          * Query 是事实标准)。前端 {@code utils/websocket.ts} 已统一拼接 token query。
+         * 同时,HttpSession 仅作诊断信息:浏览器不再带 JSESSIONID Cookie 时容器可能不创建 HttpSession,
+         * 但鉴权完全依赖 Query token,不再阻塞握手。
          *
          * @param sec      websocket 配置
          * @param request  握手请求
@@ -307,25 +309,26 @@ public class NoticeWebSocketServiceImpl {
         public void modifyHandshake(ServerEndpointConfig sec,
                                     javax.websocket.server.HandshakeRequest request,
                                     HandshakeResponse response) {
+            // HttpSession 仅作诊断信息:纯 Header 模式下浏览器不再带 JSESSIONID Cookie,
+            // Servlet 容器可能不创建 HttpSession,但这不影响鉴权(鉴权全靠下方 Query token)。
             HttpSession httpSession = (HttpSession) request.getHttpSession();
-            if (Objects.isNull(httpSession)) {
-                log.warn("通知 websocket 握手未获取到 HttpSession");
-                return;
+            String httpSessionId = Objects.nonNull(httpSession) ? httpSession.getId() : "none";
+            if (Objects.nonNull(httpSession)) {
+                sec.getUserProperties().put(AUTH_HTTP_SESSION_ID_KEY, httpSession.getId());
             }
-            sec.getUserProperties().put(AUTH_HTTP_SESSION_ID_KEY, httpSession.getId());
 
             // 从 Query 参数 ?token=xxx 提取 sa-token token 值 (全端统一约定)
             String tokenValue = extractSaToken(request);
             if (Objects.isNull(tokenValue)) {
                 log.warn("通知 websocket 握手未获取到 sa-token (Query 参数 token 缺失)，httpSessionId={}",
-                        httpSession.getId());
+                        httpSessionId);
                 return;
             }
 
             // 通过 token 反查 loginId(即 userInfoId)
             Object loginIdObj = StpUtil.getLoginIdByToken(tokenValue);
             if (Objects.isNull(loginIdObj)) {
-                log.warn("通知 websocket 握手 sa-token 无效或已过期，httpSessionId={}", httpSession.getId());
+                log.warn("通知 websocket 握手 sa-token 无效或已过期，httpSessionId={}", httpSessionId);
                 return;
             }
 
@@ -334,18 +337,22 @@ public class NoticeWebSocketServiceImpl {
                 authUserId = Integer.parseInt(loginIdObj.toString());
             } catch (NumberFormatException e) {
                 log.warn("通知 websocket 握手 loginId 解析失败，loginId={}, httpSessionId={}",
-                        loginIdObj, httpSession.getId());
+                        loginIdObj, httpSessionId);
                 return;
             }
 
             // 只保留必要的用户主键,既方便鉴权,也避免把整个 principal 暴露到 websocket 会话属性
             sec.getUserProperties().put(AUTH_USER_ID_KEY, authUserId);
             log.info("通知 websocket 握手获取登录用户成功，httpSessionId={}, authUserId={}",
-                    httpSession.getId(), authUserId);
+                    httpSessionId, authUserId);
         }
 
         /**
          * 从握手请求 Query 参数 {@code ?token=xxx} 中提取 sa-token 的 token 值。
+         * <p>
+         * 双通道兜底:JSR-356 的 {@code HandshakeRequest.getParameterMap()} 在 Tomcat/Undertow 部分版本下
+         * 并不会自动解析 query string(规范未强制要求),因此优先从 {@code getRequestURI()} 手动解析,
+         * 解析不到再回退到 {@code getParameterMap()},最大程度避免容器实现差异导致的鉴权失败。
          * <p>
          * 注意:sa-token 配置了 {@code token-prefix: Bearer} 之后,Header 取值会自动剥前缀,
          * 但 Query 不会。客户端传值时不应带 "Bearer " 前缀;
@@ -355,15 +362,50 @@ public class NoticeWebSocketServiceImpl {
          * @return token 值,提取不到返回 null
          */
         private String extractSaToken(javax.websocket.server.HandshakeRequest request) {
+            // 1. 优先从 RequestURI 手动解析 query string (规范最稳)
+            java.net.URI uri = request.getRequestURI();
+            if (Objects.nonNull(uri) && Objects.nonNull(uri.getRawQuery())) {
+                String token = parseTokenFromQuery(uri.getRawQuery());
+                if (Objects.nonNull(token)) {
+                    return stripTokenPrefix(token);
+                }
+            }
+            // 2. 兜底:容器实现填充了 parameterMap 的情况
             Map<String, List<String>> params = request.getParameterMap();
-            if (Objects.isNull(params)) {
-                return null;
+            if (Objects.nonNull(params)) {
+                List<String> tokens = params.get("token");
+                if (Objects.nonNull(tokens) && !tokens.isEmpty()) {
+                    return stripTokenPrefix(tokens.get(0));
+                }
             }
-            List<String> tokens = params.get("token");
-            if (Objects.isNull(tokens) || tokens.isEmpty()) {
-                return null;
+            return null;
+        }
+
+        /**
+         * 从 raw query string 中提取 {@code token} 字段。
+         * 使用 URLDecoder 解码,与浏览器 {@code URLSearchParams} 行为一致。
+         *
+         * @param rawQuery query string,不含开头的 '?'
+         * @return token 值,未找到返回 null
+         */
+        private String parseTokenFromQuery(String rawQuery) {
+            for (String pair : rawQuery.split("&")) {
+                int eq = pair.indexOf('=');
+                if (eq <= 0) {
+                    continue;
+                }
+                String key = pair.substring(0, eq);
+                if (!"token".equals(key)) {
+                    continue;
+                }
+                String rawValue = pair.substring(eq + 1);
+                try {
+                    return java.net.URLDecoder.decode(rawValue, "UTF-8");
+                } catch (java.io.UnsupportedEncodingException ignored) {
+                    return rawValue;
+                }
             }
-            return stripTokenPrefix(tokens.get(0));
+            return null;
         }
 
         /**
