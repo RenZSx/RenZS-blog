@@ -117,6 +117,20 @@
         "navigationBarTitleText": "我的收藏",
         "onReachBottomDistance": 80
       }
+    },
+    {
+      "path": "pages/likes/likes",
+      "style": {
+        "navigationBarTitleText": "我的点赞",
+        "onReachBottomDistance": 80
+      }
+    },
+    {
+      "path": "pages/my-comments/my-comments",
+      "style": {
+        "navigationBarTitleText": "我的评论",
+        "onReachBottomDistance": 80
+      }
     }
   ],
   "globalStyle": {

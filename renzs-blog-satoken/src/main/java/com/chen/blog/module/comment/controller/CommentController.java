@@ -3,6 +3,7 @@ package com.chen.blog.module.comment.controller;
 import com.chen.blog.common.annotation.OptLog;
 import com.chen.blog.module.comment.dto.CommentBackDTO;
 import com.chen.blog.module.comment.dto.CommentDTO;
+import com.chen.blog.module.comment.dto.MyCommentDTO;
 import com.chen.blog.common.domain.vo.*;
 import com.chen.blog.module.comment.dao.ReplyDTO;
 import com.chen.blog.module.comment.service.CommentService;
@@ -88,6 +89,21 @@ public class CommentController {
     public Result<?> saveCommentLike(@PathVariable("commentId") Integer commentId) {
         commentService.saveCommentLike(commentId);
         return Result.ok();
+    }
+
+    /**
+     * 我的评论列表(当前登录用户)
+     *
+     * @param current 页码,默认 1
+     * @param size    每页大小,默认 10
+     * @return {@link Result<PageResult<MyCommentDTO>>} 携带 topicTitle 让前端能展示评论所属主题
+     */
+    @ApiOperation(value = "我的评论列表")
+    @GetMapping("/users/comments")
+    public Result<PageResult<MyCommentDTO>> listMyComments(
+            @RequestParam(value = "current", required = false, defaultValue = "1") Long current,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Long size) {
+        return Result.ok(commentService.listMyComments(current, size));
     }
 
     /**

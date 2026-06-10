@@ -2,6 +2,7 @@ package com.chen.blog.module.comment.service;
 
 import com.chen.blog.module.comment.dto.CommentBackDTO;
 import com.chen.blog.module.comment.dto.CommentDTO;
+import com.chen.blog.module.comment.dto.MyCommentDTO;
 import com.chen.blog.module.comment.vo.CommentVO;
 import com.chen.blog.common.domain.vo.ConditionVO;
 import com.chen.blog.common.domain.vo.PageResult;
@@ -71,5 +72,14 @@ public interface CommentService extends IService<Comment> {
      * @return 评论列表
      */
     List<CommentDTO> listNewComments();
+
+    /**
+     * 我的评论列表(当前登录用户发的所有评论,按时间倒序)
+     *
+     * @param current 页码,从 1 开始
+     * @param size    每页大小
+     * @return 我的评论分页结果(携带 topicTitle 让前端能展示评论在《XXX》下)
+     */
+    PageResult<MyCommentDTO> listMyComments(Long current, Long size);
 }
 

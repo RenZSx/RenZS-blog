@@ -67,7 +67,7 @@
           <bx-icon name="chevronRight" :size="36" color="#c0c4cc" />
         </view>
         <view class="menu-divider" />
-        <view class="menu-item" @click="onTodo">
+        <view class="menu-item" @click="goLikes">
           <view class="menu-left">
             <view class="menu-icon icon-bg-pink">
               <bx-icon name="heart" :size="32" color="#f56c6c" />
@@ -77,7 +77,7 @@
           <bx-icon name="chevronRight" :size="36" color="#c0c4cc" />
         </view>
         <view class="menu-divider" />
-        <view class="menu-item" @click="onTodo">
+        <view class="menu-item" @click="goMyComments">
           <view class="menu-left">
             <view class="menu-icon icon-bg-blue">
               <bx-icon name="comment" :size="32" color="#409eff" />
@@ -181,6 +181,22 @@ function goCollects() {
     return
   }
   uni.navigateTo({ url: '/pages/collects/collects' })
+}
+
+function goLikes() {
+  if (!userStore.isLoggedIn) {
+    uni.showToast({ title: '请先登录', icon: 'none' })
+    return
+  }
+  uni.navigateTo({ url: '/pages/likes/likes' })
+}
+
+function goMyComments() {
+  if (!userStore.isLoggedIn) {
+    uni.showToast({ title: '请先登录', icon: 'none' })
+    return
+  }
+  uni.navigateTo({ url: '/pages/my-comments/my-comments' })
 }
 
 function goTalk() {

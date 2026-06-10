@@ -5,13 +5,16 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.chen.blog.module.article.dao.ArticleDao;
+import com.chen.blog.module.article.entity.Article;
 import com.chen.blog.common.strategy.email.context.EmailStrategyContext;
 import com.chen.blog.module.comment.dao.ReplyCountDTO;
 import com.chen.blog.module.comment.dao.ReplyDTO;
 import com.chen.blog.module.comment.dto.CommentBackDTO;
 import com.chen.blog.module.comment.dto.CommentDTO;
+import com.chen.blog.module.comment.dto.MyCommentDTO;
 import com.chen.blog.module.comment.vo.CommentVO;
 import com.chen.blog.module.talk.dao.TalkDao;
+import com.chen.blog.module.talk.entity.Talk;
 import com.chen.blog.common.exception.BizException;
 import com.chen.blog.module.blogInfo.service.BlogInfoService;
 import com.chen.blog.module.blogInfo.vo.WebsiteConfigVO;
@@ -295,6 +298,106 @@ public class CommentServiceImpl extends ServiceImpl<CommentDao, Comment> impleme
         }
 
 
+    }
+
+    /**
+     * 我的评论列表
+     * <p>
+     * 实现策略:
+     *   1. 用 MyBatis-Plus LambdaQueryWrapper 按 user_id 查 Comment 表(含审核中、按时间倒序)
+     *   2. 按 (type, topicId) 分组,批量查文章 / 说说标题
+     *   3. 留言/友链类型直接用 commentContent 截断作为 topicTitle
+     *   4. 组装 MyCommentDTO 返回
+     */
+    @Override
+    public PageResult<MyCommentDTO> listMyComments(Long current, Long size) {
+        // 1. 当前登录用户
+        Integer userInfoId = UserUtils.getLoginUser().getUserInfoId();
+
+        Long pageCurrent = current == null || current < 1 ? 1L : current;
+        Long pageSize = size == null || size < 1 ? 10L : size;
+
+        // 2. 分页查 Comment(LambdaQueryWrapper + Page 都是 MP 自带能力)
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<Comment> page =
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageCurrent, pageSize);
+
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getUserId, userInfoId)
+                .eq(Comment::getIsDelete, FALSE)
+                .orderByDesc(Comment::getCreateTime);
+
+        com.baomidou.mybatisplus.core.metadata.IPage<Comment> commentPage = this.page(page, wrapper);
+
+        List<Comment> records = commentPage.getRecords();
+        if (CollectionUtils.isEmpty(records)) {
+            return new PageResult<>(Collections.emptyList(), (int) commentPage.getTotal());
+        }
+
+        // 3. 按 type 分组收集 topicId
+        Set<Integer> articleIds = new HashSet<>();
+        Set<Integer> talkIds = new HashSet<>();
+        for (Comment c : records) {
+            if (c.getType() == null || c.getTopicId() == null) continue;
+            if (c.getType().equals(ARTICLE.getType())) articleIds.add(c.getTopicId());
+            else if (c.getType().equals(TALK.getType())) talkIds.add(c.getTopicId());
+            // 友链/留言/关于 topicId 可能为 null,无需查标题
+        }
+
+        // 4. 批量查标题
+        Map<Integer, String> articleTitleMap = new HashMap<>();
+        if (!articleIds.isEmpty()) {
+            List<Article> articles = articleDao.selectBatchIds(articleIds);
+            for (Article a : articles) {
+                articleTitleMap.put(a.getId(), a.getArticleTitle());
+            }
+        }
+
+        Map<Integer, String> talkContentMap = new HashMap<>();
+        if (!talkIds.isEmpty()) {
+            List<Talk> talks = talkDao.selectBatchIds(talkIds);
+            for (Talk t : talks) {
+                String text = HTMLUtils.deleteHMTLTag(t.getContent());
+                if (text != null && text.length() > 20) text = text.substring(0, 20) + "...";
+                talkContentMap.put(t.getId(), text == null ? "" : text);
+            }
+        }
+
+        // 5. 组装 MyCommentDTO
+        List<MyCommentDTO> dtoList = records.stream().map((c) -> {
+            String topicTitle = resolveTopicTitle(c, articleTitleMap, talkContentMap);
+            return MyCommentDTO.builder()
+                    .id(c.getId())
+                    .topicId(c.getTopicId())
+                    .type(c.getType())
+                    .topicTitle(topicTitle)
+                    .commentContent(c.getCommentContent())
+                    .parentId(c.getParentId())
+                    .replyUserId(c.getReplyUserId())
+                    .isReview(c.getIsReview())
+                    .createTime(c.getCreateTime())
+                    .build();
+        }).collect(Collectors.toList());
+
+        return new PageResult<>(dtoList, (int) commentPage.getTotal());
+    }
+
+    /**
+     * 根据评论 type 解析主题标题
+     */
+    private String resolveTopicTitle(Comment c,
+                                     Map<Integer, String> articleTitleMap,
+                                     Map<Integer, String> talkContentMap) {
+        if (c.getType() == null) return "未知主题";
+        Integer t = c.getType();
+        if (t.equals(ARTICLE.getType())) {
+            return articleTitleMap.getOrDefault(c.getTopicId(), "文章已删除");
+        } else if (t.equals(TALK.getType())) {
+            return talkContentMap.getOrDefault(c.getTopicId(), "说说已删除");
+        } else if (t.equals(LINK.getType())) {
+            return "友情链接";
+        }
+        // 留言板/关于 等未在 CommentTypeEnum 枚举内的类型,用通用兜底
+        return "其他评论";
     }
 
 }

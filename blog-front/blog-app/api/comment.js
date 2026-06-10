@@ -46,3 +46,16 @@ export function getCommentReplies(cid, current = 1, size = 5) {
     data: { current, size }
   })
 }
+
+/**
+ * 我的评论列表(当前登录用户发的所有评论)
+ * 后端返回:PageResult<MyCommentDTO> { recordList, count }
+ * MyCommentDTO 字段:id / topicId / type / topicTitle / commentContent / parentId / replyUserId / isReview / createTime
+ */
+export function getMyComments(current = 1, size = 10) {
+  return request({
+    url: '/users/comments',
+    method: 'GET',
+    data: { current, size }
+  })
+}
