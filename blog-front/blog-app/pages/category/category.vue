@@ -74,8 +74,17 @@ async function load() {
   loading.value = true
   try {
     const [catRes, tagRes] = await Promise.all([getCategories(), getTags()])
-    if (catRes.flag && catRes.data) categories.value = catRes.data
-    if (tagRes.flag && tagRes.data) tags.value = tagRes.data
+    // 后端 /categories 和 /tags 返回 PageResult { recordList, count },不是直接数组
+    if (catRes.flag && catRes.data) {
+      categories.value = Array.isArray(catRes.data)
+        ? catRes.data
+        : (catRes.data.recordList || catRes.data.records || [])
+    }
+    if (tagRes.flag && tagRes.data) {
+      tags.value = Array.isArray(tagRes.data)
+        ? tagRes.data
+        : (tagRes.data.recordList || tagRes.data.records || [])
+    }
   } finally {
     loading.value = false
   }

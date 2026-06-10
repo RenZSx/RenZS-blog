@@ -139,7 +139,10 @@ async function loadArticles(reset = false) {
     }
     const res = await getArticles(current.value)
     if (res.flag && res.data) {
-      const list = res.data.records || res.data.articlePreviewDTOList || res.data || []
+      // 后端 /articles 返回纯数组 List<ArticleHomeDTO>,不是分页
+      const list = Array.isArray(res.data)
+        ? res.data
+        : (res.data.recordList || res.data.records || res.data.articlePreviewDTOList || [])
       if (reset) {
         articles.value = list
       } else {

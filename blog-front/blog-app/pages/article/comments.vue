@@ -107,7 +107,8 @@ async function loadComments(reset = false) {
       routePath: routePath.value
     })
     if (res.flag && res.data) {
-      const list = res.data.records || res.data.commentDTOList || res.data || []
+      // 后端 /comments 返回 PageResult { recordList, count }
+      const list = res.data.recordList || res.data.records || res.data.commentDTOList || []
       if (reset) {
         comments.value = list
       } else {

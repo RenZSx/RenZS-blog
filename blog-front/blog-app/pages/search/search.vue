@@ -133,8 +133,10 @@ async function doSearch() {
   try {
     const res = await searchArticles(word)
     if (res.flag && res.data) {
-      // 后端返回的是 list,不是分页
-      results.value = Array.isArray(res.data) ? res.data : (res.data.records || [])
+      // 后端 PageResult 字段是 recordList(不是 records)
+      results.value = Array.isArray(res.data)
+        ? res.data
+        : (res.data.recordList || res.data.records || [])
     } else {
       results.value = []
     }

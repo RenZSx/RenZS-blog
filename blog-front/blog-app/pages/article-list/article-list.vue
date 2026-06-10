@@ -115,7 +115,8 @@ async function loadArticles(reset = false) {
     })
     if (res.flag && res.data) {
       // 后端返回 { name, articlePreviewDTOList }
-      const list = res.data.articlePreviewDTOList || res.data.records || []
+      // 后端 /articles/condition 返回 ArticlePreviewListDTO { name, articlePreviewDTOList }
+      const list = res.data.articlePreviewDTOList || res.data.recordList || res.data.records || []
       if (reset) {
         articles.value = list
       } else {
