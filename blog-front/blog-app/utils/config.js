@@ -19,3 +19,11 @@ export const SYSTEM_ERROR_CODE = 50000
 // 评论类型:与后端 CommentTypeEnum 对齐
 //   1 = 文章评论, 2 = 友链评论, 3 = 说说评论, 4 = 留言, 5 = 关于评论
 export const COMMENT_TYPE_ARTICLE = 1
+
+// 上传:与 BASE_URL 拼接的完整 URL,uni.uploadFile 必须用全路径
+export const UPLOAD_AVATAR_URL = BASE_URL + '/users/avatar'
+
+// 本地搜索历史 storage key
+export const SEARCH_HISTORY_KEY = 'search-history'
+// 搜索历史最大条数
+export const SEARCH_HISTORY_MAX = 10

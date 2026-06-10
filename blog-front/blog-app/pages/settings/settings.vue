@@ -1,5 +1,5 @@
 <template>
-  <view class="page">
+  <view class="page" :class="{ 'theme-dark': isDark }">
     <view class="section-title">外观</view>
     <view class="card">
       <view class="theme-row">
@@ -59,10 +59,12 @@
 import { ref } from 'vue'
 import { useUserStore } from '@/store/user'
 import { useThemeStore } from '@/store/theme'
+import { useThemeClass } from '@/composables/useThemeClass'
 import { BASE_URL } from '@/utils/config'
 
 const userStore = useUserStore()
 const themeStore = useThemeStore()
+const { isDark } = useThemeClass()
 const loading = ref(false)
 const baseUrl = BASE_URL
 

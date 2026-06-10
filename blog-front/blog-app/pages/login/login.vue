@@ -1,5 +1,5 @@
 <template>
-  <view class="login-page">
+  <view class="login-page page" :class="{ 'theme-dark': isDark }">
     <!-- 顶部装饰渐变 + 模糊光斑 -->
     <view class="hero">
       <view class="blob blob-1" />
@@ -63,8 +63,10 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useUserStore } from '@/store/user'
+import { useThemeClass } from '@/composables/useThemeClass'
 
 const userStore = useUserStore()
+const { isDark } = useThemeClass()
 const form = reactive({ username: '', password: '' })
 const loading = ref(false)
 const focusField = ref('')
@@ -102,7 +104,7 @@ function goRegister() {
 <style lang="scss" scoped>
 .login-page {
   min-height: 100vh;
-  background: #f7f8fa;
+  background: var(--bg-page);
   position: relative;
   overflow: hidden;
 }

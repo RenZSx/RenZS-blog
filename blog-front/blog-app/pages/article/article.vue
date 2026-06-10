@@ -1,5 +1,5 @@
 <template>
-  <view class="page">
+  <view class="page" :class="{ 'theme-dark': isDark }">
     <view v-if="loading" class="loading-state">
       <view class="skeleton skel-cover" />
       <view class="skel-padding">
@@ -85,9 +85,11 @@ import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { getArticle, likeArticle } from '@/api/article'
 import { useUserStore } from '@/store/user'
+import { useThemeClass } from '@/composables/useThemeClass'
 import { markdownToHtml } from '@/utils/markdown'
 
 const userStore = useUserStore()
+const { isDark } = useThemeClass()
 const article = ref(null)
 const loading = ref(true)
 const articleId = ref(null)

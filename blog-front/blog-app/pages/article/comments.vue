@@ -1,5 +1,5 @@
 <template>
-  <view class="page">
+  <view class="page" :class="{ 'theme-dark': isDark }">
     <view class="comment-header" v-if="comments.length > 0">
       <text class="header-title">全部评论</text>
       <text class="header-count">{{ comments.length }}</text>
@@ -77,9 +77,11 @@ import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { getComments, postComment, likeComment } from '@/api/comment'
 import { useUserStore } from '@/store/user'
+import { useThemeClass } from '@/composables/useThemeClass'
 import { COMMENT_TYPE_ARTICLE } from '@/utils/config'
 
 const userStore = useUserStore()
+const { isDark } = useThemeClass()
 const comments = ref([])
 const current = ref(1)
 const loading = ref(false)

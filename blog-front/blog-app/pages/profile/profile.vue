@@ -1,5 +1,5 @@
 <template>
-  <view class="page">
+  <view class="page" :class="{ 'theme-dark': isDark }">
     <!-- 顶部品牌区 -->
     <view class="hero" :style="{ paddingTop: `${statusBarHeight + 24}px` }">
       <view class="hero-blob blob-1" />
@@ -17,6 +17,9 @@
             <text class="nickname">{{ userStore.userInfo.nickname || '匿名用户' }}</text>
             <text class="intro" v-if="userStore.userInfo.intro">{{ userStore.userInfo.intro }}</text>
             <text class="intro" v-else>这个人很懒,什么都没留下</text>
+          </view>
+          <view class="edit-btn" @click="goEdit">
+            <bx-icon name="edit" :size="28" color="#ffffff" />
           </view>
         </view>
 
@@ -113,8 +116,10 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useUserStore } from '@/store/user'
+import { useThemeClass } from '@/composables/useThemeClass'
 
 const userStore = useUserStore()
+const { isDark } = useThemeClass()
 const defaultAvatar = 'https://www.gravatar.com/avatar/?d=mp'
 
 const statusBarHeight = ref(0)
@@ -128,6 +133,10 @@ const talkLikeCount = computed(() => userStore.userInfo?.talkLikeSet?.length || 
 
 function goLogin() {
   uni.navigateTo({ url: '/pages/login/login' })
+}
+
+function goEdit() {
+  uni.navigateTo({ url: '/pages/profile-edit/profile-edit' })
 }
 
 function goSettings() {
@@ -247,6 +256,24 @@ function onAbout() {
   font-weight: 600;
   border-radius: 28rpx;
   border: none;
+}
+
+.edit-btn {
+  width: 64rpx;
+  height: 64rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+  transition: all 220ms ease;
+}
+
+.edit-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.94);
 }
 
 .stats-row {

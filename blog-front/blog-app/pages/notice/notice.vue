@@ -1,5 +1,5 @@
 <template>
-  <view class="page">
+  <view class="page" :class="{ 'theme-dark': isDark }">
     <view class="empty-card">
       <view class="emoji-bg">
         <bx-icon name="bellRing" :size="80" color="#42b983" />
@@ -25,6 +25,8 @@
 </template>
 
 <script setup>
+import { useThemeClass } from '@/composables/useThemeClass'
+const { isDark } = useThemeClass()
 // 未来接入 WebSocket /notice-websocket/{userId}?token=xxx
 </script>
 

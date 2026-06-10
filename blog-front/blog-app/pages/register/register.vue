@@ -1,5 +1,5 @@
 <template>
-  <view class="page">
+  <view class="page" :class="{ 'theme-dark': isDark }">
     <view class="header">
       <text class="title">创建账号</text>
       <text class="subtitle">几步即可加入</text>
@@ -65,8 +65,10 @@
 import { reactive, ref, onUnmounted } from 'vue'
 import { register, sendVerificationCode } from '@/api/user'
 import { useUserStore } from '@/store/user'
+import { useThemeClass } from '@/composables/useThemeClass'
 
 const userStore = useUserStore()
+const { isDark } = useThemeClass()
 const form = reactive({ username: '', password: '', code: '' })
 const loading = ref(false)
 const codeSending = ref(false)
@@ -143,7 +145,7 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: #f7f8fa;
+  background: var(--bg-page);
   padding: 48rpx 32rpx;
 }
 

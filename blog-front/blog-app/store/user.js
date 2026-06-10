@@ -1,7 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/user'
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  getCurrentUser,
+  updateUserInfo as apiUpdateUserInfo
+} from '@/api/user'
 
 /**
  * 用户 store
@@ -125,6 +130,31 @@ export const useUserStore = defineStore('user', () => {
     else set.push(commentId)
   }
 
+  /**
+   * 更新个人资料(昵称/简介/网站等)
+   * @param {Object} patch 部分字段对象,直接传给后端 PUT /users/info
+   */
+  async function updateUserInfo(patch) {
+    const res = await apiUpdateUserInfo(patch)
+    if (!res.flag) {
+      throw new Error(res.message || '更新失败')
+    }
+    // 同步本地 userInfo,避免回到上一页还看到旧数据
+    if (userInfo.value) {
+      Object.assign(userInfo.value, patch)
+    }
+    return true
+  }
+
+  /**
+   * 仅本地更新头像 URL(头像上传成功后调用,无需再请求 /users/info)
+   * @param {string} url 后端返回的头像地址
+   */
+  function setAvatar(url) {
+    if (!userInfo.value || !url) return
+    userInfo.value.avatar = url
+  }
+
   return {
     // state
     userInfo,
@@ -140,6 +170,8 @@ export const useUserStore = defineStore('user', () => {
     toggleArticleLike,
     isArticleLiked,
     toggleCommentLike,
-    isCommentLiked
+    isCommentLiked,
+    updateUserInfo,
+    setAvatar
   }
 })

@@ -1,14 +1,19 @@
 <template>
-  <view class="page">
+  <view class="page" :class="{ 'theme-dark': isDark }">
     <!-- 顶部欢迎条 -->
     <view class="hero-bar">
       <view class="greeting">
         <text class="greet-text">{{ greeting }}</text>
         <text class="user-name">{{ userStore.userInfo?.nickname || '游客' }}</text>
       </view>
-      <view class="hero-stat">
-        <text class="stat-num">{{ articles.length }}</text>
-        <text class="stat-label">已加载</text>
+      <view class="hero-right">
+        <view class="search-entry" @click="goSearch">
+          <bx-icon name="search" :size="36" color="#42b983" />
+        </view>
+        <view class="hero-stat">
+          <text class="stat-num">{{ articles.length }}</text>
+          <text class="stat-label">已加载</text>
+        </view>
       </view>
     </view>
 
@@ -106,8 +111,10 @@ import { ref, computed } from 'vue'
 import { onShow, onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app'
 import { getArticles } from '@/api/article'
 import { useUserStore } from '@/store/user'
+import { useThemeClass } from '@/composables/useThemeClass'
 
 const userStore = useUserStore()
+const { isDark } = useThemeClass()
 const articles = ref([])
 const current = ref(1)
 const loading = ref(false)
@@ -153,6 +160,10 @@ async function loadArticles(reset = false) {
 
 function goDetail(id) {
   uni.navigateTo({ url: `/pages/article/article?id=${id}` })
+}
+
+function goSearch() {
+  uni.navigateTo({ url: '/pages/search/search' })
 }
 
 function formatTime(t) {
@@ -212,6 +223,29 @@ onReachBottom(() => {
 
 .hero-stat {
   text-align: right;
+}
+
+.hero-right {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.search-entry {
+  width: 72rpx;
+  height: 72rpx;
+  background: var(--bg-card);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: all 220ms ease;
+}
+
+.search-entry:active {
+  background: rgba(66, 185, 131, 0.08);
+  transform: scale(0.94);
 }
 
 .stat-num {
