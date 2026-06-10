@@ -1,0 +1,145 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { getToken, setToken, removeToken } from '@/utils/auth'
+import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/user'
+
+/**
+ * 用户 store
+ *
+ * 与 blog-vue3 的 stores/user.ts 概念一致:
+ *   - token 走 storage (uni.storage),不进 pinia state 持久化(避免双源)
+ *   - userInfo 只在内存中,App 启动时从 syncSession 拉回
+ *
+ * 不用 pinia-persist 的原因:uniapp 上 pinia-persist 适配差,
+ * 直接用 uni.storage 既够用又跨端兼容。
+ */
+export const useUserStore = defineStore('user', () => {
+  // ============ State ============
+  const userInfo = ref(null)        // 后端 UserInfo (扁平结构)
+  const token = ref(getToken())     // 从 storage 初始化
+
+  // ============ Getters ============
+  const isLoggedIn = computed(() => !!token.value && !!userInfo.value)
+  const userId = computed(() => userInfo.value?.userInfoId || null)
+
+  // ============ Actions ============
+
+  /**
+   * 账密登录
+   * @param {{username:string, password:string}} payload
+   * @returns {Promise<boolean>} 成功返回 true
+   */
+  async function login(payload) {
+    const res = await apiLogin(payload)
+    if (!res.flag) {
+      throw new Error(res.message || '登录失败')
+    }
+    // res.data 即 LoginUserDTO: { userInfo, tokenName, tokenValue, tokenTimeout }
+    const result = res.data
+    setToken(result.tokenValue)
+    token.value = result.tokenValue
+    userInfo.value = result.userInfo
+    return true
+  }
+
+  /**
+   * 退出登录
+   * 调后端 /logout 让 sa-token 清掉 Redis 中的 token;
+   * 无论后端是否成功,本地都必须清干净(避免卡死)
+   */
+  async function logout() {
+    try {
+      await apiLogout()
+    } catch (e) {
+      // 后端失败不阻塞本地清理
+    }
+    clearLocal()
+  }
+
+  /**
+   * 仅清本地状态(不调后端)
+   * 用于 40001 等场景:token 已失效,无需再请求后端
+   */
+  function clearLocal() {
+    removeToken()
+    token.value = ''
+    userInfo.value = null
+  }
+
+  /**
+   * 启动时校验登录态
+   * 本地有 token → 静默请求 /users/current,失败则清理
+   */
+  async function syncSession() {
+    if (!token.value) return false
+    try {
+      const res = await getCurrentUser()
+      if (res.flag && res.data) {
+        userInfo.value = res.data
+        return true
+      }
+      clearLocal()
+      return false
+    } catch (e) {
+      clearLocal()
+      return false
+    }
+  }
+
+  /**
+   * 更新本地点赞集合(乐观更新)
+   * @param {number} articleId
+   */
+  function toggleArticleLike(articleId) {
+    if (!userInfo.value) return
+    if (!Array.isArray(userInfo.value.articleLikeSet)) {
+      userInfo.value.articleLikeSet = []
+    }
+    const set = userInfo.value.articleLikeSet
+    const idx = set.indexOf(articleId)
+    if (idx > -1) {
+      set.splice(idx, 1)
+    } else {
+      set.push(articleId)
+    }
+  }
+
+  function isArticleLiked(articleId) {
+    if (!userInfo.value || !Array.isArray(userInfo.value.articleLikeSet)) return false
+    return userInfo.value.articleLikeSet.includes(articleId)
+  }
+
+  function isCommentLiked(commentId) {
+    if (!userInfo.value || !Array.isArray(userInfo.value.commentLikeSet)) return false
+    return userInfo.value.commentLikeSet.includes(commentId)
+  }
+
+  function toggleCommentLike(commentId) {
+    if (!userInfo.value) return
+    if (!Array.isArray(userInfo.value.commentLikeSet)) {
+      userInfo.value.commentLikeSet = []
+    }
+    const set = userInfo.value.commentLikeSet
+    const idx = set.indexOf(commentId)
+    if (idx > -1) set.splice(idx, 1)
+    else set.push(commentId)
+  }
+
+  return {
+    // state
+    userInfo,
+    token,
+    // getters
+    isLoggedIn,
+    userId,
+    // actions
+    login,
+    logout,
+    clearLocal,
+    syncSession,
+    toggleArticleLike,
+    isArticleLiked,
+    toggleCommentLike,
+    isCommentLiked
+  }
+})

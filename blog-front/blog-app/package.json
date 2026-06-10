@@ -1,0 +1,10 @@
+{
+  "name": "blog-app",
+  "version": "1.0.0",
+  "description": "基于 Sa-Token Header 鉴权的博客 App (uniapp + Vue 3)",
+  "private": true,
+  "dependencies": {
+    "pinia": "^2.0.36",
+    "vue": "^3.4.21"
+  }
+}

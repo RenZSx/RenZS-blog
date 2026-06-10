@@ -54,6 +54,10 @@ application-local.properties
 .env.local
 .env.*.local
 
+# ============ uniapp / HBuilderX ============
+unpackage/
+.hbuilderx/
+
 # ============ Claude 相关 ============
 .superpowers/
 .claude/
