@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chen.blog.module.notice.dao.UserNoticeDao">
+
+    <select id="countNotices" resultType="java.lang.Integer">
+        <choose>
+            <when test="noticeQueryVO.noticeType != null and noticeQueryVO.noticeType != '' and noticeQueryVO.noticeType == 'system'">
+                SELECT
+                count(1)
+                FROM
+                tb_system_notice
+            </when>
+            <when test="noticeQueryVO.noticeType != null and noticeQueryVO.noticeType != ''">
+                SELECT
+                count(1)
+                FROM
+                tb_user_notice
+                WHERE
+                user_id = #{userId}
+                AND notice_type = #{noticeQueryVO.noticeType}
+            </when>
+            <otherwise>
+                SELECT
+                (
+                    SELECT count(1)
+                    FROM tb_user_notice
+                    WHERE user_id = #{userId}
+                    AND notice_type != 'system'
+                ) + (
+                    SELECT count(1)
+                    FROM tb_system_notice
+                )
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="listNotices" resultType="com.chen.blog.module.notice.dto.NoticeDTO">
+        SELECT
+        *
+        FROM (
+            <if test="noticeQueryVO.noticeType == null or noticeQueryVO.noticeType == '' or noticeQueryVO.noticeType != 'system'">
+                SELECT
+                id,
+                user_id AS userId,
+                notice_type AS noticeType,
+                source_id AS sourceId,
+                source_type AS sourceType,
+                target_id AS targetId,
+                target_type AS targetType,
+                jump_path AS jumpPath,
+                anchor_key AS anchorKey,
+                content,
+                CASE
+                    WHEN notice_type IN ('comment_reply', 'talk_reply') THEN reply_content
+                    ELSE NULL
+                END AS replyContent,
+                is_read AS isRead,
+                create_time AS createTime
+                FROM
+                tb_user_notice
+                WHERE
+                user_id = #{userId}
+                <choose>
+                    <when test="noticeQueryVO.noticeType != null and noticeQueryVO.noticeType != ''">
+                        AND notice_type = #{noticeQueryVO.noticeType}
+                    </when>
+                    <otherwise>
+                        AND notice_type != 'system'
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="noticeQueryVO.noticeType == null or noticeQueryVO.noticeType == ''">
+                UNION ALL
+            </if>
+            <if test="noticeQueryVO.noticeType == null or noticeQueryVO.noticeType == '' or noticeQueryVO.noticeType == 'system'">
+                SELECT
+                sn.id,
+                #{userId} AS userId,
+                'system' AS noticeType,
+                NULL AS sourceId,
+                'system' AS sourceType,
+                NULL AS targetId,
+                'system' AS targetType,
+                sn.jump_path AS jumpPath,
+                NULL AS anchorKey,
+                sn.content,
+                NULL AS replyContent,
+                CASE
+                    WHEN snr.id IS NULL THEN 0
+                    ELSE 1
+                END AS isRead,
+                sn.create_time AS createTime
+                FROM
+                tb_system_notice sn
+                LEFT JOIN tb_system_notice_read snr ON snr.notice_id = sn.id AND snr.user_id = #{userId}
+            </if>
+        ) notice_list
+        ORDER BY
+        createTime DESC,
+        id DESC
+        LIMIT #{limitCurrent}, #{size}
+    </select>
+
+    <select id="getNoticeByUserIdAndNoticeId" resultType="com.chen.blog.module.notice.dto.NoticeDTO">
+        SELECT
+        id,
+        user_id AS userId,
+        notice_type AS noticeType,
+        source_id AS sourceId,
+        source_type AS sourceType,
+        target_id AS targetId,
+        target_type AS targetType,
+        jump_path AS jumpPath,
+        anchor_key AS anchorKey,
+        content,
+        CASE
+            WHEN notice_type IN ('comment_reply', 'talk_reply') THEN reply_content
+            ELSE NULL
+        END AS replyContent,
+        is_read AS isRead,
+        create_time AS createTime
+        FROM
+        tb_user_notice
+        WHERE
+        user_id = #{userId}
+        AND id = #{noticeId}
+        LIMIT 1
+    </select>
+
+    <select id="getUnreadCount" resultType="java.lang.Integer">
+        SELECT
+        (
+            SELECT count(1)
+            FROM tb_user_notice
+            WHERE user_id = #{userId}
+            AND is_read = 0
+            AND notice_type != 'system'
+        ) + (
+            SELECT count(1)
+            FROM tb_system_notice sn
+            LEFT JOIN tb_system_notice_read snr ON snr.notice_id = sn.id AND snr.user_id = #{userId}
+            WHERE snr.id IS NULL
+        )
+    </select>
+
+    <select id="acquireNoticeLock" resultType="java.lang.Integer">
+        SELECT GET_LOCK(#{lockName}, #{timeoutSeconds})
+    </select>
+
+    <select id="releaseNoticeLock" resultType="java.lang.Integer">
+        SELECT RELEASE_LOCK(#{lockName})
+    </select>
+
+</mapper>

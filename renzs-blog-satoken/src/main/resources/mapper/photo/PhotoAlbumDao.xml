@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chen.blog.module.photo.dao.PhotoAlbumDao">
+
+
+    <select id="listPhotoAlbumBacks" resultType="com.chen.blog.module.photo.dto.PhotoAlbumBackDTO">
+        SELECT
+          pa.id,
+          album_name,
+          album_desc,
+          album_cover,
+          COUNT( a.id ) AS photo_count,
+          status
+        FROM
+          (
+            SELECT
+             id,
+             album_name,
+             album_desc,
+             album_cover,
+             status
+            FROM
+              tb_photo_album
+            WHERE
+              is_delete = 0
+            <if test="condition.keywords != null">
+              and album_name like concat('%',#{condition.keywords},'%')
+            </if>
+            ORDER BY
+              id desc
+            LIMIT #{current},#{size}
+          ) pa
+        LEFT JOIN
+         (
+          SELECT
+            id,
+            album_id
+          FROM
+            tb_photo
+          WHERE
+            is_delete = 0
+         )
+         a ON pa.id = a.album_id
+        GROUP BY
+          pa.id
+    </select>
+
+    <select id="listPhotoAlbums" resultType="com.chen.blog.module.photo.dto.PhotoAlbumDTO">
+        SELECT
+          pa.id,
+          pa.album_name,
+          pa.album_desc,
+          pa.album_cover,
+          COUNT(p.id) AS photo_count
+        FROM
+          (
+            SELECT
+              id,
+              album_name,
+              album_desc,
+              album_cover
+            FROM
+              tb_photo_album
+            WHERE
+              status = 1
+              AND is_delete = 0
+            ORDER BY
+              id DESC
+          ) pa
+        LEFT JOIN
+          (
+            SELECT
+              id,
+              album_id
+            FROM
+              tb_photo
+            WHERE
+              is_delete = 0
+          ) p ON pa.id = p.album_id
+        GROUP BY
+          pa.id,
+          pa.album_name,
+          pa.album_desc,
+          pa.album_cover
+        ORDER BY
+          pa.id DESC
+    </select>
+
+</mapper>

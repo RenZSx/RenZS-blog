@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chen.blog.module.notice.dao.SystemNoticeReadDao">
+
+    <insert id="readSystemNotice">
+        INSERT IGNORE INTO tb_system_notice_read (
+            notice_id,
+            user_id,
+            create_time
+        )
+        VALUES (
+            #{noticeId},
+            #{userId},
+            NOW()
+        )
+    </insert>
+
+    <insert id="readAllSystemNotices">
+        INSERT IGNORE INTO tb_system_notice_read (
+            notice_id,
+            user_id,
+            create_time
+        )
+        SELECT
+            id,
+            #{userId},
+            NOW()
+        FROM
+            tb_system_notice
+    </insert>
+
+</mapper>

@@ -1,0 +1,87 @@
+<svg width="800" height="282" viewBox="0 0 800 282" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="60" y1="24" x2="748" y2="258" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7dc6d9"/>
+      <stop offset="0.48" stop-color="#5eb1c9"/>
+      <stop offset="1" stop-color="#2f7897"/>
+    </linearGradient>
+    <radialGradient id="light" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(308 78) rotate(35) scale(306 134)">
+      <stop stop-color="#d6f4ff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#d6f4ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="envelope" x1="515" y1="112" x2="668" y2="205" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff4d8"/>
+      <stop offset="1" stop-color="#efd292"/>
+    </linearGradient>
+    <linearGradient id="shadow" x1="137" y1="37" x2="266" y2="265" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123d54" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#082638" stop-opacity="0.64"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#063044" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="282" rx="34" fill="url(#sky)"/>
+  <rect width="800" height="282" rx="34" fill="url(#light)"/>
+
+  <!-- 左侧加深蒙层，保证页面文字在背景上保持清晰。 -->
+<!--  <path d="M0 0H346V282H0V0Z" fill="url(#shadow)"/>-->
+  <path d="M0 0H356C299 72 296 202 356 282H0V0Z" fill="#0a3147" fill-opacity="0.18"/>
+
+  <!-- 背景圆点和云朵，延续当前博客偏柔和的蓝色主题。 -->
+  <g opacity="0.58">
+    <circle cx="68" cy="63" r="22" fill="#b9e3ee"/>
+    <circle cx="711" cy="55" r="7" fill="#cfedf4"/>
+    <circle cx="732" cy="38" r="5" fill="#cfedf4"/>
+    <circle cx="469" cy="28" r="6" fill="#c8ebf4"/>
+    <circle cx="489" cy="28" r="4" fill="#c8ebf4"/>
+    <circle cx="707" cy="228" r="26" fill="#93cedf"/>
+  </g>
+  <g opacity="0.72">
+    <path d="M462 200C449 200 439 190 439 178C439 166 448 157 460 157C464 143 476 134 492 134C510 134 525 147 528 164C542 165 553 176 553 190C553 205 541 217 526 217H462C452 217 444 210 444 200H462Z" fill="#a9dce8"/>
+    <path d="M67 212C53 212 43 202 43 190C43 178 52 169 64 169C68 155 80 146 96 146C113 146 128 158 132 174C147 176 158 187 158 201C158 216 146 228 130 228H66C56 228 48 221 48 212H67Z" fill="#9bd2df"/>
+  </g>
+
+  <!-- 参考图里猫耳和尾巴的氛围元素，弱化为背景装饰。 -->
+  <g opacity="0.36" filter="url(#softShadow)">
+    <path d="M79 37L135 93L49 105L79 37Z" fill="#326f89"/>
+    <path d="M730 5C703 50 706 90 756 118C799 142 801 194 758 224" stroke="#c9edf4" stroke-width="26" stroke-linecap="round"/>
+    <path d="M729 5C704 50 708 88 756 118C795 140 799 185 766 217" stroke="#2f7897" stroke-opacity="0.35" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- 中央蓝白小猫剪影，保持背景有识别度但不抢文字。 -->
+  <g opacity="0.62" filter="url(#softShadow)">
+    <path d="M404 100C391 72 368 52 340 46C312 40 286 52 271 76C249 72 227 82 215 101C201 123 204 151 219 171C212 198 228 230 260 243C291 256 334 248 354 224C375 243 417 250 449 235C481 220 496 184 482 156C492 130 472 100 440 94C429 82 417 84 404 100Z" fill="#c9edf4"/>
+    <circle cx="316" cy="145" r="8" fill="#2b6079"/>
+    <circle cx="405" cy="145" r="8" fill="#2b6079"/>
+    <path d="M350 166C358 174 369 174 377 166" stroke="#2b6079" stroke-width="5" stroke-linecap="round"/>
+    <path d="M335 36L361 81L303 71L335 36Z" fill="#c9edf4"/>
+    <path d="M423 42L430 92L379 68L423 42Z" fill="#c9edf4"/>
+  </g>
+
+  <!-- 飞车和信件元素，让“飞车传信”的含义更直接。 -->
+  <g filter="url(#softShadow)">
+    <path d="M520 144L669 91L629 203L590 156L520 144Z" fill="url(#envelope)"/>
+    <path d="M520 144L590 156L669 91" stroke="#ccaa62" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M590 156L629 203" stroke="#ccaa62" stroke-width="5" stroke-linecap="round"/>
+    <path d="M615 126L646 114L638 140L615 126Z" fill="#75bed4"/>
+  </g>
+  <g filter="url(#softShadow)">
+    <path d="M585 78H651C663 78 673 88 673 100V116H563V100C563 88 573 78 585 78Z" fill="#dc3b35"/>
+    <path d="M582 62H642C653 62 662 71 662 82H572C572 71 571 62 582 62Z" fill="#ef554e"/>
+    <circle cx="590" cy="118" r="11" fill="#15465f"/>
+    <circle cx="648" cy="118" r="11" fill="#15465f"/>
+    <circle cx="590" cy="118" r="5" fill="#c4e8f0"/>
+    <circle cx="648" cy="118" r="5" fill="#c4e8f0"/>
+    <rect x="603" y="70" width="23" height="16" rx="3" fill="#b9e7f2"/>
+  </g>
+  <path d="M494 126C449 112 431 83 447 54C469 14 548 24 589 58" stroke="#d7f4fb" stroke-opacity="0.52" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 12"/>
+
+  <!-- 右下角深色纹理，模拟参考图中的条纹衣袖感。 -->
+  <g opacity="0.34">
+    <path d="M647 282C635 238 629 203 632 176" stroke="#092e45" stroke-width="16"/>
+    <path d="M693 282C676 236 670 198 677 164" stroke="#092e45" stroke-width="16"/>
+    <path d="M739 282C715 230 710 190 725 148" stroke="#092e45" stroke-width="16"/>
+  </g>
+</svg>

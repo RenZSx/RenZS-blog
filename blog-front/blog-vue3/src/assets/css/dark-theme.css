@@ -1,0 +1,649 @@
+/* 全局深色主题覆盖样式 - 仅处理共享基础层 */
+
+/* ========== 基础变量覆盖已在 tokens.css 中定义 ========== */
+
+.dark {
+  color: var(--text-primary);
+}
+
+/* ========== 共享暗色表面层级 ========== */
+
+.dark .v-card,
+.dark .v-sheet,
+.dark .v-list,
+.dark .blog-container {
+  background: var(--surface-raised) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--surface-border) !important;
+}
+
+.dark .v-card,
+.dark .blog-container {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    var(--surface-shadow-md) !important;
+}
+
+.dark .v-sheet,
+.dark .v-list {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    var(--surface-shadow-sm) !important;
+}
+
+.dark .v-navigation-drawer,
+.dark .v-menu .v-overlay__content,
+.dark .v-dialog .v-overlay__content,
+.dark .v-tooltip .v-overlay__content,
+.dark .v-snackbar__wrapper {
+  background: var(--surface-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--surface-border-strong) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    var(--surface-shadow-lg) !important;
+}
+
+.dark .v-navigation-drawer {
+  background: var(--surface-base) !important;
+}
+
+/* ========== 共享文字层级 ========== */
+
+.dark .v-list-item,
+.dark .v-field__input,
+.dark .v-input__control,
+.dark .markdown-body,
+.dark .markdown-body p {
+  color: var(--text-primary) !important;
+}
+
+.dark .v-list-item__subtitle,
+.dark .v-label,
+.dark .text-secondary,
+.dark .markdown-body blockquote {
+  color: var(--text-secondary) !important;
+}
+
+.dark .text-primary,
+.dark .markdown-body h1,
+.dark .markdown-body h2,
+.dark .markdown-body h3,
+.dark .markdown-body h4,
+.dark .markdown-body h5,
+.dark .markdown-body h6 {
+  color: rgba(248, 250, 255, 0.96) !important;
+}
+
+.dark .text-disabled {
+  color: var(--text-disabled) !important;
+}
+
+/* ========== 共享表单与分隔 ========== */
+
+.dark .v-field,
+.dark .v-text-field .v-field,
+.dark .v-select .v-field {
+  background: var(--surface-sunken) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--surface-border) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 8px 18px rgba(0, 0, 0, 0.18) !important;
+}
+
+.dark .v-divider,
+.dark .markdown-body hr {
+  border-color: var(--surface-border) !important;
+  opacity: 1 !important;
+}
+
+.dark .v-btn--variant-text,
+.dark .v-btn--variant-outlined {
+  color: var(--text-primary) !important;
+}
+
+.dark .v-btn--variant-outlined {
+  border-color: var(--surface-border-strong) !important;
+}
+
+/* ========== 通用内容暗色一致性 ========== */
+
+.dark .markdown-body code,
+.dark .markdown-body pre,
+.dark .v-skeleton-loader__bone {
+  background: var(--surface-sunken) !important;
+}
+
+.dark .markdown-body code {
+  color: rgba(248, 250, 255, 0.96) !important;
+}
+
+.dark .markdown-body blockquote {
+  border-left-color: var(--text-secondary) !important;
+}
+
+.dark .markdown-body table {
+  background: var(--surface-raised) !important;
+  border-color: var(--surface-border) !important;
+}
+
+.dark .markdown-body th,
+.dark .markdown-body td {
+  border-color: var(--surface-border) !important;
+  border-bottom-color: var(--surface-border) !important;
+}
+
+.dark .markdown-body table th {
+  color: var(--text-primary) !important;
+}
+
+.dark .markdown-body table thead tr {
+  background: var(--surface-sunken) !important;
+}
+
+.dark .markdown-body tr:nth-child(2n+1) {
+  background: var(--surface-sunken) !important;
+}
+
+.dark .markdown-body img {
+  border-color: var(--surface-border) !important;
+}
+
+.dark .markdown-body a {
+  color: transparent !important;
+  background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.dark .markdown-body a::after {
+  background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%) !important;
+}
+
+.dark .v-overlay__scrim {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ========== 主要内容容器层级增强 ========== */
+
+.dark .blog-container.about-container,
+.dark .blog-container.archive-container,
+.dark .blog-container.album-container,
+.dark .blog-container.photo-container,
+.dark .blog-container.category-container,
+.dark .blog-container.tag-container,
+.dark .blog-container.link-container,
+.dark .blog-container.talk-container,
+.dark .blog-container.talk-info-container,
+.dark .blog-container.user-container,
+.dark .blog-container.chat-shell,
+.dark .message-banner,
+.dark .article-list-wrapper,
+.dark .article-wrapper.article-shell,
+.dark .auth-card,
+.dark .magazine-home,
+.dark .home-content {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(31, 38, 52, 0.96) 0%,
+      rgba(19, 24, 34, 0.98) 100%
+    ) !important;
+  border: 1px solid rgba(186, 200, 224, 0.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 24px 56px rgba(0, 0, 0, 0.32) !important;
+}
+
+.dark .home-start {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(59, 130, 246, 0.28), transparent 32%),
+    radial-gradient(circle at 82% 16%, rgba(20, 184, 166, 0.18), transparent 28%),
+    linear-gradient(135deg, #101725 0%, #151e2e 54%, #0d1320 100%) !important;
+}
+
+.dark .article-panel,
+.dark .article-side-card,
+.dark .recommend-container,
+.dark .timeline-content,
+.dark .link-card,
+.dark .article-item-card,
+.dark .chat-conversation-panel,
+.dark .sidebar-card,
+.dark .conversation-mini-card,
+.dark .comment-input-wrapper,
+.dark .reply-input-wrapper,
+.dark .side-panel,
+.dark .section-card,
+.dark .featured-post,
+.dark .home-content__entry,
+.dark .home-content__card,
+.dark .home-content__empty,
+.dark .home-start__stat {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(37, 45, 61, 0.92) 0%,
+      rgba(24, 31, 42, 0.96) 100%
+    ) !important;
+  border: 1px solid rgba(186, 200, 224, 0.14) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 38px rgba(0, 0, 0, 0.24) !important;
+}
+
+.dark .about-content,
+.dark .article-wrapper.article-shell .article-content,
+.dark .article-info-container,
+.dark .auth-card-body,
+.dark .message-page,
+.dark .barrage-stage,
+.dark .comment-input,
+.dark .comment-textarea {
+  background: rgba(12, 16, 24, 0.22) !important;
+}
+
+.dark .article-container,
+.dark .auth-panel,
+.dark .message-input-shell {
+  filter: drop-shadow(0 20px 36px rgba(0, 0, 0, 0.18));
+}
+
+.dark .article-wrapper.article-shell hr,
+.dark .auth-tabs,
+.dark .auth-card-head {
+  border-color: rgba(186, 200, 224, 0.12) !important;
+}
+
+.dark .talk-item,
+.dark .talk-wrapper,
+.dark .album-item,
+.dark .photo,
+.dark .avatar-wrapper {
+  border: 1px solid rgba(186, 200, 224, 0.16) !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(34, 41, 56, 0.94) 0%,
+      rgba(24, 30, 41, 0.96) 100%
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 20px 42px rgba(0, 0, 0, 0.28) !important;
+}
+
+.dark .talk-item:hover,
+.dark .talk-wrapper:hover,
+.dark .album-item:hover {
+  border-color: rgba(116, 166, 230, 0.3) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 26px 50px rgba(0, 0, 0, 0.34) !important;
+}
+
+.dark .link-title,
+.dark .info-title,
+.dark .user-nickname,
+.dark .album-name,
+.dark .link-name,
+.dark .talk-content,
+.dark .about-content,
+.dark .barrage-nickname,
+.dark .message-title,
+.dark .auth-card-title,
+.dark .auth-brand-name,
+.dark .featured-post h1,
+.dark .side-panel h3,
+.dark .author-panel h2,
+.dark .section-card__header h3,
+.dark .hot-list a,
+.dark .section-nav__item,
+.dark .home-start__title,
+.dark .home-start__stat dd,
+.dark .home-content__header h1,
+.dark .home-content__section-title h2,
+.dark .home-content__card-head h3,
+.dark .home-content__entry strong {
+  color: rgba(246, 249, 255, 0.94) !important;
+}
+
+.dark .time,
+.dark .link-intro,
+.dark .link-meta,
+.dark .album-desc,
+.dark .message-subtitle,
+.dark .message-empty,
+.dark .auth-footer-note,
+.dark .auth-card-subtitle,
+.dark .auth-brand-meta,
+.dark .featured-post p,
+.dark .post-meta,
+.dark .author-panel p,
+.dark .author-panel__stats span,
+.dark .magazine-empty,
+.dark .section-card__articles a,
+.dark .home-start__eyebrow,
+.dark .home-start__intro,
+.dark .home-start__stat dt,
+.dark .home-content__header span,
+.dark .home-content__entry span,
+.dark .home-content__card-head span,
+.dark .home-content__article,
+.dark .home-content__empty {
+  color: var(--text-secondary) !important;
+}
+
+.dark .images-items,
+.dark .photo {
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28) !important;
+}
+
+.dark .link-open-badge,
+.dark .auth-social-btn,
+.dark .code-btn {
+  border-color: rgba(186, 200, 224, 0.16) !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.02)
+    ) !important;
+  color: rgba(236, 242, 255, 0.92) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 14px 28px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .auth-social-btn:hover,
+.dark .code-btn:hover {
+  border-color: rgba(116, 166, 230, 0.3) !important;
+}
+
+.dark .message-input-shell,
+.dark .barrage-pill {
+  border-color: rgba(186, 200, 224, 0.22) !important;
+}
+
+.dark .message-input,
+.dark .message-input::placeholder {
+  color: rgba(243, 247, 255, 0.86) !important;
+}
+
+.dark .send-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(243, 247, 255, 0.86) !important;
+}
+
+.dark .send-btn-active,
+.dark .send-btn:hover {
+  background: linear-gradient(135deg, #8bc5ff, #6c8dff) !important;
+  color: #0f1724 !important;
+}
+
+.dark .comment-textarea,
+.dark .reply-input-wrapper .comment-textarea {
+  border-color: rgba(186, 200, 224, 0.16) !important;
+  background: rgba(11, 15, 22, 0.42) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark .comment-textarea:focus,
+.dark .reply-input-wrapper .comment-textarea:focus {
+  border-color: rgba(116, 166, 230, 0.34) !important;
+  background: rgba(14, 19, 28, 0.58) !important;
+  box-shadow: 0 0 0 3px rgba(73, 177, 245, 0.16) !important;
+}
+
+.dark .emoji-btn:hover,
+.dark .emoji-btn-active {
+  background: rgba(73, 177, 245, 0.16) !important;
+  color: #9fd0ff !important;
+}
+
+.dark .cancel-btn {
+  background: rgba(148, 163, 184, 0.14) !important;
+  color: var(--text-secondary) !important;
+}
+
+.dark .cancel-btn:hover {
+  background: rgba(148, 163, 184, 0.22) !important;
+}
+
+.dark .upload-btn,
+.dark .auth-submit {
+  box-shadow: 0 18px 30px rgba(54, 105, 198, 0.26) !important;
+}
+
+.dark .link-container blockquote,
+.dark .article-shell .article-markdown blockquote {
+  background:
+    linear-gradient(90deg, rgba(73, 177, 245, 0.14), rgba(73, 177, 245, 0.04)),
+    rgba(20, 27, 38, 0.84) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+/* ========== 首页卡片层级增强 ========== */
+
+.dark .home-profile-card,
+.dark .home-talk-card,
+.dark .home-side-card,
+.dark .home-toolbar-card,
+.dark .home-feed-card,
+.dark .article-card {
+  border: 1px solid rgba(186, 200, 224, 0.16) !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(34, 41, 56, 0.96) 0%,
+      rgba(24, 30, 41, 0.94) 100%
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 24px 52px rgba(0, 0, 0, 0.34) !important;
+}
+
+.dark .home-profile-card::before,
+.dark .home-talk-card::before {
+  opacity: 0.9;
+}
+
+.dark .home-profile-card::before {
+  background: radial-gradient(
+      circle at 18% 10%,
+      rgba(255, 255, 255, 0.08),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at 82% 12%,
+      rgba(92, 155, 230, 0.18),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.01) 38%,
+      rgba(120, 149, 205, 0.08) 100%
+    ) !important;
+}
+
+.dark .home-talk-card::before {
+  background: radial-gradient(
+      circle at top right,
+      rgba(94, 166, 229, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(38, 46, 62, 0.96),
+      rgba(23, 29, 39, 0.96)
+    ) !important;
+}
+
+.dark .home-profile-card .author-wrapper,
+.dark .home-profile-card .blog-info-wrapper,
+.dark .home-talk-card .home-talk-carousel,
+.dark .home-side-card .home-side-title-badge {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.02)
+    ) !important;
+  border-color: rgba(186, 200, 224, 0.16) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .home-profile-card .home-profile-intro,
+.dark .home-profile-card .home-profile-label,
+.dark .home-talk-card .home-talk-card-copy,
+.dark .home-side-card .home-notice-body,
+.dark .home-side-card .home-side-info,
+.dark .home-side-card .content-time,
+.dark .home-side-card .comment-time,
+.dark .home-side-card .comment-text,
+.dark .home-toolbar-card .home-toolbar-message,
+.dark .home-feed-card .card-excerpt,
+.dark .article-card .article-content,
+.dark .no-more {
+  color: var(--text-secondary) !important;
+}
+
+.dark .home-profile-card .home-profile-name,
+.dark .home-profile-card .home-profile-value,
+.dark .home-talk-card .home-talk-card-heading,
+.dark .home-side-card .home-side-title,
+.dark .home-side-card .content-title a,
+.dark .home-feed-card .card-title h3,
+.dark .article-card .article-title-link,
+.dark .article-card .article-readmore {
+  color: rgba(246, 249, 255, 0.94) !important;
+}
+
+.dark .home-talk-card .home-talk-card-badge,
+.dark .home-feed-card .card-time,
+.dark .home-feed-card .card-category,
+.dark .home-feed-card .card-tag,
+.dark .article-card .article-meta-category,
+.dark .article-card .article-tag-chip,
+.dark .article-card .article-top-badge-text {
+  border-color: rgba(116, 166, 230, 0.22) !important;
+  background: rgba(86, 141, 215, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dark .home-talk-card .talk-item,
+.dark .home-side-card .comment-nickname,
+.dark .home-toolbar-card .home-toolbar-location,
+.dark .home-feed-card .card-time,
+.dark .article-card .article-time,
+.dark .article-card .article-time-minimal {
+  color: rgba(198, 221, 255, 0.84) !important;
+}
+
+.dark .home-side-card .home-side-title,
+.dark .home-side-card .article-item:not(:last-child),
+.dark .home-side-card .comment-item {
+  border-color: rgba(186, 200, 224, 0.12) !important;
+}
+
+.dark .home-side-card .content-cover,
+.dark .home-feed-card .card-image-container,
+.dark .article-card .article-cover {
+  background: linear-gradient(180deg, #161c27 0%, #111722 100%) !important;
+}
+
+.dark .home-side-card .content-title a:hover,
+.dark .home-feed-card .card-title:hover h3,
+.dark .article-card .article-readmore:hover,
+.dark .home-talk-card .talk-item:hover,
+.dark .home-content__article:hover,
+.dark .home-content__section-title a:hover {
+  color: #8bc5ff !important;
+}
+
+.dark .home-feed-card .card-category:hover,
+.dark .home-feed-card .card-tag:hover,
+.dark .article-card .article-tag-chip:hover {
+  background: linear-gradient(135deg, #49b1f5, #6c8dff) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(73, 177, 245, 0.2) !important;
+}
+
+.dark .home-quick-card {
+  border: 1px solid rgba(186, 200, 224, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 20px 40px rgba(0, 0, 0, 0.26);
+}
+
+.dark .home-quick-card::before {
+  background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.03) 34%,
+      transparent 70%
+    ),
+    linear-gradient(180deg, rgba(10, 14, 22, 0.12), rgba(10, 14, 22, 0.34));
+}
+
+.dark .home-quick-card:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 44px rgba(0, 0, 0, 0.3);
+}
+
+.dark .home-quick-card-blue {
+  background-image: linear-gradient(135deg, #315f97 0%, #1a3f67 100%) !important;
+}
+
+.dark .home-quick-card-green {
+  background-image: linear-gradient(135deg, #326664 0%, #1f495d 100%) !important;
+}
+
+.dark .home-quick-card-sunset {
+  background-image: linear-gradient(135deg, #915145 0%, #6a3e4f 100%) !important;
+}
+
+.dark .home-quick-card-purple {
+  background-image: linear-gradient(135deg, #27507f 0%, #47385f 100%) !important;
+}
+
+/* ========== 起始页 & 内容页链接按钮 ========== */
+
+.dark .home-start__link {
+  color: #bfdbfe !important;
+  border-color: rgba(147, 197, 253, 0.28) !important;
+  background: rgba(15, 23, 42, 0.72) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18) !important;
+}
+
+.dark .home-start__link--primary {
+  color: #fff !important;
+  border-color: #3b82f6 !important;
+  background: #3b82f6 !important;
+}
+
+.dark .home-start__link:hover {
+  border-color: rgba(147, 197, 253, 0.5) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28) !important;
+}
+
+.dark .home-content__section-title a {
+  color: #93c5fd !important;
+}
+
+.dark .home-content__article {
+  border-top-color: rgba(186, 200, 224, 0.14) !important;
+}

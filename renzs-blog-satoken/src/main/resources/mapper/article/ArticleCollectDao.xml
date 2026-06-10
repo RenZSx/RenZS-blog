@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chen.blog.module.article.dao.ArticleCollectDao">
+
+    <select id="countCollects" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        tb_user_article_collect
+        WHERE
+        user_id = #{userId}
+    </select>
+
+    <select id="listCollects" resultType="com.chen.blog.module.article.dto.ArticleCollectDTO">
+        SELECT
+        c.id,
+        c.article_id AS articleId,
+        a.article_title AS articleTitle,
+        a.article_cover AS articleCover,
+        c.create_time AS createTime
+        FROM
+        tb_user_article_collect c
+        JOIN tb_article a ON c.article_id = a.id
+        WHERE
+        c.user_id = #{userId}
+        ORDER BY
+        c.id DESC
+        LIMIT #{limitCurrent}, #{size}
+    </select>
+
+</mapper>
