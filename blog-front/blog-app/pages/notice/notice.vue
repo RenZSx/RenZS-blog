@@ -52,7 +52,7 @@
 
       <view
         v-for="(notice, idx) in noticeStore.filteredNoticeList"
-        :key="notice.id"
+        :key="`${notice.noticeType}-${notice.id}`"
         class="notice-item fade-in-up"
         :class="{ unread: notice.isRead !== 1 }"
         :style="{ animationDelay: `${Math.min(idx * 40, 200)}ms` }"

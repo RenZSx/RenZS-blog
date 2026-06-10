@@ -105,7 +105,12 @@ export const useNoticeStore = defineStore('notice', () => {
 
       const res = await apiGetNotices(params)
       if (res.flag && res.data) {
-        const list = res.data.records || res.data || []
+        // 后端 PageResult 字段是 recordList + count (不是 records + total)
+        const list = Array.isArray(res.data.recordList)
+          ? res.data.recordList
+          : Array.isArray(res.data)
+            ? res.data
+            : []
         if (reset) {
           noticeList.value = list
         } else {
@@ -131,9 +136,12 @@ export const useNoticeStore = defineStore('notice', () => {
    */
   function receiveRealtimeNotice(notice, nextUnread) {
     setUnreadCount(nextUnread)
-    if (panelActive.value && notice && notice.id) {
-      // 避免重复插入
-      if (!noticeList.value.find((n) => n.id === notice.id)) {
+    if (panelActive.value && notice && notice.id != null) {
+      // 避免重复插入:用 noticeType + id 双键(后端 system 通知与用户通知 id 不全局唯一)
+      const exists = noticeList.value.find(
+        (n) => n.id === notice.id && n.noticeType === notice.noticeType
+      )
+      if (!exists) {
         noticeList.value.unshift(notice)
       }
     }
@@ -144,6 +152,11 @@ export const useNoticeStore = defineStore('notice', () => {
    */
   async function markRead(notice) {
     if (!notice || notice.isRead === 1) return
+    // 防御:id 必须存在,否则路径变成 /notices/undefined/read,后端返 50000
+    if (notice.id === undefined || notice.id === null) {
+      console.warn('[notice] markRead 跳过:id 缺失', notice)
+      return
+    }
     try {
       const res = await apiMarkRead(notice.id, notice.noticeType)
       if (res.flag) {
