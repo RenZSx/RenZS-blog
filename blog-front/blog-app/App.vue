@@ -122,22 +122,26 @@ scroll-view {
 
 /* ========= 主题变量(浅色默认) ========= */
 page {
-  --bg-page: #f7f8fa;
+  --bg-page: #f6f6f3;
   --bg-card: #ffffff;
-  --bg-soft: #f5f7fa;
-  --bg-overlay: rgba(0, 0, 0, 0.45);
+  --bg-soft: #eeeeea;
+  --bg-overlay: rgba(24, 24, 24, 0.42);
 
-  --text-primary: #1d1f23;
-  --text-regular: #606266;
-  --text-secondary: #909399;
-  --text-placeholder: #c0c4cc;
+  --text-primary: #252525;
+  --text-regular: #555552;
+  --text-secondary: #888883;
+  --text-placeholder: #b8b8b2;
 
-  --border-color: #f0f2f5;
-  --border-color-light: #f5f7fa;
+  --border-color: #e8e8e3;
+  --border-color-light: #f0f0ed;
 
-  --shadow-sm: 0 2rpx 8rpx rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 6rpx 16rpx rgba(15, 23, 42, 0.06);
-  --shadow-lg: 0 12rpx 32rpx rgba(15, 23, 42, 0.08);
+  --color-primary: #3a3a3a;
+  --color-primary-soft: #eeeeea;
+  --color-primary-muted: #777773;
+
+  --shadow-sm: 0 2rpx 8rpx rgba(24, 24, 24, 0.04), 0 1rpx 2rpx rgba(24, 24, 24, 0.05);
+  --shadow-md: 0 8rpx 18rpx rgba(24, 24, 24, 0.06), 0 2rpx 5rpx rgba(24, 24, 24, 0.04);
+  --shadow-lg: 0 14rpx 34rpx rgba(24, 24, 24, 0.08), 0 5rpx 10rpx rgba(24, 24, 24, 0.04);
 
   background-color: var(--bg-page);
   font-size: 28rpx;
@@ -162,6 +166,10 @@ page.theme-dark {
 
   --border-color: #2a2c30;
   --border-color-light: #1d1f23;
+
+  --color-primary: #f5f5f0;
+  --color-primary-soft: #2a2a2a;
+  --color-primary-muted: #c8c8c2;
 
   --shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
   --shadow-md: 0 6rpx 16rpx rgba(0, 0, 0, 0.5);
