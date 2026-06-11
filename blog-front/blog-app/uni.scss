@@ -75,9 +75,10 @@ $gap-3xl: 96rpx;
 /* ================= 圆角 ================= */
 $radius-xs:   8rpx;
 $radius-sm:  12rpx;
-$radius-md:  20rpx;     // 卡片默认
-$radius-lg:  28rpx;     // 大卡�?$radius-xl:  36rpx;
-$radius-pill: 999rpx;   // 胶囊
+$radius-md:  20rpx;     // default card
+$radius-lg:  28rpx;     // large card
+$radius-xl:  36rpx;
+$radius-pill: 999rpx;   // pill
 
 /* ================= 阴影深度(4 层级) ================= */
 // L1 - 卡片浮起
