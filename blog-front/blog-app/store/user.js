@@ -58,6 +58,9 @@ export const useUserStore = defineStore('user', () => {
       console.warn('启动通知 WS 失败:', e)
     }
 
+    // 登录成功后拉一次收藏 ID 列表(失败不阻塞)
+    fetchCollectIds()
+
     return true
   }
 
@@ -112,6 +115,8 @@ export const useUserStore = defineStore('user', () => {
       const res = await getCurrentUser()
       if (res.flag && res.data) {
         userInfo.value = res.data
+        // session 仍然有效 → 拉一次收藏 ID 列表
+        fetchCollectIds()
         return true
       }
       clearLocal()
@@ -161,6 +166,50 @@ export const useUserStore = defineStore('user', () => {
     else set.push(commentId)
   }
 
+  // ========= 收藏(后端 UserInfoDTO 不返回 collectSet,需单独拉) =========
+
+  /**
+   * 启动/登录后调用一次,拉取当前用户的收藏文章 ID 列表
+   *
+   * 实现:复用已有 /user/collects 分页接口,传大 size 一次拉全,
+   * 然后 map 出 articleId 数组写入 userInfo.collectSet。
+   * 博客类应用收藏几百条是常态上限,size=999 足够覆盖。
+   */
+  async function fetchCollectIds() {
+    if (!userInfo.value) return
+    try {
+      const { getMyCollects } = await import('@/api/article')
+      const res = await getMyCollects(1, 999)
+      if (res.flag && res.data) {
+        const list = res.data.recordList || res.data.records || []
+        // 后端 ArticleCollectDTO 字段:id / articleId / articleTitle / articleCover / createTime
+        userInfo.value.collectSet = list
+          .map((item) => item.articleId)
+          .filter((id) => id != null)
+      } else if (!userInfo.value.collectSet) {
+        userInfo.value.collectSet = []
+      }
+    } catch (e) {
+      if (!userInfo.value.collectSet) userInfo.value.collectSet = []
+    }
+  }
+
+  function isArticleCollected(articleId) {
+    if (!userInfo.value || !Array.isArray(userInfo.value.collectSet)) return false
+    return userInfo.value.collectSet.includes(articleId)
+  }
+
+  function toggleArticleCollect(articleId) {
+    if (!userInfo.value) return
+    if (!Array.isArray(userInfo.value.collectSet)) {
+      userInfo.value.collectSet = []
+    }
+    const set = userInfo.value.collectSet
+    const idx = set.indexOf(articleId)
+    if (idx > -1) set.splice(idx, 1)
+    else set.push(articleId)
+  }
+
   /**
    * 更新个人资料(昵称/简介/网站等)
    * @param {Object} patch 部分字段对象,直接传给后端 PUT /users/info
@@ -203,6 +252,9 @@ export const useUserStore = defineStore('user', () => {
     toggleCommentLike,
     isCommentLiked,
     updateUserInfo,
-    setAvatar
+    setAvatar,
+    fetchCollectIds,
+    isArticleCollected,
+    toggleArticleCollect
   }
 })

@@ -72,6 +72,14 @@
         />
         <text class="action-label" :class="{ active: isLiked }">{{ article.likeCount || 0 }}</text>
       </view>
+      <view class="action-btn" :class="{ active: isCollected, popping: collecting }" @click="handleCollect">
+        <bx-icon
+          :name="isCollected ? 'starFilled' : 'star'"
+          :size="44"
+          :color="isCollected ? '#e6a23c' : '#909399'"
+        />
+        <text class="action-label" :class="{ collected: isCollected }">{{ isCollected ? '已收藏' : '收藏' }}</text>
+      </view>
       <view class="action-btn" @click="goComments">
         <bx-icon name="comment" :size="44" color="#909399" />
         <text class="action-label">{{ article.commentCount || article.commentCounts || 0 }}</text>
@@ -87,7 +95,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { getArticle, likeArticle } from '@/api/article'
+import { getArticle, likeArticle, collectArticle, uncollectArticle } from '@/api/article'
 import { useUserStore } from '@/store/user'
 import { useThemeClass } from '@/composables/useThemeClass'
 import { markdownToHtml, sanitizeRichHtml } from '@/utils/markdown'
@@ -98,6 +106,7 @@ const article = ref(null)
 const loading = ref(true)
 const articleId = ref(null)
 const liking = ref(false)
+const collecting = ref(false)
 const defaultAvatar = 'https://www.gravatar.com/avatar/?d=mp'
 
 const renderedHtml = computed(() => {
@@ -194,6 +203,11 @@ const isLiked = computed(() => {
   return userStore.isArticleLiked(articleId.value)
 })
 
+const isCollected = computed(() => {
+  if (!articleId.value) return false
+  return userStore.isArticleCollected(articleId.value)
+})
+
 async function loadArticle() {
   loading.value = true
   try {
@@ -228,6 +242,37 @@ async function handleLike() {
     }
   } catch (e) {
     // 已在拦截器提示
+  }
+}
+
+/**
+ * 收藏 / 取消收藏
+ * 后端 POST 收藏、DELETE 取消,前端先决断当前状态,再调对应接口,最后乐观更新本地 collectSet
+ */
+async function handleCollect() {
+  if (!userStore.isLoggedIn) {
+    uni.showToast({ title: '请先登录', icon: 'none' })
+    setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 800)
+    return
+  }
+  if (collecting.value) return
+  const wasCollected = isCollected.value
+  collecting.value = true
+  setTimeout(() => { collecting.value = false }, 360)
+  try {
+    const res = wasCollected
+      ? await uncollectArticle(articleId.value)
+      : await collectArticle(articleId.value)
+    if (res.flag) {
+      userStore.toggleArticleCollect(articleId.value)
+      uni.showToast({
+        title: wasCollected ? '已取消收藏' : '收藏成功',
+        icon: 'none',
+        duration: 1200
+      })
+    }
+  } catch (e) {
+    // 拦截器已处理
   }
 }
 
@@ -597,6 +642,11 @@ onLoad((query) => {
 
 .action-label.active {
   color: #f56c6c;
+  font-weight: 600;
+}
+
+.action-label.collected {
+  color: #e6a23c;
   font-weight: 600;
 }
 

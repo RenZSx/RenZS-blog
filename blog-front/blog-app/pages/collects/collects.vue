@@ -59,8 +59,10 @@
 import { ref } from 'vue'
 import { onShow, onReachBottom } from '@dcloudio/uni-app'
 import { getMyCollects, uncollectArticle } from '@/api/article'
+import { useUserStore } from '@/store/user'
 import { useThemeClass } from '@/composables/useThemeClass'
 
+const userStore = useUserStore()
 const { isDark } = useThemeClass()
 
 const collects = ref([])
@@ -100,6 +102,10 @@ function onCancel(article) {
         const r = await uncollectArticle(article.id)
         if (r.flag) {
           collects.value = collects.value.filter((a) => a.id !== article.id)
+          // 同步 store,文章详情页"收藏"按钮状态也跟着变
+          if (userStore.isArticleCollected(article.id)) {
+            userStore.toggleArticleCollect(article.id)
+          }
           uni.showToast({ title: '已取消收藏', icon: 'success' })
         }
       } catch (e) {}

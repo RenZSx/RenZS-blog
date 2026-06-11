@@ -167,7 +167,8 @@ onShow(() => {
 .list {
   flex: 1;
   overflow-y: auto;
-  padding: 16rpx 24rpx 32rpx;
+  // 右侧加大边距,长评论不顶满屏幕右边
+  padding: 16rpx 28rpx 32rpx 24rpx;
 }
 
 .loading-tip {
@@ -193,7 +194,8 @@ onShow(() => {
 .comment-card {
   background: var(--bg-card);
   border-radius: 20rpx;
-  padding: 24rpx;
+  // 卡片右内边距加大,长 topic 标题和评论内容右侧呼吸
+  padding: 24rpx 28rpx 24rpx 24rpx;
   margin-bottom: 16rpx;
   box-shadow: var(--shadow-sm);
   opacity: 0;
@@ -240,6 +242,7 @@ onShow(() => {
   line-height: 1.7;
   margin-bottom: 12rpx;
   word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .meta-row {

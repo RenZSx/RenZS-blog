@@ -283,7 +283,8 @@ onShow(() => {
 .list {
   flex: 1;
   overflow-y: auto;
-  padding: 16rpx 24rpx 32rpx;
+  // 右侧加大 4rpx 边距,让卡片不顶满屏幕右边
+  padding: 16rpx 28rpx 32rpx 24rpx;
 }
 
 .loading-tip {
@@ -322,7 +323,8 @@ onShow(() => {
 
 .card-body {
   display: flex;
-  padding: 20rpx;
+  // 卡片内部:右侧 padding 加大,长标题/数字不顶到右边
+  padding: 20rpx 24rpx 20rpx 20rpx;
   gap: 20rpx;
 }
 
@@ -332,6 +334,9 @@ onShow(() => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  // 长 URL 强制换行
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .card-title {
@@ -388,6 +393,9 @@ onShow(() => {
   color: var(--text-regular);
   max-height: 180rpx;
   overflow: hidden;
+  // 长内容强制换行,不会撑爆容器
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 /* ========= 评论占位 ========= */
