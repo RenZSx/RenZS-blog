@@ -37,6 +37,19 @@ export function getCurrentUser() {
 }
 
 /**
+ * QQ 登录
+ * 后端要求 { openId, accessToken },uni.login provider=qq 拿到后转发即可
+ * 响应 data 同账密登录:LoginUserDTO { userInfo, tokenName, tokenValue, tokenTimeout }
+ */
+export function qqLogin({ openId, accessToken }) {
+  return request({
+    url: '/users/oauth/qq',
+    method: 'POST',
+    data: { openId, accessToken }
+  })
+}
+
+/**
  * 注册
  * @param {Object} data { username, password, code, nickname? }
  */

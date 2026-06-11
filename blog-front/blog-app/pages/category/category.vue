@@ -45,7 +45,6 @@
           @click="goTagArticles(t)"
         >
           #{{ t.tagName }}
-          <text class="tag-count">{{ t.articleCount || 0 }}</text>
         </text>
       </view>
     </view>
@@ -232,12 +231,6 @@ onShow(() => {
 .tag-color-1 { color: #5e72e4; }
 .tag-color-2 { color: #f56c6c; }
 .tag-color-3 { color: #e6a23c; }
-
-.tag-count {
-  font-size: 20rpx;
-  color: var(--text-secondary);
-  font-weight: 400;
-}
 
 .empty-state {
   display: flex;

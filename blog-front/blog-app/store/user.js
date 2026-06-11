@@ -5,7 +5,8 @@ import {
   login as apiLogin,
   logout as apiLogout,
   getCurrentUser,
-  updateUserInfo as apiUpdateUserInfo
+  updateUserInfo as apiUpdateUserInfo,
+  qqLogin as apiQQLogin
 } from '@/api/user'
 
 /**
@@ -39,29 +40,73 @@ export const useUserStore = defineStore('user', () => {
     if (!res.flag) {
       throw new Error(res.message || '登录失败')
     }
-    // res.data 即 LoginUserDTO: { userInfo, tokenName, tokenValue, tokenTimeout }
-    const result = res.data
-    setToken(result.tokenValue)
-    token.value = result.tokenValue
-    userInfo.value = result.userInfo
+    applyLoginResult(res.data)
+    return true
+  }
 
-    // 登录成功后立即启动通知 WS + 拉一次未读数(动态 import 避免循环依赖)
-    try {
-      const [{ useNoticeSocket }, { useNoticeStore }] = await Promise.all([
-        import('@/composables/useNoticeSocket'),
-        import('@/store/notice')
-      ])
-      useNoticeStore().fetchUnreadCount()
-      useNoticeSocket().start()
-    } catch (e) {
-      // 启动失败不阻塞登录流程
-      console.warn('启动通知 WS 失败:', e)
+  /**
+   * QQ 登录(原生 SDK)
+   * 流程:
+   *   1. uni.login({ provider: 'qq' }) 拉起手机 QQ App 授权
+   *   2. uni.getUserInfo 拿 openId / accessToken(部分平台需要)
+   *   3. POST /users/oauth/qq 提交,后端返回 LoginUserDTO
+   *   4. 沿用账密登录的 applyLoginResult 写入 store
+   *
+   * @returns {Promise<boolean>}
+   */
+  async function loginByQQ() {
+    // 1. 唤起 QQ 授权(plus 不可用时直接报错)
+    const authRes = await new Promise((resolve, reject) => {
+      uni.login({
+        provider: 'qq',
+        success: resolve,
+        fail: reject
+      })
+    })
+
+    // uniapp 不同平台返回字段位置不同:authResult / data
+    const result = authRes.authResult || authRes.data || authRes
+    const openId =
+      result.openid || result.openId || (result.userInfo && result.userInfo.openId)
+    const accessToken =
+      result.access_token || result.accessToken || (result.userInfo && result.userInfo.accessToken)
+
+    if (!openId || !accessToken) {
+      throw new Error('QQ 授权未返回 openId / accessToken')
     }
 
-    // 登录成功后拉一次收藏 ID 列表(失败不阻塞)
-    fetchCollectIds()
-
+    // 2. 调后端换 sa-token
+    const res = await apiQQLogin({ openId, accessToken })
+    if (!res.flag) {
+      throw new Error(res.message || 'QQ 登录失败')
+    }
+    applyLoginResult(res.data)
     return true
+  }
+
+  /**
+   * 通用:登录成功后写入 token + userInfo + 触发副作用
+   * 抽出来供账密登录、QQ 登录、未来的微博/Gitee 登录复用
+   */
+  function applyLoginResult(loginUserDTO) {
+    if (!loginUserDTO) return
+    setToken(loginUserDTO.tokenValue)
+    token.value = loginUserDTO.tokenValue
+    userInfo.value = loginUserDTO.userInfo
+
+    // 启动通知 WS + 拉未读数(动态 import 避免循环依赖)
+    Promise.all([
+      import('@/composables/useNoticeSocket'),
+      import('@/store/notice')
+    ]).then(([{ useNoticeSocket }, { useNoticeStore }]) => {
+      useNoticeStore().fetchUnreadCount()
+      useNoticeSocket().start()
+    }).catch((e) => {
+      console.warn('启动通知 WS 失败:', e)
+    })
+
+    // 拉收藏 ID 列表
+    fetchCollectIds()
   }
 
   /**
@@ -244,6 +289,7 @@ export const useUserStore = defineStore('user', () => {
     userId,
     // actions
     login,
+    loginByQQ,
     logout,
     clearLocal,
     syncSession,

@@ -48,6 +48,23 @@
         <text v-if="!loading">登 录</text>
       </button>
 
+      <!-- 第三方登录区 -->
+      <view class="divider">
+        <view class="divider-line" />
+        <text class="divider-text">其他方式登录</text>
+        <view class="divider-line" />
+      </view>
+
+      <view class="oauth-list">
+        <view
+          class="oauth-btn qq"
+          :class="{ disabled: qqLoading }"
+          @click="handleQQLogin"
+        >
+          <text class="oauth-icon">QQ</text>
+        </view>
+      </view>
+
       <view class="form-footer">
         <text class="footer-link" @click="goRegister">还没账号 · 立即注册</text>
       </view>
@@ -69,6 +86,7 @@ const userStore = useUserStore()
 const { isDark } = useThemeClass()
 const form = reactive({ username: '', password: '' })
 const loading = ref(false)
+const qqLoading = ref(false)
 const focusField = ref('')
 
 async function handleLogin() {
@@ -93,6 +111,44 @@ async function handleLogin() {
     uni.showToast({ title: e.message || '登录失败', icon: 'none' })
   } finally {
     loading.value = false
+  }
+}
+
+/**
+ * QQ 登录:仅 App 端可用(H5 端没有 plus.oauth)
+ * 流程:uni.login(qq) → 后端换 token → 跳首页
+ */
+async function handleQQLogin() {
+  if (qqLoading.value) return
+
+  // 平台兜底:plus 不存在的 H5/小程序端,提示去 App 端
+  if (typeof plus === 'undefined' || !plus.oauth) {
+    return uni.showToast({
+      title: '请在 App 端使用 QQ 登录',
+      icon: 'none'
+    })
+  }
+
+  qqLoading.value = true
+  try {
+    await userStore.loginByQQ()
+    uni.showToast({ title: '登录成功', icon: 'success' })
+    setTimeout(() => {
+      uni.switchTab({ url: '/pages/index/index' })
+    }, 600)
+  } catch (e) {
+    const msg = e && e.message ? e.message : ''
+    // 用户在 QQ 授权页主动取消时不弹错误
+    if (msg.includes('cancel') || msg.includes('取消')) {
+      // 静默
+    } else {
+      uni.showToast({
+        title: msg || 'QQ 登录失败',
+        icon: 'none'
+      })
+    }
+  } finally {
+    qqLoading.value = false
   }
 }
 
@@ -279,6 +335,64 @@ function goRegister() {
   font-size: 26rpx;
   color: #42b983;
   font-weight: 500;
+}
+
+/* ========= 第三方登录区 ========= */
+.divider {
+  display: flex;
+  align-items: center;
+  margin-top: 40rpx;
+  gap: 20rpx;
+}
+
+.divider-line {
+  flex: 1;
+  height: 2rpx;
+  background: #ebeef5;
+}
+
+.divider-text {
+  font-size: 22rpx;
+  color: #909399;
+  letter-spacing: 1rpx;
+}
+
+.oauth-list {
+  display: flex;
+  justify-content: center;
+  margin-top: 28rpx;
+}
+
+.oauth-btn {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  transition: all 220ms ease;
+}
+
+.oauth-btn:active {
+  transform: scale(0.92);
+}
+
+.oauth-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.oauth-btn.qq {
+  background: linear-gradient(135deg, #12b7f5 0%, #0084ff 100%);
+  box-shadow: 0 6rpx 16rpx rgba(18, 183, 245, 0.35);
+}
+
+.oauth-icon {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -2rpx;
 }
 
 .bottom-tip {

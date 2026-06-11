@@ -19,7 +19,7 @@
         :key="article.id"
         class="article-card fade-in-up"
         :style="{ animationDelay: `${Math.min(idx * 60, 300)}ms` }"
-        @click="goDetail(article.id)"
+        @click="goDetail(article.articleId)"
       >
         <view class="card-body">
           <view class="card-text">
@@ -99,12 +99,14 @@ function onCancel(article) {
     success: async (res) => {
       if (!res.confirm) return
       try {
-        const r = await uncollectArticle(article.id)
+        // 后端 ArticleCollectDTO: id=收藏记录主键, articleId=真正的文章 ID
+        // 收藏/取消/详情都用 articleId,id 仅用作列表 :key
+        const r = await uncollectArticle(article.articleId)
         if (r.flag) {
           collects.value = collects.value.filter((a) => a.id !== article.id)
           // 同步 store,文章详情页"收藏"按钮状态也跟着变
-          if (userStore.isArticleCollected(article.id)) {
-            userStore.toggleArticleCollect(article.id)
+          if (userStore.isArticleCollected(article.articleId)) {
+            userStore.toggleArticleCollect(article.articleId)
           }
           uni.showToast({ title: '已取消收藏', icon: 'success' })
         }

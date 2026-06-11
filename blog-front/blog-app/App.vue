@@ -3,6 +3,7 @@ import { useUserStore } from '@/store/user'
 import { useNoticeStore } from '@/store/notice'
 import { useThemeStore } from '@/store/theme'
 import { useNoticeSocket } from '@/composables/useNoticeSocket'
+import { onNotificationClick } from '@/utils/native-notification'
 import { watch } from 'vue'
 
 export default {
@@ -38,6 +39,31 @@ export default {
         }
       })
     } catch (e) { /* 平台不支持时静默 */ }
+
+    // 5. 系统通知栏点击监听 - 唤起 App 后路由
+    //    H5 端 plus 不存在,工具内部自动 no-op
+    onNotificationClick((payload) => {
+      try {
+        if (!payload) return
+        // 文章/说说/友链:走 jumpPath 解析跳详情
+        if (payload.jumpPath) {
+          const article = /^\/articles\/(\d+)/.exec(payload.jumpPath)
+          if (article) {
+            uni.navigateTo({ url: `/pages/article/article?id=${article[1]}` })
+            return
+          }
+          const talk = /^\/talks\/(\d+)/.exec(payload.jumpPath)
+          if (talk) {
+            uni.navigateTo({ url: `/pages/talk/talk-detail?id=${talk[1]}` })
+            return
+          }
+        }
+        // 兜底:跳通知页
+        uni.switchTab({ url: '/pages/notice/notice' })
+      } catch (e) {
+        uni.switchTab({ url: '/pages/notice/notice' })
+      }
+    })
   },
   onShow() {
     // App 端从后台回到前台:检测 WS 是否仍连接,断了则重连
@@ -56,6 +82,44 @@ export default {
 </script>
 
 <style lang="scss">
+/* ============================================================
+ * H5 端隐藏浏览器原生滚动条
+ * - WebKit (Chrome / Safari / Edge): ::-webkit-scrollbar width:0
+ * - Firefox: scrollbar-width:none
+ * - IE: -ms-overflow-style:none
+ * 注意:只隐藏样式,不影响滚动功能,touch / wheel 仍然能滚
+ * ============================================================ */
+::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none;
+  -webkit-appearance: none;
+  background: transparent;
+}
+::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* uniapp 自带的 scroll-view 也走原生滚动条样式 */
+scroll-view ::-webkit-scrollbar,
+uni-scroll-view ::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none;
+}
+
+/* Firefox / IE 兼容 */
+html,
+uni-app,
+uni-page-wrapper,
+uni-page-body,
+uni-scroll-view,
+scroll-view {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 /* ========= 主题变量(浅色默认) ========= */
 page {
   --bg-page: #f7f8fa;
