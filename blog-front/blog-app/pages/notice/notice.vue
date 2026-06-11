@@ -66,10 +66,12 @@
             <text class="notice-type-label">{{ typeLabel(notice.noticeType) }}</text>
             <text class="notice-time">{{ formatNoticeTime(notice.createTime) }}</text>
           </view>
-          <text class="notice-text text-ellipsis-2">{{ notice.content || '收到一条新通知' }}</text>
-          <text v-if="notice.replyContent" class="notice-reply text-ellipsis-2">
-            "{{ notice.replyContent }}"
-          </text>
+          <view class="notice-text">
+            <mp-html :content="notice.content || '收到一条新通知'" :tag-style="noticeTagStyle" />
+          </view>
+          <view v-if="notice.replyContent" class="notice-reply">
+            <mp-html :content="notice.replyContent" :tag-style="noticeReplyTagStyle" />
+          </view>
         </view>
         <view v-if="notice.isRead !== 1" class="unread-dot" />
       </view>
@@ -97,6 +99,20 @@ import { formatNoticeTime } from '@/utils/notice-time'
 const noticeStore = useNoticeStore()
 const userStore = useUserStore()
 const { isDark } = useThemeClass()
+
+// 通知内容里可能含 emoji <img>,inline 渲染配置
+const noticeTagStyle = {
+  p: 'margin:0;font-size:26rpx;line-height:1.5;color:var(--text-regular);',
+  img: 'display:inline-block;height:36rpx;width:auto;vertical-align:text-bottom;margin:0 2rpx;',
+  a: 'color:#42b983;'
+}
+
+// 回复内容引用块的样式(颜色比正文淡)
+const noticeReplyTagStyle = {
+  p: 'margin:0;font-size:24rpx;line-height:1.5;color:var(--text-secondary);',
+  img: 'display:inline-block;height:32rpx;width:auto;vertical-align:text-bottom;margin:0 2rpx;',
+  a: 'color:#42b983;'
+}
 
 const tabs = [
   { value: 'all', label: '全部' },
@@ -323,7 +339,8 @@ onHide(() => {
   display: flex;
   background: var(--bg-card);
   border-radius: 20rpx;
-  padding: 24rpx;
+  // 右侧加大留白:32rpx,给未读小红点留位 + 内容呼吸感
+  padding: 24rpx 32rpx 24rpx 24rpx;
   margin-bottom: 16rpx;
   box-shadow: var(--shadow-sm);
   position: relative;
@@ -364,6 +381,8 @@ onHide(() => {
 .notice-content {
   flex: 1;
   margin-left: 20rpx;
+  // 右侧给 unread-dot 留出 28rpx 安全区,长文本不会顶进红点
+  padding-right: 28rpx;
   min-width: 0;
 }
 
@@ -390,23 +409,41 @@ onHide(() => {
   font-size: 26rpx;
   color: var(--text-regular);
   line-height: 1.5;
+  // 容器层级 2 行限高:emoji 比文字略大,行高 1.5 * 26rpx * 2 ≈ 78rpx + 余量
+  max-height: 90rpx;
+  overflow: hidden;
+  // 长英文/URL 强制换行,避免横向溢出
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .notice-reply {
   display: block;
   margin-top: 8rpx;
-  padding: 8rpx 12rpx;
+  padding: 8rpx 12rpx 8rpx 16rpx;
   background: var(--bg-soft);
-  border-radius: 8rpx;
+  border-left: 6rpx solid #42b983;
+  border-radius: 0 8rpx 8rpx 0;
   font-size: 24rpx;
   color: var(--text-secondary);
   line-height: 1.5;
+  // 引用块 2 行限高
+  max-height: 80rpx;
+  overflow: hidden;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.reply-quote {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  opacity: 0.6;
 }
 
 .unread-dot {
   position: absolute;
-  top: 24rpx;
-  right: 24rpx;
+  top: 20rpx;
+  right: 20rpx;
   width: 16rpx;
   height: 16rpx;
   background: #f56c6c;

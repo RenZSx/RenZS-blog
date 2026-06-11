@@ -9,6 +9,11 @@
 
     <view class="content-card">
       <view v-if="loading" class="loading-tip">加载中...</view>
+      <view v-else-if="!aboutContent" class="empty-state">
+        <bx-icon name="bookOpen" :size="120" color="#c0c4cc" />
+        <text class="empty-title">关于页内容尚未配置</text>
+        <text class="empty-sub">博主可在管理后台 → 关于我 填写</text>
+      </view>
       <mp-html
         v-else
         class="markdown-body"
@@ -38,10 +43,13 @@ const websiteAuthor = ref('博主')
 const renderedHtml = computed(() => markdownToHtml(aboutContent.value || ''))
 
 const mdTagStyle = {
-  h1: 'font-size:40rpx;font-weight:700;margin:32rpx 0 16rpx;color:var(--text-primary);',
-  h2: 'font-size:34rpx;font-weight:700;margin:28rpx 0 14rpx;color:var(--text-primary);border-bottom:2rpx solid var(--border-color);padding-bottom:12rpx;',
-  h3: 'font-size:30rpx;font-weight:700;margin:24rpx 0 12rpx;color:var(--text-primary);',
+  h1: 'font-size:36rpx;font-weight:700;line-height:1.4;margin:32rpx 0 16rpx;color:var(--text-primary);letter-spacing:-0.5rpx;',
+  h2: 'font-size:34rpx;font-weight:700;line-height:1.4;margin:28rpx 0 14rpx;color:var(--text-primary);border-bottom:2rpx solid var(--border-color);padding-bottom:10rpx;',
+  h3: 'font-size:32rpx;font-weight:700;line-height:1.4;margin:24rpx 0 12rpx;color:var(--text-primary);',
+  h4: 'font-size:30rpx;font-weight:700;line-height:1.4;margin:20rpx 0 10rpx;color:var(--text-primary);',
   p: 'font-size:30rpx;line-height:1.85;color:var(--text-regular);margin:16rpx 0;',
+  div: 'font-size:30rpx;line-height:1.85;color:var(--text-regular);',
+  span: 'font-size:30rpx;',
   a: 'color:#42b983;',
   // 行内代码:与代码块统一黑底白字 + 字号对齐正文 30rpx
   code: 'background:#000000;color:#e8e8e8;padding:2rpx 10rpx;border-radius:6rpx;font-size:30rpx;font-family:Consolas,Menlo,monospace;',
@@ -156,9 +164,55 @@ onShow(() => {
   color: var(--text-secondary);
 }
 
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 40rpx;
+  color: var(--text-secondary);
+}
+
+.empty-title {
+  margin-top: 24rpx;
+  font-size: 28rpx;
+  color: var(--text-regular);
+}
+
+.empty-sub {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  opacity: 0.7;
+}
+
 .markdown-body {
   font-size: 30rpx;
   line-height: 1.85;
   color: var(--text-regular);
 }
+
+/* mp-html 内置 ._h1 ~ ._h6 用 em 写死,覆盖回 rpx 阅读体系(同 article.vue) */
+.markdown-body :deep(._h1) {
+  font-size: 36rpx !important;
+  line-height: 1.4 !important;
+  margin: 32rpx 0 16rpx !important;
+}
+.markdown-body :deep(._h2) {
+  font-size: 34rpx !important;
+  line-height: 1.4 !important;
+  margin: 28rpx 0 14rpx !important;
+}
+.markdown-body :deep(._h3) {
+  font-size: 32rpx !important;
+  line-height: 1.4 !important;
+  margin: 24rpx 0 12rpx !important;
+}
+.markdown-body :deep(._h4),
+.markdown-body :deep(._h5),
+.markdown-body :deep(._h6) {
+  font-size: 30rpx !important;
+  line-height: 1.4 !important;
+  margin: 20rpx 0 10rpx !important;
+}
+.markdown-body :deep(._big) { font-size: 32rpx !important; }
+.markdown-body :deep(._small) { font-size: 26rpx !important; }
 </style>

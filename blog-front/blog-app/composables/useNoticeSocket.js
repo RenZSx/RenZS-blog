@@ -110,7 +110,21 @@ function handleMessage(rawData) {
 
 function previewText(text) {
   if (!text) return '收到新通知'
-  const clean = String(text).replace(/\s+/g, ' ').trim()
+  let clean = String(text)
+    // 1. 把 <img> emoji 标签替换成 [表情] 占位(uni.showToast 不能渲染 HTML)
+    .replace(/<img[^>]*>/gi, '[表情]')
+    // 2. 剥掉其余所有 HTML 标签
+    .replace(/<[^>]+>/g, '')
+    // 3. HTML 实体常见转义
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    // 4. 合并空白
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!clean) return '收到新通知'
   return clean.length > 20 ? clean.slice(0, 20) + '...' : clean
 }
 

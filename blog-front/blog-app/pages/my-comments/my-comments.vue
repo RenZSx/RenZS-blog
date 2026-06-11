@@ -66,7 +66,8 @@ const totalCount = ref(0)
 const commentContentStyle = {
   p: 'margin:4rpx 0;font-size:28rpx;line-height:1.7;color:var(--text-primary);',
   a: 'color:#42b983;',
-  img: 'max-width:100%;border-radius:8rpx;'
+  // 表情包 emoji <img width=24 height=24>:内联行高对齐,不要块状
+  img: 'display:inline-block;height:48rpx;width:auto;vertical-align:text-bottom;margin:0 2rpx;'
 }
 
 function typeLabel(t) {
