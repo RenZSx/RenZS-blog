@@ -189,8 +189,8 @@ onUnmounted(() => {
 
 .form-field.active {
   background: #ffffff;
-  border-color: #42b983;
-  box-shadow: 0 4rpx 12rpx rgba(66, 185, 131, 0.15);
+  border-color: #3a3a3a;
+  box-shadow: 0 4rpx 12rpx rgba(71, 85, 105, 0.15);
 }
 
 .field-icon {
@@ -219,8 +219,8 @@ onUnmounted(() => {
   height: 64rpx;
   line-height: 64rpx;
   padding: 0 24rpx;
-  background: rgba(66, 185, 131, 0.12);
-  color: #42b983;
+  background: rgba(71, 85, 105, 0.12);
+  color: #3a3a3a;
   font-size: 24rpx;
   font-weight: 500;
   border-radius: 32rpx;
@@ -237,19 +237,19 @@ onUnmounted(() => {
   margin-top: 16rpx;
   height: 96rpx;
   line-height: 96rpx;
-  background: linear-gradient(135deg, #42b983 0%, #2d8362 100%);
+  background: linear-gradient(135deg, #3a3a3a 0%, #252525 100%);
   color: #ffffff;
   font-size: 30rpx;
   font-weight: 600;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   letter-spacing: 4rpx;
-  box-shadow: 0 8rpx 20rpx rgba(66, 185, 131, 0.32);
+  box-shadow: 0 8rpx 20rpx rgba(71, 85, 105, 0.32);
   transition: all 220ms ease;
 }
 
 .submit-btn:active {
   transform: translateY(2rpx);
-  box-shadow: 0 4rpx 12rpx rgba(66, 185, 131, 0.32);
+  box-shadow: 0 4rpx 12rpx rgba(71, 85, 105, 0.32);
 }
 
 .form-footer {
@@ -259,7 +259,7 @@ onUnmounted(() => {
 
 .footer-link {
   font-size: 26rpx;
-  color: #42b983;
+  color: #3a3a3a;
   font-weight: 500;
 }
 </style>

@@ -178,13 +178,13 @@ const mdTagStyle = {
   // 富文本常用容器,显式声明字号统一阅读流
   div: 'font-size:13.5px;line-height:1.65;',
   span: 'font-size:13.5px;',
-  a: 'color:#42b983;',
+  a: 'color:#4F46E5;',
   strong: 'font-weight:700;',
   em: 'font-style:italic;',
   // 行内代码和代码块略小于正文,避免等宽字体在移动端显得过大
   code: 'background:#000000;color:#e8e8e8;padding:1px 4px;border-radius:3px;font-family:Consolas,Menlo,monospace;font-size:13.5px;',
   pre: 'background:#000000;color:#e8e8e8;padding:9px;border-radius:6px;overflow-x:auto;font-family:Consolas,Menlo,monospace;font-size:13.5px;line-height:1.5;margin:10px 0;white-space:pre;box-shadow:0 2px 6px rgba(0,0,0,0.12);',
-  blockquote: 'border-left:3px solid #42b983;padding:6px 8px;background:rgba(66,185,131,0.06);color:#606266;margin:8px 0;border-radius:0 6px 6px 0;',
+  blockquote: 'border-left:3px solid #4F46E5;padding:6px 8px;background:rgba(79, 70, 229, 0.06);color:#606266;margin:8px 0;border-radius:0 6px 6px 0;',
   img: 'max-width:100%;display:block;margin:24rpx 0;border-radius:16rpx;',
   hr: 'border:none;height:1px;background:#f0f2f5;margin:14px 0;',
   ul: 'font-size:7px;line-height:1.6;margin:5px 0;padding-left:14px;',
@@ -228,6 +228,10 @@ async function handleLike() {
     setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 800)
     return
   }
+  
+  // 触觉反馈 (轻震动)
+  uni.vibrateShort({ type: 'light' })
+  
   try {
     liking.value = true
     setTimeout(() => { liking.value = false }, 360)
@@ -256,6 +260,10 @@ async function handleCollect() {
     return
   }
   if (collecting.value) return
+  
+  // 触觉反馈
+  uni.vibrateShort({ type: 'light' })
+  
   const wasCollected = isCollected.value
   collecting.value = true
   setTimeout(() => { collecting.value = false }, 360)
@@ -342,8 +350,8 @@ onLoad((query) => {
 .cat {
   display: inline-block;
   padding: 6rpx 20rpx;
-  background: rgba(66, 185, 131, 0.1);
-  color: #339268;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
   font-size: 22rpx;
   border-radius: 20rpx;
   font-weight: 500;
@@ -406,8 +414,8 @@ onLoad((query) => {
 
 .tag {
   font-size: 22rpx;
-  color: #339268;
-  background: rgba(66, 185, 131, 0.08);
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
   padding: 4rpx 14rpx;
   border-radius: 16rpx;
 }
@@ -514,7 +522,7 @@ onLoad((query) => {
 .body :deep(.md-del) { color: var(--text-secondary); text-decoration: line-through; }
 
 .body :deep(.md-link) {
-  color: #42b983;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 
@@ -553,9 +561,9 @@ onLoad((query) => {
 }
 
 .body :deep(.md-quote) {
-  border-left: 6rpx solid #42b983;
+  border-left: 6rpx solid var(--color-primary);
   padding: 16rpx 20rpx;
-  background: rgba(66, 185, 131, 0.06);
+  background: var(--color-primary-soft);
   color: var(--text-regular);
   margin: 24rpx 0;
   border-radius: 0 12rpx 12rpx 0;

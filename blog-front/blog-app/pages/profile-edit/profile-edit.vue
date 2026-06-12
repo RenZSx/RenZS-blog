@@ -156,6 +156,7 @@ onLoad(() => {
   height: 180rpx;
   border-radius: 50%;
   overflow: hidden;
+  border: 1px solid var(--border-color-light);
   box-shadow: var(--shadow-md);
 }
 
@@ -191,7 +192,8 @@ onLoad(() => {
   background: var(--bg-card);
   border-radius: 20rpx;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
 }
 
 .form-item {
@@ -237,13 +239,13 @@ onLoad(() => {
   width: 100%;
   height: 96rpx;
   line-height: 96rpx;
-  background: linear-gradient(135deg, #42b983 0%, #2d8362 100%);
+  background: linear-gradient(135deg, #3a3a3a 0%, #252525 100%);
   color: #ffffff;
   font-size: 30rpx;
   font-weight: 600;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   letter-spacing: 8rpx;
-  box-shadow: 0 8rpx 20rpx rgba(66, 185, 131, 0.32);
+  box-shadow: 0 8rpx 20rpx rgba(58, 58, 58, 0.32);
 }
 
 .save-btn:active { transform: translateY(2rpx); }

@@ -167,7 +167,8 @@ onShow(() => {
   background: var(--bg-card);
   border-radius: 20rpx;
   padding: 24rpx;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   opacity: 0;
   animation-fill-mode: both;
   position: relative;
@@ -183,7 +184,7 @@ onShow(() => {
   width: 6rpx;
 }
 
-.accent-0::before { background: #42b983; }
+.accent-0::before { background: #3a3a3a; }
 .accent-1::before { background: #5e72e4; }
 .accent-2::before { background: #f56c6c; }
 .accent-3::before { background: #e6a23c; }
@@ -263,8 +264,8 @@ onShow(() => {
 }
 
 .send-btn.active {
-  background: linear-gradient(135deg, #42b983 0%, #2d8362 100%);
-  box-shadow: 0 6rpx 16rpx rgba(66,185,131,0.4);
+  background: linear-gradient(135deg, #3a3a3a 0%, #252525 100%);
+  box-shadow: 0 6rpx 16rpx rgba(71, 85, 105,0.4);
 }
 
 .tip {

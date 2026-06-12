@@ -11,7 +11,7 @@
           @click="setTheme(opt.value)"
         >
           <view class="theme-icon-wrap">
-            <bx-icon :name="opt.icon" :size="48" :color="themeStore.mode === opt.value ? '#42b983' : '#909399'" />
+            <bx-icon :name="opt.icon" :size="48" :color="themeStore.mode === opt.value ? '#3a3a3a' : '#909399'" />
           </view>
           <text class="theme-label">{{ opt.label }}</text>
           <view v-if="themeStore.mode === opt.value" class="check-mark">
@@ -125,7 +125,8 @@ function handleLogout() {
   border-radius: 20rpx;
   margin-bottom: 24rpx;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
 }
 
 /* ========= 主题切换 ========= */
@@ -149,8 +150,8 @@ function handleLogout() {
 }
 
 .theme-option.active {
-  background: rgba(66, 185, 131, 0.08);
-  border-color: #42b983;
+  background: rgba(71, 85, 105, 0.08);
+  border-color: #3a3a3a;
 }
 
 .theme-option:active { transform: scale(0.97); }
@@ -167,7 +168,7 @@ function handleLogout() {
 }
 
 .theme-option.active .theme-icon-wrap {
-  background: rgba(66, 185, 131, 0.15);
+  background: rgba(71, 85, 105, 0.15);
 }
 
 .theme-label {
@@ -176,7 +177,7 @@ function handleLogout() {
 }
 
 .theme-option.active .theme-label {
-  color: #42b983;
+  color: #3a3a3a;
   font-weight: 600;
 }
 
@@ -186,7 +187,7 @@ function handleLogout() {
   right: 12rpx;
   width: 32rpx;
   height: 32rpx;
-  background: #42b983;
+  background: #3a3a3a;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -234,8 +235,9 @@ function handleLogout() {
   color: #f56c6c;
   font-size: 30rpx;
   font-weight: 600;
-  border-radius: 24rpx;
-  box-shadow: var(--shadow-sm);
+  border-radius: 20rpx;
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   transition: all 220ms ease;
   display: flex;
   align-items: center;

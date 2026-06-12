@@ -50,12 +50,12 @@ const mdTagStyle = {
   p: 'font-size:30rpx;line-height:1.85;color:var(--text-regular);margin:16rpx 0;',
   div: 'font-size:30rpx;line-height:1.85;color:var(--text-regular);',
   span: 'font-size:30rpx;',
-  a: 'color:#42b983;',
+  a: 'color:#3a3a3a;',
   // 行内代码:与代码块统一黑底白字 + 字号对齐正文 30rpx
   code: 'background:#000000;color:#e8e8e8;padding:2rpx 10rpx;border-radius:6rpx;font-size:30rpx;font-family:Consolas,Menlo,monospace;',
   // 代码块:纯黑底 + 近白字 + 字号对齐正文 30rpx
   pre: 'background:#000000;color:#e8e8e8;padding:24rpx;border-radius:12rpx;overflow-x:auto;font-size:30rpx;line-height:1.85;font-family:Consolas,Menlo,monospace;margin:24rpx 0;white-space:pre;box-shadow:0 4rpx 12rpx rgba(0,0,0,0.12);',
-  blockquote: 'border-left:6rpx solid #42b983;padding:16rpx 20rpx;background:rgba(66,185,131,0.06);color:var(--text-regular);margin:24rpx 0;border-radius:0 12rpx 12rpx 0;',
+  blockquote: 'border-left:6rpx solid #3a3a3a;padding:16rpx 20rpx;background:rgba(58,58,58,0.06);color:var(--text-regular);margin:24rpx 0;border-radius:0 12rpx 12rpx 0;',
   img: 'max-width:100%;display:block;margin:24rpx 0;border-radius:16rpx;',
   table: 'border-collapse:collapse;width:100%;margin:24rpx 0;font-size:24rpx;display:table;',
   thead: 'background:var(--bg-soft);',
@@ -98,7 +98,7 @@ onShow(() => {
 
 .hero {
   position: relative;
-  background: linear-gradient(135deg, #42b983 0%, #2d8362 100%);
+  background: linear-gradient(135deg, #3a3a3a 0%, #252525 100%);
   padding: 80rpx 32rpx 56rpx;
   text-align: center;
   overflow: hidden;
@@ -151,8 +151,9 @@ onShow(() => {
 .content-card {
   margin: -32rpx 24rpx 0;
   background: var(--bg-card);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   padding: 32rpx 28rpx;
+  border: 1px solid var(--border-color-light);
   box-shadow: var(--shadow-md);
   position: relative;
   z-index: 2;

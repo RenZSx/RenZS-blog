@@ -172,14 +172,14 @@ const replyTarget = reactive({
 const commentTagStyle = {
   p: 'margin:0;font-size:28rpx;line-height:1.7;color:var(--text-primary);',
   img: 'display:inline-block;height:48rpx;width:auto;vertical-align:text-bottom;margin:0 2rpx;',
-  a: 'color:#42b983;'
+  a: 'color:#3a3a3a;'
 }
 
 // 二级回复字号比一级小一档
 const replyTagStyle = {
   p: 'margin:0;font-size:26rpx;line-height:1.6;color:var(--text-regular);',
   img: 'display:inline-block;height:40rpx;width:auto;vertical-align:text-bottom;margin:0 2rpx;',
-  a: 'color:#42b983;'
+  a: 'color:#3a3a3a;'
 }
 
 async function loadComments(reset = false) {
@@ -269,6 +269,9 @@ async function handleSend() {
   }
   if (!newComment.value.trim()) return
   if (sending.value) return
+  
+  uni.vibrateShort({ type: 'light' })
+  
   sending.value = true
   try {
     // 与后端 CommentVO 对齐字段:commentContent / topicId / type / parentId / replyUserId
@@ -302,6 +305,9 @@ async function handleLike(comment) {
     uni.showToast({ title: '请先登录', icon: 'none' })
     return
   }
+  
+  uni.vibrateShort({ type: 'light' })
+  
   try {
     const res = await likeComment(comment.id)
     if (res.flag) {
@@ -375,7 +381,8 @@ onLoad((query) => {
   border-radius: 20rpx;
   padding: 24rpx;
   margin-bottom: 16rpx;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   opacity: 0;
   animation-fill-mode: both;
 }
@@ -439,8 +446,8 @@ onLoad((query) => {
 }
 
 .reply-btn:active {
-  background: rgba(66, 185, 131, 0.08);
-  color: #42b983;
+  background: rgba(58, 58, 58, 0.08);
+  color: #3a3a3a;
 }
 
 /* ========= 二级回复区 ========= */
@@ -480,12 +487,12 @@ onLoad((query) => {
 .reply-nickname {
   font-size: 24rpx;
   font-weight: 600;
-  color: #339268;
+  color: #555552;
 }
 
 .reply-to { display: inline-flex; align-items: center; }
 .arrow { font-size: 22rpx; color: var(--text-placeholder); }
-.target-name { font-size: 24rpx; color: #339268; }
+.target-name { font-size: 24rpx; color: #555552; }
 
 .reply-text {
   font-size: 26rpx;
@@ -516,7 +523,7 @@ onLoad((query) => {
   padding: 8rpx 0;
   text-align: center;
   font-size: 22rpx;
-  color: #42b983;
+  color: #3a3a3a;
   font-weight: 500;
 }
 
@@ -532,7 +539,7 @@ onLoad((query) => {
   align-items: center;
   justify-content: space-between;
   padding: 12rpx 32rpx;
-  background: rgba(66, 185, 131, 0.06);
+  background: rgba(58, 58, 58, 0.06);
   border-bottom: 2rpx solid var(--border-color-light);
 }
 
@@ -542,7 +549,7 @@ onLoad((query) => {
 }
 
 .hint-name {
-  color: #42b983;
+  color: #3a3a3a;
   font-weight: 600;
 }
 
@@ -591,8 +598,8 @@ onLoad((query) => {
 }
 
 .send-btn.active {
-  background: linear-gradient(135deg, #42b983 0%, #2d8362 100%);
-  box-shadow: 0 6rpx 16rpx rgba(66, 185, 131, 0.4);
+  background: linear-gradient(135deg, #3a3a3a 0%, #252525 100%);
+  box-shadow: 0 6rpx 16rpx rgba(58, 58, 58, 0.4);
 }
 
 .send-btn.active:active { transform: scale(0.94); }

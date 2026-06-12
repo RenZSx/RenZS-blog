@@ -26,7 +26,7 @@
         <!-- 未登录 -->
         <view v-else class="user-card not-logged">
           <view class="avatar avatar-placeholder">
-            <bx-icon name="user" :size="64" color="#42b983" />
+            <bx-icon name="user" :size="64" color="#475569" />
           </view>
           <view class="user-meta">
             <text class="nickname">未登录</text>
@@ -92,7 +92,7 @@
         <view class="menu-item" @click="goTalk">
           <view class="menu-left">
             <view class="menu-icon icon-bg-green">
-              <bx-icon name="smile" :size="32" color="#42b983" />
+              <bx-icon name="smile" :size="32" color="#475569" />
             </view>
             <text class="menu-text">说说</text>
           </view>
@@ -229,7 +229,7 @@ function onTodo() {
 
 .hero {
   position: relative;
-  background: linear-gradient(135deg, #42b983 0%, #2d8362 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-muted) 100%);
   padding-bottom: 80rpx;
   overflow: hidden;
 }
@@ -315,7 +315,7 @@ function onTodo() {
   line-height: 56rpx;
   padding: 0 32rpx;
   background: #ffffff;
-  color: #42b983;
+  color: var(--color-primary);
   font-size: 24rpx;
   font-weight: 600;
   border-radius: 28rpx;
@@ -347,7 +347,7 @@ function onTodo() {
   display: flex;
   align-items: center;
   background: var(--bg-card);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   padding: 28rpx 0;
   box-shadow: var(--shadow-lg);
 }
@@ -378,7 +378,8 @@ function onTodo() {
   border-radius: 20rpx;
   overflow: hidden;
   margin-bottom: 20rpx;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
 }
 
 .menu-item {
@@ -409,7 +410,7 @@ function onTodo() {
 .icon-bg-yellow { background: rgba(230, 162, 60, 0.12); }
 .icon-bg-gray { background: rgba(144, 147, 153, 0.12); }
 .icon-bg-purple { background: rgba(139, 92, 246, 0.12); }
-.icon-bg-green { background: rgba(66, 185, 131, 0.12); }
+.icon-bg-green { background: rgba(71, 85, 105, 0.12); }
 .icon-bg-orange { background: rgba(255, 154, 60, 0.12); }
 
 .menu-text {

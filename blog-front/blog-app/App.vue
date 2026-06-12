@@ -122,25 +122,25 @@ scroll-view {
 
 /* ========= 主题变量(浅色默认) ========= */
 page {
-  --bg-page: #f6f6f3;
+  --bg-page: #f3f4f6;
   --bg-card: #ffffff;
-  --bg-soft: #eeeeea;
-  --bg-overlay: rgba(24, 24, 24, 0.42);
+  --bg-soft: #f9fafb;
+  --bg-overlay: rgba(17, 24, 39, 0.42);
 
-  --text-primary: #252525;
-  --text-regular: #555552;
-  --text-secondary: #888883;
-  --text-placeholder: #b8b8b2;
+  --text-primary: #1f2937;
+  --text-regular: #4b5563;
+  --text-secondary: #6b7280;
+  --text-placeholder: #9ca3af;
 
-  --border-color: #e8e8e3;
-  --border-color-light: #f0f0ed;
+  --border-color: #e5e7eb;
+  --border-color-light: #f3f4f6;
 
-  --color-primary: #3a3a3a;
-  --color-primary-soft: #eeeeea;
-  --color-primary-muted: #777773;
+  --color-primary: #4F46E5;
+  --color-primary-soft: #EEF2FF;
+  --color-primary-muted: #818CF8;
 
   --shadow-sm: 0 2rpx 8rpx rgba(24, 24, 24, 0.04), 0 1rpx 2rpx rgba(24, 24, 24, 0.05);
-  --shadow-md: 0 8rpx 18rpx rgba(24, 24, 24, 0.06), 0 2rpx 5rpx rgba(24, 24, 24, 0.04);
+  --shadow-md: 0 12rpx 32rpx rgba(15, 23, 42, 0.04), 0 2rpx 4rpx rgba(15, 23, 42, 0.02);
   --shadow-lg: 0 14rpx 34rpx rgba(24, 24, 24, 0.08), 0 5rpx 10rpx rgba(24, 24, 24, 0.04);
 
   background-color: var(--bg-page);
@@ -154,25 +154,25 @@ page {
 /* 暗色主题:H5 端给 body 加 .theme-dark,所有 page 继承 */
 body.theme-dark page,
 page.theme-dark {
-  --bg-page: #0f1011;
-  --bg-card: #1d1f23;
-  --bg-soft: #2a2c30;
+  --bg-page: #0f172a;
+  --bg-card: #1e293b;
+  --bg-soft: #334155;
   --bg-overlay: rgba(0, 0, 0, 0.65);
 
-  --text-primary: #f5f7fa;
-  --text-regular: #c0c4cc;
-  --text-secondary: #909399;
-  --text-placeholder: #606266;
+  --text-primary: #f1f5f9;
+  --text-regular: #cbd5e1;
+  --text-secondary: #94a3b8;
+  --text-placeholder: #64748b;
 
-  --border-color: #2a2c30;
-  --border-color-light: #1d1f23;
+  --border-color: #334155;
+  --border-color-light: #1e293b;
 
-  --color-primary: #f5f5f0;
-  --color-primary-soft: #2a2a2a;
-  --color-primary-muted: #c8c8c2;
+  --color-primary: #818CF8;
+  --color-primary-soft: #334155;
+  --color-primary-muted: #818CF8;
 
   --shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 6rpx 16rpx rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 12rpx 32rpx rgba(15, 23, 42, 0.04), 0 2rpx 4rpx rgba(15, 23, 42, 0.02);
   --shadow-lg: 0 12rpx 32rpx rgba(0, 0, 0, 0.6);
 }
 

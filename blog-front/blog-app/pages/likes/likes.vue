@@ -120,7 +120,7 @@ const PAGE_SIZE = 10
 
 const talkContentStyle = {
   p: 'margin:4rpx 0;font-size:28rpx;line-height:1.6;color:var(--text-regular);',
-  a: 'color:#42b983;',
+  a: 'color:#3a3a3a;',
   img: 'max-width:100%;border-radius:8rpx;display:block;margin:6rpx 0;'
 }
 
@@ -258,7 +258,7 @@ onShow(() => {
 }
 
 .tab.active {
-  background: rgba(66, 185, 131, 0.1);
+  background: rgba(71, 85, 105, 0.1);
 }
 
 .tab-label {
@@ -268,7 +268,7 @@ onShow(() => {
 }
 
 .tab.active .tab-label {
-  color: #42b983;
+  color: #3a3a3a;
   font-weight: 600;
 }
 
@@ -277,7 +277,7 @@ onShow(() => {
   color: var(--text-secondary);
 }
 
-.tab.active .tab-count { color: #42b983; }
+.tab.active .tab-count { color: #3a3a3a; }
 
 /* ========= 列表 ========= */
 .list {
@@ -313,7 +313,8 @@ onShow(() => {
 .article-card {
   background: var(--bg-card);
   border-radius: 20rpx;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   opacity: 0;
   animation-fill-mode: both;
   transition: all 220ms ease;
@@ -366,7 +367,8 @@ onShow(() => {
   background: var(--bg-card);
   border-radius: 20rpx;
   padding: 24rpx;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   opacity: 0;
   animation-fill-mode: both;
   transition: all 220ms ease;

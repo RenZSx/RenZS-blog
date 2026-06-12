@@ -8,7 +8,7 @@
       </view>
       <view class="hero-right">
         <view class="search-entry" @click="goSearch">
-          <bx-icon name="search" :size="36" color="#42b983" />
+          <bx-icon name="search" :size="40" :color="isDark ? '#94a3b8' : '#475569'" />
         </view>
         <view class="hero-stat">
           <text class="stat-num">{{ articles.length }}</text>
@@ -162,10 +162,12 @@ async function loadArticles(reset = false) {
 }
 
 function goDetail(id) {
+  uni.vibrateShort({ type: 'light' })
   uni.navigateTo({ url: `/pages/article/article?id=${id}` })
 }
 
 function goSearch() {
+  uni.vibrateShort({ type: 'light' })
   uni.navigateTo({ url: '/pages/search/search' })
 }
 
@@ -182,6 +184,7 @@ onShow(() => {
 })
 
 onPullDownRefresh(async () => {
+  uni.vibrateShort({ type: 'light' })
   await loadArticles(true)
   uni.stopPullDownRefresh()
 })
@@ -201,9 +204,8 @@ onReachBottom(() => {
 .hero-bar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  padding: 24rpx 32rpx 24rpx;
-  background: linear-gradient(180deg, rgba(66, 185, 131, 0.08) 0%, transparent 100%);
+  align-items: center;
+  padding: 48rpx 32rpx 24rpx;
 }
 
 .greeting {
@@ -242,12 +244,13 @@ onReachBottom(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: 0 4rpx 12rpx rgba(15, 23, 42, 0.05);
   transition: all 220ms ease;
 }
 
 .search-entry:active {
-  background: rgba(66, 185, 131, 0.08);
+  background: var(--color-primary-soft);
   transform: scale(0.94);
 }
 
@@ -255,7 +258,7 @@ onReachBottom(() => {
   display: block;
   font-size: 32rpx;
   font-weight: 700;
-  color: #42b983;
+  color: var(--text-primary);
 }
 
 .stat-label {
@@ -267,7 +270,7 @@ onReachBottom(() => {
 
 .skeleton-card {
   background: var(--bg-card);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
 }
@@ -280,10 +283,10 @@ onReachBottom(() => {
 
 .article-card {
   background: var(--bg-card);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   margin-bottom: 24rpx;
   overflow: hidden;
-  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color-light);
   transition: all 220ms ease;
   opacity: 0;
   animation-fill-mode: both;
@@ -291,7 +294,7 @@ onReachBottom(() => {
 
 .article-card:active {
   transform: scale(0.98);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--border-color);
 }
 
 .card-hero { position: relative; height: 380rpx; }
@@ -364,8 +367,8 @@ onReachBottom(() => {
 .tag {
   display: inline-block;
   padding: 4rpx 14rpx;
-  background: rgba(66, 185, 131, 0.1);
-  color: #339268;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
   font-size: 20rpx;
   border-radius: 16rpx;
   font-weight: 500;

@@ -65,7 +65,7 @@ const totalCount = ref(0)
 
 const commentContentStyle = {
   p: 'margin:4rpx 0;font-size:28rpx;line-height:1.7;color:var(--text-primary);',
-  a: 'color:#42b983;',
+  a: 'color:#3a3a3a;',
   // 表情包 emoji <img width=24 height=24>:内联行高对齐,不要块状
   img: 'display:inline-block;height:48rpx;width:auto;vertical-align:text-bottom;margin:0 2rpx;'
 }
@@ -197,7 +197,8 @@ onShow(() => {
   // 卡片右内边距加大,长 topic 标题和评论内容右侧呼吸
   padding: 24rpx 28rpx 24rpx 24rpx;
   margin-bottom: 16rpx;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   opacity: 0;
   animation-fill-mode: both;
   transition: all 220ms ease;
@@ -222,7 +223,7 @@ onShow(() => {
   flex-shrink: 0;
 }
 
-.type-article { background: rgba(66, 185, 131, 0.12); color: #339268; }
+.type-article { background: rgba(58, 58, 58, 0.12); color: #555552; }
 .type-link    { background: rgba(94, 114, 228, 0.12); color: #5e72e4; }
 .type-talk    { background: rgba(230, 162, 60, 0.12); color: #e6a23c; }
 .type-message { background: rgba(245, 108, 108, 0.12); color: #f56c6c; }

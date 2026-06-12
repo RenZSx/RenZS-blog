@@ -176,7 +176,8 @@ onReachBottom(() => load(false))
   border-radius: 20rpx;
   margin-bottom: 16rpx;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   opacity: 0;
   animation-fill-mode: both;
   transition: all 220ms ease;

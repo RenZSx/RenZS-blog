@@ -182,7 +182,7 @@ const replyTarget = reactive({
 
 const contentTagStyle = {
   p: 'margin:12rpx 0;font-size:30rpx;line-height:1.75;color:var(--text-primary);',
-  a: 'color:#42b983;',
+  a: 'color:#3a3a3a;',
   img: 'max-width:100%;border-radius:12rpx;display:block;margin:12rpx 0;'
 }
 
@@ -190,14 +190,14 @@ const contentTagStyle = {
 const commentTagStyle = {
   p: 'margin:0;font-size:26rpx;line-height:1.6;color:var(--text-regular);',
   img: 'display:inline-block;height:48rpx;width:auto;vertical-align:text-bottom;margin:0 2rpx;',
-  a: 'color:#42b983;'
+  a: 'color:#3a3a3a;'
 }
 
 // 二级回复字号小一档
 const replyTagStyle = {
   p: 'margin:0;font-size:24rpx;line-height:1.55;color:var(--text-regular);',
   img: 'display:inline-block;height:40rpx;width:auto;vertical-align:text-bottom;margin:0 2rpx;',
-  a: 'color:#42b983;'
+  a: 'color:#3a3a3a;'
 }
 
 function talkLikeKey(id) { return `talk-${id}` }
@@ -451,8 +451,8 @@ onLoad((query) => {
 }
 
 .reply-btn:active {
-  background: rgba(66, 185, 131, 0.08);
-  color: #42b983;
+  background: rgba(58, 58, 58, 0.08);
+  color: #3a3a3a;
 }
 
 /* ========= 二级回复区 ========= */
@@ -492,12 +492,12 @@ onLoad((query) => {
 .r-name {
   font-size: 22rpx;
   font-weight: 600;
-  color: #339268;
+  color: #555552;
 }
 
 .r-to { display: inline-flex; align-items: center; }
 .r-arrow { font-size: 20rpx; color: var(--text-placeholder); }
-.r-target { font-size: 22rpx; color: #339268; }
+.r-target { font-size: 22rpx; color: #555552; }
 
 .r-text {
   font-size: 24rpx;
@@ -521,7 +521,7 @@ onLoad((query) => {
   padding: 6rpx 0;
   text-align: center;
   font-size: 20rpx;
-  color: #42b983;
+  color: #3a3a3a;
   font-weight: 500;
 }
 
@@ -541,12 +541,12 @@ onLoad((query) => {
   align-items: center;
   justify-content: space-between;
   padding: 12rpx 32rpx;
-  background: rgba(66, 185, 131, 0.06);
+  background: rgba(58, 58, 58, 0.06);
   border-bottom: 2rpx solid var(--border-color-light);
 }
 
 .hint-text { font-size: 22rpx; color: var(--text-secondary); }
-.hint-name { color: #42b983; font-weight: 600; }
+.hint-name { color: #3a3a3a; font-weight: 600; }
 
 .hint-cancel {
   width: 48rpx;
@@ -588,7 +588,7 @@ onLoad((query) => {
 }
 
 .send-btn.active {
-  background: linear-gradient(135deg, #42b983 0%, #2d8362 100%);
-  box-shadow: 0 6rpx 16rpx rgba(66, 185, 131, 0.4);
+  background: linear-gradient(135deg, #3a3a3a 0%, #252525 100%);
+  box-shadow: 0 6rpx 16rpx rgba(58, 58, 58, 0.4);
 }
 </style>

@@ -173,7 +173,7 @@ onReachBottom(() => loadArticles(false))
   justify-content: space-between;
   align-items: flex-end;
   padding: 32rpx;
-  background: linear-gradient(180deg, rgba(66, 185, 131, 0.1) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(71, 85, 105, 0.1) 0%, transparent 100%);
 }
 
 .hero-info {
@@ -203,7 +203,7 @@ onReachBottom(() => loadArticles(false))
   display: block;
   font-size: 36rpx;
   font-weight: 700;
-  color: #42b983;
+  color: #3a3a3a;
 }
 
 .stat-label {
@@ -229,9 +229,10 @@ onReachBottom(() => loadArticles(false))
 
 .article-card {
   background: var(--bg-card);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   margin-bottom: 24rpx;
   overflow: hidden;
+  border: 1px solid var(--border-color-light);
   box-shadow: var(--shadow-md);
   opacity: 0;
   animation-fill-mode: both;
@@ -240,7 +241,8 @@ onReachBottom(() => loadArticles(false))
 
 .article-card:active {
   transform: scale(0.98);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
 }
 
 .card-body {
@@ -266,8 +268,8 @@ onReachBottom(() => loadArticles(false))
 
 .tag {
   padding: 4rpx 14rpx;
-  background: rgba(66, 185, 131, 0.1);
-  color: #339268;
+  background: rgba(71, 85, 105, 0.1);
+  color: #555552;
   font-size: 20rpx;
   border-radius: 16rpx;
   font-weight: 500;

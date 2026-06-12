@@ -170,7 +170,7 @@ function goRegister() {
   position: relative;
   height: 520rpx;
   padding: 120rpx 48rpx 60rpx;
-  background: linear-gradient(135deg, #42b983 0%, #2d8362 60%, #1f6d52 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-muted) 60%, var(--color-primary-soft) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -218,7 +218,7 @@ function goRegister() {
 .logo-mark {
   font-size: 64rpx;
   font-weight: 700;
-  color: #339268;
+  color: var(--color-primary);
   letter-spacing: -2rpx;
 }
 
@@ -281,8 +281,8 @@ function goRegister() {
 
 .form-field.active {
   background: #ffffff;
-  border-color: #42b983;
-  box-shadow: 0 4rpx 12rpx rgba(66, 185, 131, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 4rpx 12rpx rgba(71, 85, 105, 0.15);
 }
 
 .field-icon {
@@ -307,19 +307,19 @@ function goRegister() {
   margin-top: 16rpx;
   height: 96rpx;
   line-height: 96rpx;
-  background: linear-gradient(135deg, #42b983 0%, #2d8362 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-muted) 100%);
   color: #ffffff;
   font-size: 30rpx;
   font-weight: 600;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   letter-spacing: 8rpx;
-  box-shadow: 0 8rpx 20rpx rgba(66, 185, 131, 0.32);
+  box-shadow: 0 8rpx 20rpx rgba(71, 85, 105, 0.32);
   transition: all 220ms ease;
 }
 
 .submit-btn:active {
   transform: translateY(2rpx);
-  box-shadow: 0 4rpx 12rpx rgba(66, 185, 131, 0.32);
+  box-shadow: 0 4rpx 12rpx rgba(71, 85, 105, 0.32);
 }
 
 .submit-btn[disabled] {
@@ -333,7 +333,7 @@ function goRegister() {
 
 .footer-link {
   font-size: 26rpx;
-  color: #42b983;
+  color: var(--color-primary);
   font-weight: 500;
 }
 
@@ -406,7 +406,7 @@ function goRegister() {
 }
 
 .bottom-tip .link {
-  color: #42b983;
+  color: var(--color-primary);
 }
 
 @keyframes fadeIn {

@@ -139,7 +139,7 @@ onShow(() => {
 
 .skel-card {
   background: var(--bg-card);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   padding: 32rpx 24rpx;
   height: 200rpx;
 }
@@ -157,7 +157,7 @@ onShow(() => {
   display: flex;
   flex-direction: column;
   padding: 32rpx 28rpx;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   min-height: 200rpx;
   transition: all 220ms ease;
   position: relative;
@@ -166,7 +166,7 @@ onShow(() => {
 
 .cat-card:active { transform: translateY(2rpx); }
 
-.bg-0 { background: linear-gradient(135deg, #42b983 0%, #2d8362 100%); color: #fff; }
+.bg-0 { background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-muted) 100%); color: #fff; }
 .bg-1 { background: linear-gradient(135deg, #5e72e4 0%, #3a4cb1 100%); color: #fff; }
 .bg-2 { background: linear-gradient(135deg, #f56c6c 0%, #c0392b 100%); color: #fff; }
 .bg-3 { background: linear-gradient(135deg, #e6a23c 0%, #b87800 100%); color: #fff; }
@@ -220,14 +220,15 @@ onShow(() => {
   background: var(--bg-card);
   font-size: 26rpx;
   border-radius: 32rpx;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   font-weight: 500;
   transition: all 220ms ease;
 }
 
 .tag-chip:active { transform: scale(0.94); }
 
-.tag-color-0 { color: #42b983; }
+.tag-color-0 { color: var(--color-primary); }
 .tag-color-1 { color: #5e72e4; }
 .tag-color-2 { color: #f56c6c; }
 .tag-color-3 { color: #e6a23c; }

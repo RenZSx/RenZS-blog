@@ -101,7 +101,7 @@ function talkLikeKey(id) {
 // rich-text/mp-html 内嵌段落样式覆盖
 const contentTagStyle = {
   p: 'margin:8rpx 0;font-size:30rpx;line-height:1.7;color:var(--text-primary);',
-  a: 'color:#42b983;',
+  a: 'color:#3a3a3a;',
   img: 'max-width:100%;border-radius:12rpx;display:block;margin:12rpx 0;'
 }
 
@@ -227,9 +227,10 @@ onReachBottom(() => load(false))
 
 .talk-card {
   background: var(--bg-card);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   padding: 28rpx 24rpx;
   margin-bottom: 24rpx;
+  border: 1px solid var(--border-color-light);
   box-shadow: var(--shadow-md);
   opacity: 0;
   animation-fill-mode: both;
@@ -238,7 +239,8 @@ onReachBottom(() => load(false))
 
 .talk-card:active {
   transform: scale(0.99);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
 }
 
 .card-header {

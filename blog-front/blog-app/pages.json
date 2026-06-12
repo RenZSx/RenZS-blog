@@ -134,32 +134,40 @@
     }
   ],
   "globalStyle": {
-    "navigationBarTextStyle": "white",
+    "navigationBarTextStyle": "black",
     "navigationBarTitleText": "博客",
-    "navigationBarBackgroundColor": "#42b983",
+    "navigationBarBackgroundColor": "#ffffff",
     "backgroundColor": "#f7f8fa"
   },
   "tabBar": {
     "color": "#909399",
-    "selectedColor": "#42b983",
+    "selectedColor": "#4F46E5",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "text": "首页",
+        "iconPath": "static/tabs/home.svg",
+        "selectedIconPath": "static/tabs/home-active.svg"
       },
       {
         "pagePath": "pages/category/category",
-        "text": "分类"
+        "text": "分类",
+        "iconPath": "static/tabs/category.svg",
+        "selectedIconPath": "static/tabs/category-active.svg"
       },
       {
         "pagePath": "pages/notice/notice",
-        "text": "通知"
+        "text": "通知",
+        "iconPath": "static/tabs/notice.svg",
+        "selectedIconPath": "static/tabs/notice-active.svg"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "我的"
+        "text": "我的",
+        "iconPath": "static/tabs/profile.svg",
+        "selectedIconPath": "static/tabs/profile-active.svg"
       }
     ]
   }

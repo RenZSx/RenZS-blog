@@ -140,9 +140,10 @@ onShow(() => {
   display: flex;
   align-items: flex-start;
   background: var(--bg-card);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   padding: 28rpx 24rpx;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   opacity: 0;
   animation-fill-mode: both;
   transition: all 220ms ease;
@@ -199,8 +200,8 @@ onShow(() => {
 
 .apply-card {
   margin: 48rpx 24rpx 0;
-  background: linear-gradient(135deg, rgba(66, 185, 131, 0.12) 0%, rgba(66, 185, 131, 0.04) 100%);
-  border-radius: 24rpx;
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.12) 0%, rgba(71, 85, 105, 0.04) 100%);
+  border-radius: 20rpx;
   padding: 36rpx 28rpx;
   text-align: center;
 }
@@ -227,11 +228,11 @@ onShow(() => {
   height: 72rpx;
   line-height: 72rpx;
   padding: 0 32rpx;
-  background: linear-gradient(135deg, #42b983 0%, #2d8362 100%);
+  background: linear-gradient(135deg, #3a3a3a 0%, #252525 100%);
   color: #ffffff;
   font-size: 26rpx;
   font-weight: 600;
   border-radius: 36rpx;
-  box-shadow: 0 8rpx 20rpx rgba(66, 185, 131, 0.3);
+  box-shadow: 0 8rpx 20rpx rgba(71, 85, 105, 0.3);
 }
 </style>

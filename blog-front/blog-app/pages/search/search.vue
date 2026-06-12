@@ -169,7 +169,7 @@ function goBack() {
 function highlight(text) {
   if (!text || !keyword.value) return text
   const reg = new RegExp(`(${escapeReg(keyword.value)})`, 'gi')
-  return text.replace(reg, '<span style="color:#42b983;font-weight:700;">$1</span>')
+  return text.replace(reg, '<span style="color:#3a3a3a;font-weight:700;">$1</span>')
 }
 
 function escapeReg(s) {
@@ -285,9 +285,9 @@ onLoad(() => {
 }
 
 .chip:active {
-  background: rgba(66, 185, 131, 0.08);
-  border-color: #42b983;
-  color: #42b983;
+  background: rgba(71, 85, 105, 0.08);
+  border-color: #3a3a3a;
+  color: #3a3a3a;
 }
 
 /* ========= 结果 ========= */
@@ -316,7 +316,8 @@ onLoad(() => {
   border-radius: 20rpx;
   margin-bottom: 16rpx;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   opacity: 0;
   animation-fill-mode: both;
 }

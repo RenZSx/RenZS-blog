@@ -11,7 +11,7 @@
           <text class="hero-sub" v-else>暂无未读</text>
         </view>
         <view v-if="noticeStore.unreadCount > 0" class="all-read-btn" @click="onMarkAll">
-          <bx-icon name="check" :size="24" color="#42b983" />
+          <bx-icon name="check" :size="24" color="#475569" />
           <text class="all-read-text">全部已读</text>
         </view>
       </view>
@@ -104,14 +104,14 @@ const { isDark } = useThemeClass()
 const noticeTagStyle = {
   p: 'margin:0;font-size:26rpx;line-height:1.5;color:var(--text-regular);',
   img: 'display:inline-block;height:36rpx;width:auto;vertical-align:text-bottom;margin:0 2rpx;',
-  a: 'color:#42b983;'
+  a: 'color:#475569;'
 }
 
 // 回复内容引用块的样式(颜色比正文淡)
 const noticeReplyTagStyle = {
   p: 'margin:0;font-size:24rpx;line-height:1.5;color:var(--text-secondary);',
   img: 'display:inline-block;height:32rpx;width:auto;vertical-align:text-bottom;margin:0 2rpx;',
-  a: 'color:#42b983;'
+  a: 'color:#475569;'
 }
 
 const tabs = [
@@ -203,7 +203,8 @@ onHide(() => {
 .hero {
   background: var(--bg-card);
   padding: 24rpx 32rpx 16rpx;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
 }
 
 .hero-row {
@@ -236,17 +237,17 @@ onHide(() => {
   align-items: center;
   gap: 6rpx;
   padding: 12rpx 20rpx;
-  background: rgba(66, 185, 131, 0.1);
-  border-radius: 24rpx;
+  background: rgba(71, 85, 105, 0.1);
+  border-radius: 20rpx;
 }
 
 .all-read-btn:active {
-  background: rgba(66, 185, 131, 0.2);
+  background: rgba(71, 85, 105, 0.2);
 }
 
 .all-read-text {
   font-size: 24rpx;
-  color: #42b983;
+  color: var(--color-primary);
   font-weight: 500;
 }
 
@@ -267,8 +268,8 @@ onHide(() => {
 }
 
 .status-dot.online {
-  background: #42b983;
-  box-shadow: 0 0 8rpx rgba(66, 185, 131, 0.6);
+  background: var(--color-primary);
+  box-shadow: 0 0 8rpx rgba(71, 85, 105, 0.6);
 }
 
 .status-text {
@@ -293,8 +294,8 @@ onHide(() => {
 }
 
 .filter-tab.active {
-  background: rgba(66, 185, 131, 0.1);
-  color: #42b983;
+  background: rgba(71, 85, 105, 0.1);
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -342,7 +343,8 @@ onHide(() => {
   // 右侧加大留白:32rpx,给未读小红点留位 + 内容呼吸感
   padding: 24rpx 32rpx 24rpx 24rpx;
   margin-bottom: 16rpx;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
   position: relative;
   opacity: 0;
   animation-fill-mode: both;
@@ -356,7 +358,7 @@ onHide(() => {
   bottom: 0;
   left: 0;
   width: 6rpx;
-  background: #42b983;
+  background: var(--color-primary);
   border-radius: 4rpx 0 0 4rpx;
 }
 
@@ -422,7 +424,7 @@ onHide(() => {
   margin-top: 8rpx;
   padding: 8rpx 12rpx 8rpx 16rpx;
   background: var(--bg-soft);
-  border-left: 6rpx solid #42b983;
+  border-left: 6rpx solid var(--color-primary);
   border-radius: 0 8rpx 8rpx 0;
   font-size: 24rpx;
   color: var(--text-secondary);
