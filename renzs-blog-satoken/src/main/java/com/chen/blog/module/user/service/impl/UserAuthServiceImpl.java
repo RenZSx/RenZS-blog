@@ -16,6 +16,7 @@ import com.chen.blog.module.user.strategy.context.SocialLoginStrategyContext;
 import com.chen.blog.module.user.strategy.impl.QQLoginStrategyImpl;
 import com.chen.blog.module.user.vo.*;
 import com.chen.blog.common.service.RedisService;
+import com.chen.blog.module.user.service.AccountMergeService;
 import com.chen.blog.module.user.service.UserAuthService;
 import com.chen.blog.common.constant.CommonConst;
 import com.chen.blog.common.domain.vo.*;
@@ -67,6 +68,8 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthDao, UserAuth> impl
     private SocialLoginStrategyContext socialLoginStrategyContext;
     @Autowired
     private QQLoginStrategyImpl qqLoginStrategy;
+    @Autowired
+    private AccountMergeService accountMergeService;
 
     @Override
     public List<UserAreaDTO> listUserAreas(ConditionVO conditionVO) {
@@ -208,7 +211,8 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthDao, UserAuth> impl
                 .eq(UserAuth::getUsername, qqLoginVO.getOpenId())
                 .eq(UserAuth::getLoginType, LoginTypeEnum.QQ.getType()));
         if (Objects.nonNull(qqAuth) && !Objects.equals(qqAuth.getUserInfoId(), currentUserInfoId)) {
-            throw new BizException("该QQ已绑定其他账号");
+            accountMergeService.mergeQqAccountToEmailAccount(currentUserInfoId, qqAuth.getUserInfoId());
+            return;
         }
         if (Objects.isNull(qqAuth)) {
             // 绑定只新增凭证行，资料、角色等主体数据继续归属当前 userInfoId。

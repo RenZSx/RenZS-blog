@@ -2,7 +2,6 @@ package com.chen.blog.module.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chen.blog.common.enums.LoginTypeEnum;
-import com.chen.blog.common.exception.BizException;
 import com.chen.blog.common.service.RedisService;
 import com.chen.blog.common.util.UserUtils;
 import com.chen.blog.module.blogInfo.service.BlogInfoService;
@@ -11,6 +10,7 @@ import com.chen.blog.module.user.dao.UserAuthDao;
 import com.chen.blog.module.user.dao.UserInfoDao;
 import com.chen.blog.module.user.dto.UserDetailDTO;
 import com.chen.blog.module.user.entity.UserAuth;
+import com.chen.blog.module.user.service.AccountMergeService;
 import com.chen.blog.module.user.strategy.context.SocialLoginStrategyContext;
 import com.chen.blog.module.user.strategy.impl.QQLoginStrategyImpl;
 import com.chen.blog.module.user.vo.QQLoginVO;
@@ -23,15 +23,15 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * 用户账号服务的QQ绑定行为测试。
+ * 用户账号服务的 QQ 绑定行为测试。
  */
 @ExtendWith(MockitoExtension.class)
 class UserAuthServiceImplTest {
@@ -57,14 +57,17 @@ class UserAuthServiceImplTest {
     @Mock
     private QQLoginStrategyImpl qqLoginStrategy;
 
+    @Mock
+    private AccountMergeService accountMergeService;
+
     @InjectMocks
     private UserAuthServiceImpl userAuthService;
 
     /**
-     * 已属于其他用户的QQ不能被当前用户抢占绑定。
+     * 已属于 QQ 独立账号的 QQ 绑定到邮箱账号时，应把 QQ 账号合并到当前邮箱账号。
      */
     @Test
-    void bindQq_should_reject_open_id_bound_to_other_user() {
+    void bindQq_should_merge_existing_qq_account_to_current_email_user() {
         QQLoginVO qqLoginVO = QQLoginVO.builder()
                 .openId("qq-open-id")
                 .accessToken("token")
@@ -83,14 +86,15 @@ class UserAuthServiceImplTest {
         try (MockedStatic<UserUtils> userUtils = mockStatic(UserUtils.class)) {
             userUtils.when(UserUtils::getLoginUser).thenReturn(loginUser);
 
-            BizException exception = assertThrows(BizException.class, () -> userAuthService.bindQq(qqLoginVO));
-
-            assertEquals("该QQ已绑定其他账号", exception.getMessage());
+            userAuthService.bindQq(qqLoginVO);
         }
+
+        verify(accountMergeService).mergeQqAccountToEmailAccount(1, 2);
+        verify(userAuthDao, never()).insert(any(UserAuth.class));
     }
 
     /**
-     * 未绑定过的QQ会创建当前资料账号的QQ登录凭证。
+     * 未绑定过的 QQ 会创建当前资料账号的 QQ 登录凭证。
      */
     @Test
     void bindQq_should_insert_qq_auth_for_current_user() {
@@ -146,7 +150,7 @@ class UserAuthServiceImplTest {
         }
 
         verify(qqLoginStrategy).validateToken(qqLoginVO);
-        verify(userAuthDao, org.mockito.Mockito.never()).insert(any(UserAuth.class));
+        verify(userAuthDao, never()).insert(any(UserAuth.class));
         assertEquals(1, existingAuth.getUserInfoId());
         assertEquals(LoginTypeEnum.QQ.getType(), existingAuth.getLoginType());
         assertEquals("qq-open-id", existingAuth.getUsername());

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chen.blog.module.user.mapper.AccountMergeMapper">
+
+    <delete id="deleteDuplicateArticleCollects">
+        DELETE source_collect
+        FROM tb_user_article_collect source_collect
+        JOIN tb_user_article_collect target_collect
+          ON target_collect.user_id = #{targetUserInfoId}
+         AND target_collect.article_id = source_collect.article_id
+        WHERE source_collect.user_id = #{sourceUserInfoId}
+    </delete>
+
+    <delete id="deleteDuplicateArticleHistories">
+        DELETE source_history
+        FROM tb_user_article_history source_history
+        JOIN tb_user_article_history target_history
+          ON target_history.user_id = #{targetUserInfoId}
+         AND target_history.article_id = source_history.article_id
+        WHERE source_history.user_id = #{sourceUserInfoId}
+    </delete>
+
+    <delete id="deleteDuplicateSystemNoticeReads">
+        DELETE source_read
+        FROM tb_system_notice_read source_read
+        JOIN tb_system_notice_read target_read
+          ON target_read.user_id = #{targetUserInfoId}
+         AND target_read.notice_id = source_read.notice_id
+        WHERE source_read.user_id = #{sourceUserInfoId}
+    </delete>
+
+    <delete id="deleteDuplicateUserRoles">
+        DELETE source_role
+        FROM tb_user_role source_role
+        JOIN tb_user_role target_role
+          ON target_role.user_id = #{targetUserInfoId}
+         AND target_role.role_id = source_role.role_id
+        WHERE source_role.user_id = #{sourceUserInfoId}
+    </delete>
+
+    <update id="mergeArticleOwners">
+        UPDATE tb_article
+        SET user_id = #{targetUserInfoId}
+        WHERE user_id = #{sourceUserInfoId}
+    </update>
+
+    <update id="mergeTalkOwners">
+        UPDATE tb_talk
+        SET user_id = #{targetUserInfoId}
+        WHERE user_id = #{sourceUserInfoId}
+    </update>
+
+    <update id="mergeCommentOwners">
+        UPDATE tb_comment
+        SET user_id = #{targetUserInfoId}
+        WHERE user_id = #{sourceUserInfoId}
+    </update>
+
+    <update id="mergeCommentReplyUsers">
+        UPDATE tb_comment
+        SET reply_user_id = #{targetUserInfoId}
+        WHERE reply_user_id = #{sourceUserInfoId}
+    </update>
+
+    <update id="mergeArticleCollectUsers">
+        UPDATE tb_user_article_collect
+        SET user_id = #{targetUserInfoId}
+        WHERE user_id = #{sourceUserInfoId}
+    </update>
+
+    <update id="mergeArticleHistoryUsers">
+        UPDATE tb_user_article_history
+        SET user_id = #{targetUserInfoId}
+        WHERE user_id = #{sourceUserInfoId}
+    </update>
+
+    <update id="mergeChatRecordUsers">
+        UPDATE tb_chat_record
+        SET user_id = #{targetUserInfoId}
+        WHERE user_id = #{sourceUserInfoId}
+    </update>
+
+    <update id="mergeOperationLogUsers">
+        UPDATE tb_operation_log
+        SET user_id = #{targetUserInfoId}
+        WHERE user_id = #{sourceUserInfoId}
+    </update>
+
+    <update id="mergeSystemNoticeReadUsers">
+        UPDATE tb_system_notice_read
+        SET user_id = #{targetUserInfoId}
+        WHERE user_id = #{sourceUserInfoId}
+    </update>
+
+    <update id="mergeUserNoticeUsers">
+        UPDATE tb_user_notice
+        SET user_id = #{targetUserInfoId}
+        WHERE user_id = #{sourceUserInfoId}
+    </update>
+
+    <update id="mergeUserRoleUsers">
+        UPDATE tb_user_role
+        SET user_id = #{targetUserInfoId}
+        WHERE user_id = #{sourceUserInfoId}
+    </update>
+
+</mapper>
