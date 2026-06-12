@@ -78,6 +78,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoDao, UserInfo> impl
         userInfoDao.updateById(userInfo);
     }
 
+    /**
+     * 判断是否允许修正历史邮箱凭证归属。
+     *
+     * @param currentUserInfoId 当前资料账号ID
+     * @param email             绑定邮箱
+     * @return true 表示当前 QQ 资料账号已拥有该邮箱，可以迁移邮箱登录凭证
+     */
+    private boolean canRepairHistoricalEmailOwner(Integer currentUserInfoId, String email) {
+        UserInfo currentUserInfo = userInfoDao.selectById(currentUserInfoId);
+        if (Objects.isNull(currentUserInfo) || !Objects.equals(currentUserInfo.getEmail(), email)) {
+            return false;
+        }
+        UserAuth qqAuth = userAuthDao.selectOne(new LambdaQueryWrapper<UserAuth>()
+                .select(UserAuth::getId)
+                .eq(UserAuth::getUserInfoId, currentUserInfoId)
+                .eq(UserAuth::getLoginType, LoginTypeEnum.QQ.getType()));
+        return Objects.nonNull(qqAuth);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String updateUserAvatar(MultipartFile file) {
@@ -116,7 +135,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoDao, UserInfo> impl
                 .eq(UserAuth::getUsername, emailVO.getEmail())
                 .eq(UserAuth::getLoginType, LoginTypeEnum.EMAIL.getType()));
         if (Objects.nonNull(emailAuth) && !Objects.equals(emailAuth.getUserInfoId(), currentUserInfoId)) {
-            throw new BizException("该邮箱已绑定其他账号");
+            if (!canRepairHistoricalEmailOwner(currentUserInfoId, emailVO.getEmail())) {
+                throw new BizException("该邮箱已绑定其他账号");
+            }
+            UserAuth updateAuth = UserAuth.builder()
+                    .id(emailAuth.getId())
+                    .userInfoId(currentUserInfoId)
+                    .build();
+            userAuthDao.updateById(updateAuth);
+            emailAuth.setUserInfoId(currentUserInfoId);
         }
         if (Objects.isNull(emailAuth)) {
             if (StringUtils.isBlank(emailVO.getPassword())) {

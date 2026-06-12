@@ -2,6 +2,8 @@ package com.chen.blog.module.user.service.impl;
 
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.chen.blog.common.enums.LoginTypeEnum;
 import com.chen.blog.common.exception.BizException;
 import com.chen.blog.common.service.RedisService;
@@ -14,6 +16,8 @@ import com.chen.blog.module.user.dto.UserDetailDTO;
 import com.chen.blog.module.user.entity.UserAuth;
 import com.chen.blog.module.user.entity.UserInfo;
 import com.chen.blog.module.user.vo.EmailVO;
+import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -56,6 +61,12 @@ class UserInfoServiceImplTest {
 
     @InjectMocks
     private UserInfoServiceImpl userInfoService;
+
+    @BeforeEach
+    void setUp() {
+        initTableInfo(UserAuth.class);
+        initTableInfo(UserInfo.class);
+    }
 
     /**
      * 已属于其他用户的邮箱不能被当前用户抢占绑定。
@@ -121,5 +132,58 @@ class UserInfoServiceImplTest {
         assertEquals(LoginTypeEnum.EMAIL.getType(), savedAuth.getLoginType());
         assertTrue(BCrypt.checkpw("abc123", savedAuth.getPassword()));
         assertTrue(Objects.nonNull(savedAuth.getPassword()));
+    }
+
+    /**
+     * 历史数据里当前 QQ 资料账号已经写入邮箱时，绑定邮箱应把邮箱登录凭证迁回当前账号。
+     */
+    @Test
+    void saveUserEmail_should_repair_history_email_auth_owner_when_current_profile_has_same_email() {
+        EmailVO emailVO = EmailVO.builder()
+                .email("bind@example.com")
+                .code("123456")
+                .build();
+        UserDetailDTO loginUser = UserDetailDTO.builder().userInfoId(2).build();
+        UserInfo currentUserInfo = UserInfo.builder()
+                .id(2)
+                .email("bind@example.com")
+                .build();
+        UserAuth existingEmailAuth = UserAuth.builder()
+                .id(10)
+                .userInfoId(1)
+                .username("bind@example.com")
+                .loginType(LoginTypeEnum.EMAIL.getType())
+                .build();
+        UserAuth qqAuth = UserAuth.builder()
+                .id(20)
+                .userInfoId(2)
+                .username("qq-open-id")
+                .loginType(LoginTypeEnum.QQ.getType())
+                .build();
+
+        when(redisService.get(USER_CODE_KEY + "bind@example.com")).thenReturn("123456");
+        when(userAuthDao.selectOne(any(LambdaQueryWrapper.class))).thenReturn(existingEmailAuth, qqAuth);
+        when(userInfoDao.selectById(2)).thenReturn(currentUserInfo);
+
+        try (MockedStatic<UserUtils> userUtils = mockStatic(UserUtils.class)) {
+            userUtils.when(UserUtils::getLoginUser).thenReturn(loginUser);
+
+            userInfoService.saveUserEmail(emailVO);
+        }
+
+        ArgumentCaptor<UserAuth> userAuthCaptor = ArgumentCaptor.forClass(UserAuth.class);
+        verify(userAuthDao).updateById(userAuthCaptor.capture());
+        assertEquals(10, userAuthCaptor.getValue().getId());
+        assertEquals(2, userAuthCaptor.getValue().getUserInfoId());
+        verify(userAuthDao, never()).insert(any(UserAuth.class));
+
+        ArgumentCaptor<UserInfo> userInfoCaptor = ArgumentCaptor.forClass(UserInfo.class);
+        verify(userInfoDao).updateById(userInfoCaptor.capture());
+        assertEquals(2, userInfoCaptor.getValue().getId());
+        assertEquals("bind@example.com", userInfoCaptor.getValue().getEmail());
+    }
+
+    private void initTableInfo(Class<?> entityClass) {
+        TableInfoHelper.initTableInfo(new MapperBuilderAssistant(new MybatisConfiguration(), ""), entityClass);
     }
 }

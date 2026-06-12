@@ -52,12 +52,48 @@ public class UserDetailsServiceImpl {
         // 查询账号是否存在
         UserAuth userAuth = userAuthDao.selectOne(new LambdaQueryWrapper<UserAuth>()
                 .select(UserAuth::getId, UserAuth::getUserInfoId, UserAuth::getUsername, UserAuth::getPassword, UserAuth::getLoginType)
-                .eq(UserAuth::getUsername, username));
+                .eq(UserAuth::getUsername, username)
+                .eq(UserAuth::getLoginType, LoginTypeEnum.EMAIL.getType()));
         if (Objects.isNull(userAuth)) {
             throw new BizException("用户名不存在!");
         }
         // 封装登录信息
+        userAuth = repairHistoricalEmailOwner(userAuth);
         return convertUserDetail(userAuth, request);
+    }
+
+    /**
+     * 兼容历史数据：QQ 资料账号已写入邮箱，但邮箱登录凭证仍指向旧资料账号。
+     *
+     * @param emailAuth 邮箱登录凭证
+     * @return 修正归属后的邮箱登录凭证
+     */
+    private UserAuth repairHistoricalEmailOwner(UserAuth emailAuth) {
+        List<UserInfo> sameEmailUserInfoList = userInfoDao.selectList(new LambdaQueryWrapper<UserInfo>()
+                .select(UserInfo::getId, UserInfo::getEmail)
+                .eq(UserInfo::getEmail, emailAuth.getUsername()));
+        if (Objects.isNull(sameEmailUserInfoList) || sameEmailUserInfoList.isEmpty()) {
+            return emailAuth;
+        }
+        for (UserInfo userInfo : sameEmailUserInfoList) {
+            if (Objects.equals(userInfo.getId(), emailAuth.getUserInfoId())) {
+                continue;
+            }
+            UserAuth qqAuth = userAuthDao.selectOne(new LambdaQueryWrapper<UserAuth>()
+                    .select(UserAuth::getId)
+                    .eq(UserAuth::getUserInfoId, userInfo.getId())
+                    .eq(UserAuth::getLoginType, LoginTypeEnum.QQ.getType()));
+            if (Objects.nonNull(qqAuth)) {
+                UserAuth updateAuth = UserAuth.builder()
+                        .id(emailAuth.getId())
+                        .userInfoId(userInfo.getId())
+                        .build();
+                userAuthDao.updateById(updateAuth);
+                emailAuth.setUserInfoId(userInfo.getId());
+                return emailAuth;
+            }
+        }
+        return emailAuth;
     }
 
     /**
