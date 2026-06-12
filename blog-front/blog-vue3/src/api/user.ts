@@ -42,7 +42,7 @@ export function register(data: { username: string; password: string; code: strin
 
 // 发送验证码
 export function sendCode(email: string) {
-  return request.get('/api/users/code', { params: { email } })
+  return request.get('/api/users/code', { params: { username: email } })
 }
 
 // 修改密码

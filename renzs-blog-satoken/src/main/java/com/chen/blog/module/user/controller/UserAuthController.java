@@ -16,6 +16,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -59,8 +60,8 @@ public class UserAuthController {
     @ApiOperation(value = "发送邮箱验证码")
     @ApiImplicitParam(name = "username", value = "用户名", required = true, dataType = "String")
     @GetMapping("/users/code")
-    public Result<?> sendCode(String username) {
-        emailSendService.sendCode(username);
+    public Result<?> sendCode(String username, String email) {
+        emailSendService.sendCode(StringUtils.hasText(username) ? username : email);
         return Result.ok();
     }
 

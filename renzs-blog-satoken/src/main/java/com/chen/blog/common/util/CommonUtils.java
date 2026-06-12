@@ -19,6 +19,9 @@ public class CommonUtils {
      * @return 合法状态
      */
     public static boolean checkEmail(String username) {
+        if (Objects.isNull(username)) {
+            return false;
+        }
         String rule = "^\\w+((-\\w+)|(\\.\\w+))*\\@[A-Za-z0-9]+((\\.|-)[A-Za-z0-9]+)*\\.[A-Za-z0-9]+$";
         //正则表达式的模式 编译正则表达式
         Pattern p = Pattern.compile(rule);
