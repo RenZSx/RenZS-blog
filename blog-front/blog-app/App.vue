@@ -3,6 +3,7 @@ import { useUserStore } from '@/store/user'
 import { useNoticeStore } from '@/store/notice'
 import { useThemeStore } from '@/store/theme'
 import { useNoticeSocket } from '@/composables/useNoticeSocket'
+import { onNotificationClick } from '@/utils/native-notification'
 import { watch } from 'vue'
 
 export default {
@@ -38,6 +39,28 @@ export default {
         }
       })
     } catch (e) { /* 平台不支持时静默 */ }
+
+    // 5. App 运行时系统通知点击路由。
+    onNotificationClick((payload) => {
+      try {
+        if (!payload) return
+        if (payload.jumpPath) {
+          const article = /^\/articles\/(\d+)/.exec(payload.jumpPath)
+          if (article) {
+            uni.navigateTo({ url: `/pages/article/article?id=${article[1]}` })
+            return
+          }
+          const talk = /^\/talks\/(\d+)/.exec(payload.jumpPath)
+          if (talk) {
+            uni.navigateTo({ url: `/pages/talk/talk-detail?id=${talk[1]}` })
+            return
+          }
+        }
+        uni.switchTab({ url: '/pages/notice/notice' })
+      } catch (e) {
+        uni.switchTab({ url: '/pages/notice/notice' })
+      }
+    })
 
   },
   onShow() {
