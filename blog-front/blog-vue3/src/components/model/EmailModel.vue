@@ -33,6 +33,18 @@
           </v-btn>
         </div>
 
+        <v-text-field
+          v-if="!userStore.emailBound"
+          v-model="password"
+          class="mt-4"
+          label="邮箱登录密码"
+          placeholder="请设置邮箱登录密码"
+          variant="outlined"
+          :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+          :type="showPassword ? 'text' : 'password'"
+          @click:append="showPassword = !showPassword"
+        />
+
         <!-- 确认按钮 -->
         <v-btn
           class="mt-6"
@@ -62,6 +74,8 @@ const userStore = useUserStore()
 
 const email = ref('')
 const code = ref('')
+const password = ref('')
+const showPassword = ref(false)
 const countdown = ref(0)
 
 const isMobile = computed(() => mobile.value)
@@ -101,14 +115,21 @@ async function handleBind() {
     useToast({ type: 'error', message: '验证码不能为空' })
     return
   }
+  if (!userStore.emailBound && !password.value.trim()) {
+    useToast({ type: 'error', message: '请设置邮箱登录密码' })
+    return
+  }
 
   try {
     const { data } = await bindEmail({
       email: email.value,
-      code: code.value
+      code: code.value,
+      password: userStore.emailBound ? undefined : password.value
     })
     if (data.flag) {
       userStore.email = email.value
+      userStore.emailBound = true
+      password.value = ''
       useToast({ type: 'success', message: '绑定成功' })
       uiStore.setEmailFlag(false)
     } else {

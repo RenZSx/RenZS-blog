@@ -101,6 +101,23 @@
                 {{ userStore.email ? '修改绑定' : '绑定邮箱' }}
               </v-btn>
             </div>
+            <div class="mt-4 binding-wrapper">
+              <v-text-field
+                disabled
+                :model-value="userStore.qqBound ? '已绑定' : '未绑定'"
+                label="QQ"
+                variant="outlined"
+              />
+              <v-btn
+                color="primary"
+                variant="text"
+                size="small"
+                :disabled="userStore.qqBound"
+                @click="bindQq"
+              >
+                {{ userStore.qqBound ? '已绑定' : '绑定QQ' }}
+              </v-btn>
+            </div>
             <v-btn
               @click="updateUserInfo"
               color="primary"
@@ -209,6 +226,8 @@ import {
   updateAvatarLink
 } from '@/api/user'
 import { useToast } from '@/composables/useToast'
+import config from '@/assets/js/config'
+import { saveOauthMode } from '@/utils/oauthMode'
 import UserNoticePanel from './components/UserNoticePanel.vue'
 import UserCollectPanel from './components/UserCollectPanel.vue'
 import UserHistoryPanel from './components/UserHistoryPanel.vue'
@@ -352,6 +371,15 @@ function resetAvatarDialog() {
 
 function openEmailDialog() {
   uiStore.setEmailFlag(true)
+}
+
+function bindQq() {
+  saveOauthMode({ provider: 'qq', mode: 'bind' })
+  uiStore.saveLoginUrl(route.fullPath)
+  window.open(
+    `https://graph.qq.com/oauth2.0/show?which=Login&display=pc&client_id=${config.QQ_APP_ID}&response_type=token&scope=all&redirect_uri=${config.QQ_REDIRECT_URI}`,
+    '_self'
+  )
 }
 
 watch(

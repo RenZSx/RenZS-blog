@@ -16,8 +16,9 @@ import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useUIStore } from '@/stores/ui'
-import { qqLogin, weiboLogin, giteeLogin } from '@/api/user'
+import { bindQq, getCurrentUser, giteeLogin, qqLogin, weiboLogin } from '@/api/user'
 import { useToast } from '@/composables/useToast'
+import { clearOauthMode, getOauthMode } from '@/utils/oauthMode'
 
 const route = useRoute()
 const router = useRouter()
@@ -30,8 +31,28 @@ onMounted(async () => {
 
   try {
     let data: any
+    const oauthMode = getOauthMode()
 
-    if (path.includes('qq')) {
+    if (path.includes('qq') && oauthMode?.provider === 'qq' && oauthMode.mode === 'bind') {
+      data = await bindQq({ openId: code as string, accessToken: state as string })
+      clearOauthMode()
+      if (data?.data?.flag) {
+        const currentUser = await getCurrentUser()
+        if (currentUser.data?.flag && currentUser.data.data) {
+          userStore.login({
+            userInfo: currentUser.data.data,
+            tokenName: '',
+            tokenValue: '',
+            tokenTimeout: 0
+          })
+        } else {
+          userStore.qqBound = true
+        }
+        useToast({ type: 'success', message: '绑定成功' })
+      } else {
+        useToast({ type: 'error', message: data?.data?.message || '绑定失败' })
+      }
+    } else if (path.includes('qq')) {
       data = await qqLogin({ code: code as string, state: state as string })
     } else if (path.includes('weibo')) {
       data = await weiboLogin({ code: code as string })
@@ -39,7 +60,9 @@ onMounted(async () => {
       data = await giteeLogin({ code: code as string })
     }
 
-    if (data?.data?.flag) {
+    if (path.includes('qq') && oauthMode?.provider === 'qq' && oauthMode.mode === 'bind') {
+      // 绑定模式已经在上方完成提示和用户状态刷新。
+    } else if (data?.data?.flag) {
       userStore.login(data.data.data)
       useToast({ type: 'success', message: '登录成功' })
     } else {
