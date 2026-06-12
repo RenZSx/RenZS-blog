@@ -2,10 +2,13 @@ package com.chen.blog.module.user.service.impl;
 
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.chen.blog.common.enums.LoginTypeEnum;
 import com.chen.blog.common.strategy.upload.context.UploadStrategyContext;
+import com.chen.blog.module.user.dao.UserAuthDao;
 import com.chen.blog.module.user.dao.UserInfoDao;
 import com.chen.blog.module.user.dto.UserDetailDTO;
 import com.chen.blog.module.user.dto.UserOnlineDTO;
@@ -18,6 +21,7 @@ import com.chen.blog.common.service.RedisService;
 import com.chen.blog.module.user.service.UserInfoService;
 import com.chen.blog.module.rbac.service.UserRoleService;
 import com.chen.blog.common.domain.vo.*;
+import com.chen.blog.module.user.entity.UserAuth;
 import com.chen.blog.module.user.entity.UserInfo;
 import com.chen.blog.module.rbac.entity.UserRole;
 import com.chen.blog.common.enums.FilePathEnum;
@@ -57,6 +61,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoDao, UserInfo> impl
     private RedisService redisService;
     @Autowired
     private UploadStrategyContext uploadStrategyContext;
+    @Autowired
+    private UserAuthDao userAuthDao;
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -100,11 +106,32 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoDao, UserInfo> impl
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveUserEmail(EmailVO emailVO) {
-        if (!emailVO.getCode().equals(redisService.get(USER_CODE_KEY + emailVO.getEmail()).toString())) {
+        Object cachedCode = redisService.get(USER_CODE_KEY + emailVO.getEmail());
+        if (Objects.isNull(cachedCode) || !emailVO.getCode().equals(cachedCode.toString())) {
             throw new BizException("验证码错误！");
         }
+        UserDetailDTO loginUser = UserUtils.getLoginUser();
+        Integer currentUserInfoId = loginUser.getUserInfoId();
+        UserAuth emailAuth = userAuthDao.selectOne(new LambdaQueryWrapper<UserAuth>()
+                .eq(UserAuth::getUsername, emailVO.getEmail())
+                .eq(UserAuth::getLoginType, LoginTypeEnum.EMAIL.getType()));
+        if (Objects.nonNull(emailAuth) && !Objects.equals(emailAuth.getUserInfoId(), currentUserInfoId)) {
+            throw new BizException("该邮箱已绑定其他账号");
+        }
+        if (Objects.isNull(emailAuth)) {
+            if (StringUtils.isBlank(emailVO.getPassword())) {
+                throw new BizException("请设置邮箱登录密码");
+            }
+            // 新邮箱绑定必须同步创建登录凭证，否则后续无法用邮箱登录同一个资料账号。
+            userAuthDao.insert(UserAuth.builder()
+                    .userInfoId(currentUserInfoId)
+                    .username(emailVO.getEmail())
+                    .password(BCrypt.hashpw(emailVO.getPassword(), BCrypt.gensalt()))
+                    .loginType(LoginTypeEnum.EMAIL.getType())
+                    .build());
+        }
         UserInfo userInfo = UserInfo.builder()
-                .id(UserUtils.getLoginUser().getUserInfoId())
+                .id(currentUserInfoId)
                 .email(emailVO.getEmail())
                 .build();
         userInfoDao.updateById(userInfo);
@@ -224,4 +251,3 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoDao, UserInfo> impl
     }
 
 }
-
