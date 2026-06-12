@@ -15,7 +15,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 /**
- * Token validation tests for QQ login strategy.
+ * QQ登录策略的token校验测试。
  */
 @ExtendWith(MockitoExtension.class)
 class QQLoginStrategyImplTest {
@@ -30,7 +30,7 @@ class QQLoginStrategyImplTest {
     private QQLoginStrategyImpl qqLoginStrategy;
 
     /**
-     * The backend should fill openId from QQ validation when the callback only has access_token.
+     * 当QQ回调只携带access_token时，后端应从QQ校验结果中回填openId。
      */
     @Test
     void validateToken_should_fill_open_id_when_missing() {

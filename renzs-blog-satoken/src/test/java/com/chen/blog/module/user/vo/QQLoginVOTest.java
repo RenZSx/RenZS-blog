@@ -10,14 +10,14 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Validation tests for QQ login payloads.
+ * QQ登录请求参数校验测试。
  */
 class QQLoginVOTest {
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     /**
-     * QQ callbacks can omit openId because the backend can derive it from the access token.
+     * QQ回调允许缺少openId，因为后端可以根据accessToken查询得到。
      */
     @Test
     void validate_should_allow_missing_open_id() {
@@ -31,7 +31,7 @@ class QQLoginVOTest {
     }
 
     /**
-     * The access token must still be present because QQ token validation depends on it.
+     * accessToken仍必须存在，因为QQ token校验依赖该字段。
      */
     @Test
     void validate_should_reject_missing_access_token() {

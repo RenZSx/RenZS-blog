@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 
 /**
- * QQ login payload.
+ * QQ登录请求参数。
  *
  * @author chenfuyun
  * @date 2021/06/14
@@ -20,19 +20,19 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ApiModel(description = "QQ login information")
+@ApiModel(description = "QQ登录信息")
 public class QQLoginVO {
 
     /**
-     * QQ openId, optional when QQ only returns it from token validation.
+     * QQ openId；当QQ只在token校验接口返回openId时，该字段允许为空。
      */
     @ApiModelProperty(name = "openId", value = "qq openId", dataType = "String")
     private String openId;
 
     /**
-     * QQ accessToken.
+     * QQ accessToken。
      */
-    @NotBlank(message = "accessToken cannot be blank")
+    @NotBlank(message = "accessToken不能为空")
     @ApiModelProperty(name = "accessToken", value = "qq accessToken", required = true, dataType = "String")
     private String accessToken;
 

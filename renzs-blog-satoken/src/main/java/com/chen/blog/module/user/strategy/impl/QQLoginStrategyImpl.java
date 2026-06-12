@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * QQ login strategy implementation.
+ * QQ登录策略实现。
  *
  * @author chenfuyun
  * @date 2021/07/28
@@ -37,7 +37,7 @@ public class QQLoginStrategyImpl extends AbstractSocialLoginStrategyImpl {
     @Override
     public SocialTokenDTO getSocialToken(String data) {
         QQLoginVO qqLoginVO = JSON.parseObject(data, QQLoginVO.class);
-        // Validate the QQ access token before issuing the local social token.
+        // 校验QQ accessToken，校验通过后再生成本地社交登录token。
         validateToken(qqLoginVO);
         return SocialTokenDTO.builder()
                 .openId(qqLoginVO.getOpenId())
@@ -48,7 +48,7 @@ public class QQLoginStrategyImpl extends AbstractSocialLoginStrategyImpl {
 
     @Override
     public SocialUserInfoDTO getSocialUserInfo(SocialTokenDTO socialTokenDTO) {
-        // Build the QQ user info request parameters.
+        // 构建QQ用户信息请求参数。
         Map<String, String> formData = new HashMap<>(3);
         formData.put(SocialLoginConst.QQ_OPEN_ID, socialTokenDTO.getOpenId());
         formData.put(SocialLoginConst.ACCESS_TOKEN, socialTokenDTO.getAccessToken());
@@ -61,9 +61,9 @@ public class QQLoginStrategyImpl extends AbstractSocialLoginStrategyImpl {
     }
 
     /**
-     * Validate QQ token information and fill the openId when QQ only returns it from the check-token API.
+     * 校验QQ token信息；当QQ回调只返回access_token时，从校验接口回填openId。
      *
-     * @param qqLoginVO QQ login payload
+     * @param qqLoginVO QQ登录请求参数
      */
     public void validateToken(QQLoginVO qqLoginVO) {
         Map<String, String> qqData = new HashMap<>(1);
@@ -72,7 +72,7 @@ public class QQLoginStrategyImpl extends AbstractSocialLoginStrategyImpl {
             String result = restTemplate.getForObject(qqConfigProperties.getCheckTokenUrl(), String.class, qqData);
             QQTokenDTO qqTokenDTO = JSON.parseObject(CommonUtils.getBracketsContent(Objects.requireNonNull(result)), QQTokenDTO.class);
             if (!StringUtils.hasText(qqLoginVO.getOpenId())) {
-                // QQ implicit flow may only return access_token to the callback; fill openId from QQ validation.
+                // QQ implicit授权回调可能只返回access_token，需要从QQ校验结果中回填openId。
                 qqLoginVO.setOpenId(qqTokenDTO.getOpenid());
             }
             if (!qqLoginVO.getOpenId().equals(qqTokenDTO.getOpenid())) {
