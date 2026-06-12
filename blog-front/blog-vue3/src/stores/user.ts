@@ -8,6 +8,8 @@ export interface UserInfo {
   intro: string
   webSite: string
   email: string
+  emailBound: boolean
+  qqBound: boolean
   loginType: string
   articleLikeSet: number[]
   commentLikeSet: number[]
@@ -41,6 +43,8 @@ export const useUserStore = defineStore('user', () => {
   const intro = ref<string | null>(null)
   const webSite = ref<string | null>(null)
   const email = ref<string | null>(null)
+  const emailBound = ref(false)
+  const qqBound = ref(false)
   const loginType = ref<string | null>(null)
   const articleLikeSet = ref<number[]>([])
   const commentLikeSet = ref<number[]>([])
@@ -60,6 +64,8 @@ export const useUserStore = defineStore('user', () => {
     intro.value = user.intro
     webSite.value = user.webSite
     email.value = user.email
+    emailBound.value = Boolean(user.emailBound)
+    qqBound.value = Boolean(user.qqBound)
     loginType.value = user.loginType
     articleLikeSet.value = user.articleLikeSet || []
     commentLikeSet.value = user.commentLikeSet || []
@@ -79,6 +85,8 @@ export const useUserStore = defineStore('user', () => {
     intro.value = null
     webSite.value = null
     email.value = null
+    emailBound.value = false
+    qqBound.value = false
     loginType.value = null
     articleLikeSet.value = []
     commentLikeSet.value = []
@@ -145,6 +153,8 @@ export const useUserStore = defineStore('user', () => {
     intro,
     webSite,
     email,
+    emailBound,
+    qqBound,
     loginType,
     articleLikeSet,
     commentLikeSet,
@@ -174,6 +184,8 @@ export const useUserStore = defineStore('user', () => {
       'intro',
       'webSite',
       'email',
+      'emailBound',
+      'qqBound',
       'loginType',
       'articleLikeSet',
       'commentLikeSet',

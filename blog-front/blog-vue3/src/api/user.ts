@@ -39,13 +39,17 @@ export function updatePassword(data: { username: string; password: string; code:
 }
 
 // 绑定邮箱
-export function bindEmail(data: { email: string; code: string }) {
+export function bindEmail(data: { email: string; code: string; password?: string }) {
   return request.post('/api/users/email', data)
 }
 
 // QQ 登录
 export function qqLogin(data: { code: string; state: string }) {
   return request.post('/api/users/oauth/qq', data)
+}
+
+export function bindQq(data: { openId: string; accessToken: string }) {
+  return request.post('/api/users/oauth/qq/bind', data)
 }
 
 // 微博登录
