@@ -19,6 +19,7 @@ import { useUIStore } from '@/stores/ui'
 import { bindQq, getCurrentUser, giteeLogin, qqLogin, weiboLogin } from '@/api/user'
 import { useToast } from '@/composables/useToast'
 import { clearOauthMode, getOauthMode } from '@/utils/oauthMode'
+import { extractQqOAuthPayload } from '@/utils/qqOAuth'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,15 +27,16 @@ const userStore = useUserStore()
 const uiStore = useUIStore()
 
 onMounted(async () => {
-  const { code, state } = route.query
+  const { code } = route.query
   const path = route.path
+  const qqPayload = extractQqOAuthPayload(route.query, route.hash || window.location.hash)
 
   try {
     let data: any
     const oauthMode = getOauthMode()
 
     if (path.includes('qq') && oauthMode?.provider === 'qq' && oauthMode.mode === 'bind') {
-      data = await bindQq({ openId: code as string, accessToken: state as string })
+      data = await bindQq(qqPayload)
       clearOauthMode()
       if (data?.data?.flag) {
         const currentUser = await getCurrentUser()
@@ -53,7 +55,7 @@ onMounted(async () => {
         useToast({ type: 'error', message: data?.data?.message || '绑定失败' })
       }
     } else if (path.includes('qq')) {
-      data = await qqLogin({ openId: code as string, accessToken: state as string })
+      data = await qqLogin(qqPayload)
     } else if (path.includes('weibo')) {
       data = await weiboLogin({ code: code as string })
     } else if (path.includes('gitee')) {
