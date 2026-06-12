@@ -38,4 +38,10 @@ public class EmailVO {
     @ApiModelProperty(name = "code", value = "邮箱验证码", required = true, dataType = "String")
     private String code;
 
+    /**
+     * 邮箱登录密码，QQ账号首次绑定邮箱登录时使用。
+     */
+    @ApiModelProperty(name = "password", value = "邮箱登录密码", dataType = "String")
+    private String password;
+
 }

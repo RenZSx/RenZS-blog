@@ -95,4 +95,14 @@ public class UserInfoDTO {
      */
     private LocalDateTime lastLoginTime;
 
+    /**
+     * 当前资料账号是否已绑定邮箱登录凭证。
+     */
+    private Boolean emailBound;
+
+    /**
+     * 当前资料账号是否已绑定QQ登录凭证。
+     */
+    private Boolean qqBound;
+
 }

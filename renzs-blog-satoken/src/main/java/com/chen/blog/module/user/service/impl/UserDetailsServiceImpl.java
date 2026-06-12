@@ -2,6 +2,7 @@ package com.chen.blog.module.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.chen.blog.common.enums.LoginTypeEnum;
 import com.chen.blog.module.user.dto.UserDetailDTO;
 import com.chen.blog.common.exception.BizException;
 import com.chen.blog.module.rbac.dao.RoleDao;
@@ -75,6 +76,14 @@ public class UserDetailsServiceImpl {
         Set<Object> articleLikeSet = redisService.sMembers(ARTICLE_USER_LIKE + userInfo.getId());
         Set<Object> commentLikeSet = redisService.sMembers(COMMENT_USER_LIKE + userInfo.getId());
         Set<Object> talkLikeSet = redisService.sMembers(TALK_USER_LIKE + userInfo.getId());
+        // 登录响应需要告诉前端当前资料账号已经具备哪些登录凭证。
+        List<UserAuth> boundAuthList = userAuthDao.selectList(new LambdaQueryWrapper<UserAuth>()
+                .select(UserAuth::getLoginType)
+                .eq(UserAuth::getUserInfoId, userInfo.getId()));
+        boolean emailBound = boundAuthList.stream()
+                .anyMatch(item -> Objects.equals(item.getLoginType(), LoginTypeEnum.EMAIL.getType()));
+        boolean qqBound = boundAuthList.stream()
+                .anyMatch(item -> Objects.equals(item.getLoginType(), LoginTypeEnum.QQ.getType()));
         // 获取设备信息
         String ipAddress = IpUtils.getIpAddress(request);
         String ipSource = IpUtils.getIpSource(ipAddress);
@@ -101,6 +110,8 @@ public class UserDetailsServiceImpl {
                 .browser(userAgent.getBrowser().getName())
                 .os(userAgent.getOperatingSystem().getName())
                 .lastLoginTime(LocalDateTime.now(ZoneId.of(SHANGHAI.getZone())))
+                .emailBound(emailBound)
+                .qqBound(qqBound)
                 .build();
     }
 
