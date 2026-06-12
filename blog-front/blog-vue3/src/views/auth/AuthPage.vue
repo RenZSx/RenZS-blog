@@ -360,6 +360,7 @@ import { useBlogInfoStore } from '@/stores/blogInfo'
 import { login, register, sendCode as sendCodeApi, updatePassword } from '@/api/user'
 import { useToast } from '@/composables/useToast'
 import { normalizeAuthRedirect } from '@/utils/authPrompt'
+import { saveOauthMode } from '@/utils/oauthMode'
 import config from '@/assets/js/config'
 
 type AuthMode = 'login' | 'register' | 'forgot-password'
@@ -710,6 +711,7 @@ async function handleReset() {
 }
 
 function qqLogin() {
+  saveOauthMode({ provider: 'qq', mode: 'login' })
   uiStore.saveLoginUrl(getRedirectTarget())
   window.open(
     `https://graph.qq.com/oauth2.0/show?which=Login&display=pc&client_id=${config.QQ_APP_ID}&response_type=token&scope=all&redirect_uri=${config.QQ_REDIRECT_URI}`,

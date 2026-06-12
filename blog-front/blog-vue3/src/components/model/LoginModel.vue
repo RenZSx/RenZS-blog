@@ -85,6 +85,7 @@ import { useBlogInfoStore } from '@/stores/blogInfo'
 import { login } from '@/api/user'
 import { useToast } from '@/composables/useToast'
 import config from '@/assets/js/config'
+import { saveOauthMode } from '@/utils/oauthMode'
 
 const { mobile } = useDisplay()
 const router = useRouter()
@@ -146,6 +147,7 @@ async function handleLogin() {
 }
 
 function qqLogin() {
+  saveOauthMode({ provider: 'qq', mode: 'login' })
   uiStore.saveLoginUrl(router.currentRoute.value.path)
   // QQ 登录逻辑
   if (mobile.value) {

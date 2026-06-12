@@ -69,6 +69,9 @@ onMounted(async () => {
     if (path.includes('qq') && oauthMode?.provider === 'qq' && oauthMode.mode === 'bind') {
       // 绑定模式已经在上方完成提示和用户状态刷新。
     } else if (data?.data?.flag) {
+      if (path.includes('qq')) {
+        clearOauthMode()
+      }
       userStore.login(data.data.data)
       useToast({ type: 'success', message: '登录成功' })
     } else {
