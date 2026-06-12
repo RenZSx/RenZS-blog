@@ -19,7 +19,7 @@ import { useUIStore } from '@/stores/ui'
 import { bindQq, getCurrentUser, giteeLogin, qqLogin, weiboLogin } from '@/api/user'
 import { useToast } from '@/composables/useToast'
 import { clearOauthMode, getOauthMode } from '@/utils/oauthMode'
-import { extractQqOAuthPayload } from '@/utils/qqOAuth'
+import { extractQqOAuthPayload, hasQqAccessToken } from '@/utils/qqOAuth'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,11 +29,15 @@ const uiStore = useUIStore()
 onMounted(async () => {
   const { code } = route.query
   const path = route.path
-  const qqPayload = extractQqOAuthPayload(route.query, route.hash || window.location.hash)
+  const qqPayload = extractQqOAuthPayload(route.query, route.hash || window.location.hash || window.location.href)
 
   try {
     let data: any
     const oauthMode = getOauthMode()
+
+    if (path.includes('qq') && !hasQqAccessToken(qqPayload)) {
+      throw new Error('QQ授权信息缺失，请重新授权')
+    }
 
     if (path.includes('qq') && oauthMode?.provider === 'qq' && oauthMode.mode === 'bind') {
       data = await bindQq(qqPayload)
@@ -71,7 +75,7 @@ onMounted(async () => {
       useToast({ type: 'error', message: data?.data?.message || '登录失败' })
     }
   } catch (error) {
-    useToast({ type: 'error', message: '登录失败' })
+    useToast({ type: 'error', message: error instanceof Error ? error.message : '登录失败' })
   }
 
   // 跳转到之前的页面或首页

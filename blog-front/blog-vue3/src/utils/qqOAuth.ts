@@ -11,7 +11,11 @@ function firstQueryValue(value: LocationQuery[string]) {
 
 function readHashParam(hash: string, key: string) {
   const normalizedHash = hash.startsWith('#') ? hash.slice(1) : hash
-  return new URLSearchParams(normalizedHash).get(key) || ''
+  const hashStartIndex = normalizedHash.indexOf('#')
+  const hashContent = hashStartIndex >= 0 ? normalizedHash.slice(hashStartIndex + 1) : normalizedHash
+  const queryStartIndex = hashContent.indexOf('?')
+  const hashQuery = queryStartIndex >= 0 ? hashContent.slice(queryStartIndex + 1) : hashContent
+  return new URLSearchParams(hashQuery).get(key) || ''
 }
 
 export function extractQqOAuthPayload(query: LocationQuery, hash = ''): QqOAuthPayload {
@@ -24,4 +28,8 @@ export function extractQqOAuthPayload(query: LocationQuery, hash = ''): QqOAuthP
     openId: String(queryOpenId || queryCode || readHashParam(hash, 'openid') || ''),
     accessToken: String(queryAccessToken || queryState || readHashParam(hash, 'access_token') || '')
   }
+}
+
+export function hasQqAccessToken(payload: QqOAuthPayload) {
+  return payload.accessToken.trim().length > 0
 }
