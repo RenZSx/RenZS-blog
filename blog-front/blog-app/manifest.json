@@ -55,7 +55,7 @@
                 }
             },
             "splashscreen" : {
-                "androidStyle" : "common",
+                "androidStyle" : "default",
                 "android" : {
                     "xxhdpi" : ""
                 },
