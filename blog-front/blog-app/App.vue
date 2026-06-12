@@ -3,7 +3,6 @@ import { useUserStore } from '@/store/user'
 import { useNoticeStore } from '@/store/notice'
 import { useThemeStore } from '@/store/theme'
 import { useNoticeSocket } from '@/composables/useNoticeSocket'
-import { onNotificationClick } from '@/utils/native-notification'
 import { watch } from 'vue'
 
 export default {
@@ -40,30 +39,6 @@ export default {
       })
     } catch (e) { /* 平台不支持时静默 */ }
 
-    // 5. 系统通知栏点击监听 - 唤起 App 后路由
-    //    H5 端 plus 不存在,工具内部自动 no-op
-    onNotificationClick((payload) => {
-      try {
-        if (!payload) return
-        // 文章/说说/友链:走 jumpPath 解析跳详情
-        if (payload.jumpPath) {
-          const article = /^\/articles\/(\d+)/.exec(payload.jumpPath)
-          if (article) {
-            uni.navigateTo({ url: `/pages/article/article?id=${article[1]}` })
-            return
-          }
-          const talk = /^\/talks\/(\d+)/.exec(payload.jumpPath)
-          if (talk) {
-            uni.navigateTo({ url: `/pages/talk/talk-detail?id=${talk[1]}` })
-            return
-          }
-        }
-        // 兜底:跳通知页
-        uni.switchTab({ url: '/pages/notice/notice' })
-      } catch (e) {
-        uni.switchTab({ url: '/pages/notice/notice' })
-      }
-    })
   },
   onShow() {
     // App 端从后台回到前台:检测 WS 是否仍连接,断了则重连

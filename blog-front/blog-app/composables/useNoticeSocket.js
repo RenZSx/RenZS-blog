@@ -19,7 +19,6 @@ import { ref } from 'vue'
 import { useUserStore } from '@/store/user'
 import { useNoticeStore } from '@/store/notice'
 import { buildNoticeSocketUrl } from '@/utils/notice-socket-url'
-import { createLocalNotification } from '@/utils/native-notification'
 
 // ============ 模块单例状态 ============
 const RECONNECT_DELAYS = [1000, 3000, 5000]
@@ -95,26 +94,12 @@ function handleMessage(rawData) {
 
     noticeStore.receiveRealtimeNotice(notice, nextUnread)
 
-    // 通知页未聚焦 → toast 提示 + 系统通知栏
+    // 通知页未聚焦 → toast 提示
     if (!noticeStore.panelActive && notice && notice.content) {
-      // 1) App 内 toast(用户在 App 内时立即可见)
       uni.showToast({
         title: previewText(notice.content),
         icon: 'none',
         duration: 2000
-      })
-
-      // 2) 系统通知栏本地通知(App 在后台/锁屏时仍能感知)
-      //    H5 端 plus 不存在,工具会自动 no-op
-      createLocalNotification({
-        title: notificationTitleOfType(notice.noticeType),
-        content: previewText(notice.content, 50),
-        payload: {
-          type: 'notice',
-          noticeId: notice.id,
-          noticeType: notice.noticeType,
-          jumpPath: notice.jumpPath || ''
-        }
       })
     }
     return
@@ -141,20 +126,6 @@ function previewText(text, limit = 20) {
     .trim()
   if (!clean) return '收到新通知'
   return clean.length > limit ? clean.slice(0, limit) + '...' : clean
-}
-
-/**
- * 根据通知类型,返回系统通知栏顶部的标题文案
- *   reply  → 有人回复了你
- *   like   → 收到点赞
- *   system → 系统通知
- *   其他   → 博客有新消息
- */
-function notificationTitleOfType(noticeType) {
-  if (noticeType === 'reply') return '有人回复了你'
-  if (noticeType === 'like') return '收到点赞'
-  if (noticeType === 'system') return '系统通知'
-  return '博客有新消息'
 }
 
 function handleAuthFailed() {
