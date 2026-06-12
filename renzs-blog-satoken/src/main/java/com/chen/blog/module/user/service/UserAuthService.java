@@ -44,6 +44,13 @@ public interface UserAuthService extends IService<UserAuth> {
     LoginUserDTO qqLogin(QQLoginVO qqLoginVO);
 
     /**
+     * 绑定QQ登录凭证到当前登录用户。
+     *
+     * @param qqLoginVO QQ授权信息
+     */
+    void bindQq(QQLoginVO qqLoginVO);
+
+    /**
      * 微博登录
      *
      * @param weiboLoginVO 微博登录信息
@@ -82,4 +89,3 @@ public interface UserAuthService extends IService<UserAuth> {
     PageResult<UserBackDTO> listUserBackDTO(ConditionVO condition);
 
 }
-

@@ -152,6 +152,19 @@ public class UserAuthController {
     }
 
     /**
+     * 缁戝畾qq
+     *
+     * @param qqLoginVO qq授权信息
+     * @return {@link Result<>}
+     */
+    @ApiOperation(value = "缁戝畾qq")
+    @PostMapping("/users/oauth/qq/bind")
+    public Result<?> bindQq(@Valid @RequestBody QQLoginVO qqLoginVO) {
+        userAuthService.bindQq(qqLoginVO);
+        return Result.ok();
+    }
+
+    /**
      * Gitee登录
      *
      * @param giteeLoginVO Gitee登录信息

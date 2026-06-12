@@ -13,6 +13,7 @@ import com.chen.blog.module.user.dto.UserAreaDTO;
 import com.chen.blog.module.user.dto.UserBackDTO;
 import com.chen.blog.module.user.dto.LoginUserDTO;
 import com.chen.blog.module.user.strategy.context.SocialLoginStrategyContext;
+import com.chen.blog.module.user.strategy.impl.QQLoginStrategyImpl;
 import com.chen.blog.module.user.vo.*;
 import com.chen.blog.common.service.RedisService;
 import com.chen.blog.module.user.service.UserAuthService;
@@ -64,6 +65,8 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthDao, UserAuth> impl
 //    private RabbitTemplate rabbitTemplate;
     @Autowired
     private SocialLoginStrategyContext socialLoginStrategyContext;
+    @Autowired
+    private QQLoginStrategyImpl qqLoginStrategy;
 
     @Override
     public List<UserAreaDTO> listUserAreas(ConditionVO conditionVO) {
@@ -192,6 +195,33 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthDao, UserAuth> impl
     }
 
     /**
+     * 绑定QQ登录凭证到当前登录用户。
+     *
+     * @param qqLoginVO QQ授权信息
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void bindQq(QQLoginVO qqLoginVO) {
+        qqLoginStrategy.validateToken(qqLoginVO);
+        Integer currentUserInfoId = UserUtils.getLoginUser().getUserInfoId();
+        UserAuth qqAuth = userAuthDao.selectOne(new LambdaQueryWrapper<UserAuth>()
+                .eq(UserAuth::getUsername, qqLoginVO.getOpenId())
+                .eq(UserAuth::getLoginType, LoginTypeEnum.QQ.getType()));
+        if (Objects.nonNull(qqAuth) && !Objects.equals(qqAuth.getUserInfoId(), currentUserInfoId)) {
+            throw new BizException("该QQ已绑定其他账号");
+        }
+        if (Objects.isNull(qqAuth)) {
+            // 绑定只新增凭证行，资料、角色等主体数据继续归属当前 userInfoId。
+            userAuthDao.insert(UserAuth.builder()
+                    .userInfoId(currentUserInfoId)
+                    .username(qqLoginVO.getOpenId())
+                    .password(qqLoginVO.getAccessToken())
+                    .loginType(LoginTypeEnum.QQ.getType())
+                    .build());
+        }
+    }
+
+    /**
      * 微博登录
      * @param weiboLoginVO 微博登录信息
      * @return
@@ -253,4 +283,3 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthDao, UserAuth> impl
     }
 
 }
-

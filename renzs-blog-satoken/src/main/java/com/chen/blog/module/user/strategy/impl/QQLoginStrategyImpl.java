@@ -37,7 +37,7 @@ public class QQLoginStrategyImpl extends AbstractSocialLoginStrategyImpl {
     public SocialTokenDTO getSocialToken(String data) {
         QQLoginVO qqLoginVO = JSON.parseObject(data, QQLoginVO.class);
         // 校验QQ token信息
-        checkQQToken(qqLoginVO);
+        validateToken(qqLoginVO);
         // 返回token信息
         return SocialTokenDTO.builder()
                 .openId(qqLoginVO.getOpenId())
@@ -67,7 +67,7 @@ public class QQLoginStrategyImpl extends AbstractSocialLoginStrategyImpl {
      *
      * @param qqLoginVO qq登录信息
      */
-    private void checkQQToken(QQLoginVO qqLoginVO) {
+    public void validateToken(QQLoginVO qqLoginVO) {
         // 根据token获取qq openId信息
         Map<String, String> qqData = new HashMap<>(1);
         qqData.put(SocialLoginConst.ACCESS_TOKEN, qqLoginVO.getAccessToken());
