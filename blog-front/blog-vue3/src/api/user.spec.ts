@@ -68,4 +68,23 @@ describe('user api', () => {
       accessToken: 'qq-access-token'
     })
   })
+
+  it('rejects QQ login without access token before sending request', async () => {
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: {
+        getItem: vi.fn(),
+        setItem: vi.fn(),
+        removeItem: vi.fn()
+      },
+      configurable: true
+    })
+
+    const { qqLogin } = await import('./user')
+    const { default: request } = await import('./request')
+    const adapter = vi.fn()
+    request.defaults.adapter = adapter
+
+    await expect(qqLogin({ openId: '', accessToken: '' })).rejects.toThrow('QQ授权信息缺失，请重新授权')
+    expect(adapter).not.toHaveBeenCalled()
+  })
 })

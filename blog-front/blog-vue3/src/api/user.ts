@@ -1,6 +1,18 @@
 import request from './request'
 import type { UserInfo } from '@/stores/user'
 
+type QqOAuthPayload = {
+  openId: string
+  accessToken: string
+}
+
+function assertQqAccessToken(data: QqOAuthPayload) {
+  if (!data.accessToken?.trim()) {
+    return Promise.reject(new Error('QQ授权信息缺失，请重新授权'))
+  }
+  return null
+}
+
 // 登录
 export function login(data: { username: string; password: string }) {
   const params = new URLSearchParams()
@@ -44,11 +56,15 @@ export function bindEmail(data: { email: string; code: string; password?: string
 }
 
 // QQ 登录
-export function qqLogin(data: { openId: string; accessToken: string }) {
+export function qqLogin(data: QqOAuthPayload) {
+  const invalidResult = assertQqAccessToken(data)
+  if (invalidResult) return invalidResult
   return request.post('/api/users/oauth/qq', data)
 }
 
-export function bindQq(data: { openId: string; accessToken: string }) {
+export function bindQq(data: QqOAuthPayload) {
+  const invalidResult = assertQqAccessToken(data)
+  if (invalidResult) return invalidResult
   return request.post('/api/users/oauth/qq/bind', data)
 }
 
