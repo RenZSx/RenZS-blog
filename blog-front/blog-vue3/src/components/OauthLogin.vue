@@ -53,7 +53,7 @@ onMounted(async () => {
         useToast({ type: 'error', message: data?.data?.message || '绑定失败' })
       }
     } else if (path.includes('qq')) {
-      data = await qqLogin({ code: code as string, state: state as string })
+      data = await qqLogin({ openId: code as string, accessToken: state as string })
     } else if (path.includes('weibo')) {
       data = await weiboLogin({ code: code as string })
     } else if (path.includes('gitee')) {

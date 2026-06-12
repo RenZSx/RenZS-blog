@@ -44,7 +44,7 @@ export function bindEmail(data: { email: string; code: string; password?: string
 }
 
 // QQ 登录
-export function qqLogin(data: { code: string; state: string }) {
+export function qqLogin(data: { openId: string; accessToken: string }) {
   return request.post('/api/users/oauth/qq', data)
 }
 
