@@ -12,7 +12,7 @@ vi.mock('@/composables/useToast', () => ({
 }))
 
 describe('request', () => {
-  it('sends browser credentials with API requests', async () => {
+  it('does not send browser credentials with API requests', async () => {
     Object.defineProperty(globalThis, 'localStorage', {
       value: {
         getItem: vi.fn(),
@@ -24,8 +24,8 @@ describe('request', () => {
 
     const { default: request } = await import('./request')
 
-    // Spring Security 当前使用服务端 Session，所有接口请求都必须允许浏览器带上 JSESSIONID。
-    expect(request.defaults.withCredentials).toBe(true)
+    // Sa-Token 当前使用 Authorization Header 鉴权，接口请求不再依赖浏览器 Cookie。
+    expect(request.defaults.withCredentials).toBe(false)
   })
 
   it('marks current-user checks as silent session validation requests', async () => {
