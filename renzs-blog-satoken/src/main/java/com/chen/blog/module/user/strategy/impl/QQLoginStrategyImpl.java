@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.chen.blog.common.config.QQConfigProperties;
 import com.chen.blog.common.constant.SocialLoginConst;
 import com.chen.blog.common.enums.LoginTypeEnum;
-import com.chen.blog.common.enums.StatusCodeEnum;
 import com.chen.blog.common.exception.BizException;
 import com.chen.blog.common.util.CommonUtils;
 import com.chen.blog.module.user.dto.QQTokenDTO;
@@ -12,6 +11,7 @@ import com.chen.blog.module.user.dto.QQUserInfoDTO;
 import com.chen.blog.module.user.dto.SocialTokenDTO;
 import com.chen.blog.module.user.dto.SocialUserInfoDTO;
 import com.chen.blog.module.user.vo.QQLoginVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -27,6 +27,7 @@ import java.util.Objects;
  * @author chenfuyun
  * @date 2021/07/28
  */
+@Slf4j
 @Service("qqLoginStrategyImpl")
 public class QQLoginStrategyImpl extends AbstractSocialLoginStrategyImpl {
     @Autowired
@@ -66,21 +67,31 @@ public class QQLoginStrategyImpl extends AbstractSocialLoginStrategyImpl {
      * @param qqLoginVO QQ登录请求参数
      */
     public void validateToken(QQLoginVO qqLoginVO) {
+        if (!StringUtils.hasText(qqLoginVO.getAccessToken())) {
+            throw new BizException("QQ授权信息缺失，请重新授权");
+        }
         Map<String, String> qqData = new HashMap<>(1);
         qqData.put(SocialLoginConst.ACCESS_TOKEN, qqLoginVO.getAccessToken());
         try {
             String result = restTemplate.getForObject(qqConfigProperties.getCheckTokenUrl(), String.class, qqData);
             QQTokenDTO qqTokenDTO = JSON.parseObject(CommonUtils.getBracketsContent(Objects.requireNonNull(result)), QQTokenDTO.class);
+            if (Objects.isNull(qqTokenDTO) || !StringUtils.hasText(qqTokenDTO.getOpenid())) {
+                log.warn("QQ token校验未返回openid，腾讯响应：{}", result);
+                throw new BizException("QQ授权校验失败，请重新授权");
+            }
             if (!StringUtils.hasText(qqLoginVO.getOpenId())) {
                 // QQ implicit授权回调可能只返回access_token，需要从QQ校验结果中回填openId。
                 qqLoginVO.setOpenId(qqTokenDTO.getOpenid());
             }
             if (!qqLoginVO.getOpenId().equals(qqTokenDTO.getOpenid())) {
-                throw new BizException(StatusCodeEnum.QQ_LOGIN_ERROR);
+                log.warn("QQ openId不一致，请求openId={}，腾讯openid={}", qqLoginVO.getOpenId(), qqTokenDTO.getOpenid());
+                throw new BizException("QQ授权信息不一致，请重新授权");
             }
+        } catch (BizException e) {
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new BizException(StatusCodeEnum.QQ_LOGIN_ERROR);
+            log.warn("QQ token校验异常", e);
+            throw new BizException("QQ授权校验失败，请重新授权");
         }
     }
 
