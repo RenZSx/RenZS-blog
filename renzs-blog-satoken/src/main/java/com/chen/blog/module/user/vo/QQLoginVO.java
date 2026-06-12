@@ -1,5 +1,6 @@
 package com.chen.blog.module.user.vo;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -26,12 +27,14 @@ public class QQLoginVO {
     /**
      * QQ openId；当QQ只在token校验接口返回openId时，该字段允许为空。
      */
+    @JsonAlias("openid")
     @ApiModelProperty(name = "openId", value = "qq openId", dataType = "String")
     private String openId;
 
     /**
      * QQ accessToken。
      */
+    @JsonAlias("access_token")
     @NotBlank(message = "accessToken不能为空")
     @ApiModelProperty(name = "accessToken", value = "qq accessToken", required = true, dataType = "String")
     private String accessToken;
