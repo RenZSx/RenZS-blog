@@ -6,7 +6,11 @@
     </div>
     <!-- 说说内容 -->
     <v-card class="blog-container talk-container">
-      <div class="talk-item" v-for="item of talkList" :key="item.id">
+      <div
+        v-for="(item, index) of talkList"
+        :key="item.id"
+        :class="getTalkItemClass(index, talkList.length)"
+      >
         <router-link :to="'/talks/' + item.id">
           <!-- 用户信息 -->
           <div class="user-info-wrapper">
@@ -91,6 +95,7 @@ import { useUserStore } from '@/stores/user'
 import { getTalks, likeTalk } from '@/api/talk'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { openLoginRequiredPrompt } from '@/utils/authPrompt'
+import { getTalkItemClass } from './talkListStyle'
 
 interface TalkItem {
   id: number
@@ -221,32 +226,22 @@ useInfiniteScroll({
 }
 
 .talk-container {
-  padding: 30px;
+  padding: 0 30px;
   margin: 20px auto 40px !important;
-  max-width: 780px;
-  border: 1px solid var(--card-border-accent);
+  max-width: 815px;
+  border: 1px solid rgba(99, 139, 184, 0.16);
   border-radius: var(--card-radius-lg) !important;
-  background: var(--card-surface-elevated);
-  box-shadow: var(--card-shadow-raised);
-}
-
-.talk-item:not(:first-child) {
-  margin-top: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(250, 253, 255, 0.97));
+  box-shadow: none;
 }
 
 .talk-item {
-  padding: 18px 22px;
-  border: 1px solid var(--card-border-soft);
-  border-radius: var(--card-radius-md);
-  background: var(--card-surface-soft);
-  box-shadow: var(--card-shadow-soft);
-  transition: all 0.3s ease 0s;
+  padding: 24px 0;
 }
 
-.talk-item:hover {
-  border-color: var(--card-border-accent-hover);
-  box-shadow: var(--card-shadow-hover);
-  transform: translateY(-3px);
+.talk-item-with-divider {
+  border-bottom: 1px solid rgba(119, 142, 170, 0.26);
 }
 
 .talk-item a {
@@ -352,6 +347,17 @@ useInfiniteScroll({
   color: #eb5055 !important;
 }
 
+:global(.dark) .talk-container {
+  border-color: rgba(186, 200, 224, 0.14);
+  background:
+    linear-gradient(180deg, rgba(35, 43, 58, 0.98), rgba(24, 30, 41, 0.96));
+  box-shadow: none;
+}
+
+:global(.dark) .talk-item-with-divider {
+  border-bottom-color: rgba(186, 200, 224, 0.16);
+}
+
 @media (max-width: 759px) {
   .banner {
     height: 300px;
@@ -364,7 +370,11 @@ useInfiniteScroll({
 
   .talk-container {
     margin: 20px 10px 20px;
-    padding: 15px;
+    padding: 0 16px;
+  }
+
+  .talk-item {
+    padding: 20px 0;
   }
 }
 </style>
