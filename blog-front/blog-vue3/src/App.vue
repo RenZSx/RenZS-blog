@@ -1,10 +1,10 @@
 <template>
   <v-app id="app">
-    <!-- 顶部导航栏 -->
-    <TopNavBar />
+    <!-- 顶部导航栏；独立认证页不挂载主站导航，保证登录入口是完整页面。 -->
+    <TopNavBar/>
 
-    <!-- 侧边导航栏 -->
-    <SideNavBar />
+    <!-- 侧边导航栏；独立认证页隐藏移动端抽屉入口，避免挤占认证卡片宽度。 -->
+    <SideNavBar/>
 
     <!-- 主内容区域 -->
     <v-main :class="{ 'auth-main': isStandaloneAuth }">
@@ -217,24 +217,8 @@ watch(
 }
 
 .auth-main .auth-screen {
+  width: 100%;
   min-height: 100vh;
-}
-
-.auth-main .auth-stage {
-  min-height: 100vh;
-  padding-top: 94px;
-}
-
-@media (max-width: 1100px) {
-  .auth-main .auth-stage {
-    padding-top: 76px;
-  }
-}
-
-@media (max-width: 759px) {
-  .auth-main .auth-stage {
-    padding-top: 70px;
-  }
 }
 
 ::view-transition-old(root),
