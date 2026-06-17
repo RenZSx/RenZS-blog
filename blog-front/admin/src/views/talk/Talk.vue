@@ -36,6 +36,7 @@
           <!-- 图片上传 -->
           <el-upload
             action="/api/admin/talks/images"
+            :headers="uploadHeaders"
             multiple
             :before-upload="beforeUpload"
             :on-success="upload"
@@ -87,6 +88,7 @@
         class="talk-image-upload"
         v-show="uploadList.length > 0"
         action="/api/admin/talks/images"
+        :headers="uploadHeaders"
         list-type="picture-card"
         :file-list="uploadList"
         multiple
@@ -206,6 +208,10 @@ export default {
     }
   },
   computed: {
+    uploadHeaders() {
+      const token = localStorage.getItem("token");
+      return token ? { Authorization: "Bearer " + token } : {};
+    },
     dropdownTitle() {
       var desc = "";
       this.statusList.forEach(item => {
