@@ -41,12 +41,12 @@
             <v-icon size="18">mdi-magnify</v-icon> 搜索
           </a>
         </div>
-        <div class="menus-item home-menu-item">
+        <div class="menus-item">
           <a class="menu-btn">
             <v-icon size="18">mdi-home</v-icon> 首页
             <v-icon size="14">mdi-chevron-down</v-icon>
           </a>
-          <ul class="menus-submenu home-submenu">
+          <ul class="menus-submenu">
             <li>
               <router-link to="/">
                 <v-icon size="16">mdi-home-city</v-icon> 博客
@@ -684,73 +684,6 @@ ul {
 :global(.dark) .menus-submenu a:hover {
   background: linear-gradient(135deg, rgba(87, 163, 232, 0.92), rgba(90, 125, 255, 0.92));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.home-submenu {
-  right: auto;
-  left: 50%;
-  width: 220px;
-  padding: 10px;
-  border: 1px solid rgba(11, 111, 118, 0.15);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 18px 34px rgba(31, 41, 51, 0.12);
-  transform: translateX(-50%);
-  backdrop-filter: blur(12px) saturate(130%);
-}
-
-.home-submenu li + li {
-  margin-top: 6px;
-}
-
-.home-submenu a,
-.nav .home-submenu a,
-.nav-fixed-light .home-submenu a,
-.nav-fixed-dark .home-submenu a,
-.nav-love-overlay .home-submenu a,
-.nav-albums-overlay .home-submenu a,
-.nav-letter-overlay .home-submenu a {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 7px;
-  color: #1f2933 !important;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.2;
-  text-shadow: none;
-  background: transparent;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.home-submenu a:hover {
-  color: #0b6f76 !important;
-  background: rgba(11, 111, 118, 0.08);
-  box-shadow: none;
-}
-
-:global(.dark) .home-submenu {
-  border-color: rgba(186, 200, 224, 0.16);
-  background: rgba(24, 31, 43, 0.95);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 24px 46px rgba(0, 0, 0, 0.38);
-}
-
-:global(.dark) .home-submenu a,
-:global(.dark) .nav .home-submenu a,
-:global(.dark) .nav-fixed-dark .home-submenu a,
-:global(.dark) .nav-albums-overlay .home-submenu a,
-:global(.dark) .nav-letter-overlay .home-submenu a {
-  color: rgba(237, 243, 255, 0.92) !important;
-}
-
-:global(.dark) .home-submenu a:hover {
-  color: #93c5fd !important;
-  background: rgba(59, 130, 246, 0.12);
 }
 
 :global(.dark) .user-avatar-badge {
