@@ -11,8 +11,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { createScrollFrameScheduler } from '@/utils/scrollFrame'
 
 const isShow = ref('')
+const visibleStyle = 'opacity: 1;transform: translateX(-38px);'
+const backTopScheduler = createScrollFrameScheduler(updateBackTopVisibility)
 
 function backTop() {
   window.scrollTo({
@@ -21,25 +24,26 @@ function backTop() {
   })
 }
 
-function scrollToTop() {
+function updateBackTopVisibility() {
   const scrollTop =
     window.pageYOffset ||
     document.documentElement.scrollTop ||
     document.body.scrollTop
+  const nextStyle = scrollTop > 20 ? visibleStyle : ''
 
-  if (scrollTop > 20) {
-    isShow.value = 'opacity: 1;transform: translateX(-38px);'
-  } else {
-    isShow.value = ''
+  if (nextStyle !== isShow.value) {
+    isShow.value = nextStyle
   }
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', scrollToTop)
+  backTopScheduler.runNow()
+  window.addEventListener('scroll', backTopScheduler.requestUpdate, { passive: true })
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', scrollToTop)
+  window.removeEventListener('scroll', backTopScheduler.requestUpdate)
+  backTopScheduler.cancel()
 })
 </script>
 

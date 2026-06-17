@@ -202,6 +202,7 @@ import { useBlogInfoStore } from '@/stores/blogInfo'
 import { logout } from '@/api/user'
 import { useToast } from '@/composables/useToast'
 import { toggleTheme } from '@/utils/theme/toggleTheme'
+import { createScrollFrameScheduler } from '@/utils/scrollFrame'
 import { getTopNavBaseClass } from './topNavBehavior'
 
 const router = useRouter()
@@ -217,6 +218,7 @@ const lastScrollTop = ref(0)
 const isNavHidden = ref(false)
 const NAV_HIDE_START = 120
 const NAV_SCROLL_DELTA = 8
+const navScrollScheduler = createScrollFrameScheduler(updateNavOnScroll)
 
 const blogInfo = computed(() => blogInfoStore.blogInfo)
 const websiteConfig = computed(() => blogInfo.value.websiteConfig || {})
@@ -259,7 +261,7 @@ function getNavBaseClass(scrollTop: number) {
   })
 }
 
-function scroll() {
+function updateNavOnScroll() {
   const scrollTop =
     window.pageYOffset ||
     document.documentElement.scrollTop ||
@@ -277,7 +279,11 @@ function scroll() {
 
   lastScrollTop.value = normalizedScrollTop
   const baseClass = getNavBaseClass(normalizedScrollTop)
-  navClass.value = isNavHidden.value ? `${baseClass} nav-hidden` : baseClass
+  const nextNavClass = isNavHidden.value ? `${baseClass} nav-hidden` : baseClass
+
+  if (nextNavClass !== navClass.value) {
+    navClass.value = nextNavClass
+  }
 }
 
 function openSearch() {
@@ -322,16 +328,17 @@ function handleThemeToggle(event: MouseEvent) {
 }
 
 onMounted(() => {
-  scroll()
-  window.addEventListener('scroll', scroll)
+  navScrollScheduler.runNow()
+  window.addEventListener('scroll', navScrollScheduler.requestUpdate, { passive: true })
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', scroll)
+  window.removeEventListener('scroll', navScrollScheduler.requestUpdate)
+  navScrollScheduler.cancel()
 })
 
 watch(isDark, () => {
-  scroll()
+  navScrollScheduler.runNow()
 })
 
 watch(
@@ -339,7 +346,7 @@ watch(
   () => {
     lastScrollTop.value = 0
     isNavHidden.value = false
-    scroll()
+    navScrollScheduler.runNow()
   }
 )
 </script>

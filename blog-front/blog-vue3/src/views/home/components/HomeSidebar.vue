@@ -47,6 +47,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { formatTime } from '@/utils/filters'
+import { createAnimationLoop } from '@/utils/scrollFrame'
 
 interface Comment {
   id: number
@@ -72,40 +73,43 @@ const scrollViewRef = ref<HTMLElement | null>(null)
 const commentListRef = ref<HTMLElement[] | null>(null)
 const commentListCount = ref(1)
 const isAutoScrolling = ref(true)
-let scrollTimer: ReturnType<typeof setInterval> | null = null
+const commentScrollLoop = createAnimationLoop(updateCommentScroll)
 
 function hasScrollBar() {
   if (!scrollViewRef.value) return false
   return scrollViewRef.value.scrollHeight > scrollViewRef.value.clientHeight
 }
 
-function initCommentScroll() {
-  if (scrollTimer) {
-    clearInterval(scrollTimer)
+function updateCommentScroll() {
+  if (
+    !isAutoScrolling.value ||
+    document.hidden ||
+    !scrollViewRef.value ||
+    !commentListRef.value ||
+    commentListRef.value.length === 0
+  ) {
+    return
   }
 
+  const scrollView = scrollViewRef.value
+  const firstList = commentListRef.value[0]
+
+  if (scrollView.scrollTop >= firstList.clientHeight) {
+    scrollView.scrollTop = 0
+  } else {
+    scrollView.scrollTop += 1
+  }
+}
+
+function initCommentScroll() {
+  commentScrollLoop.stop()
   if (!scrollViewRef.value) return
 
   commentListCount.value = hasScrollBar() ? 2 : 1
 
   if (commentListCount.value === 2) {
     nextTick(() => {
-      scrollTimer = setInterval(() => {
-        if (
-          isAutoScrolling.value &&
-          scrollViewRef.value &&
-          commentListRef.value &&
-          commentListRef.value.length > 0
-        ) {
-          const scrollView = scrollViewRef.value
-          const firstList = commentListRef.value[0]
-          if (scrollView.scrollTop >= firstList.clientHeight) {
-            scrollView.scrollTop = 0
-          } else {
-            scrollView.scrollTop += 1
-          }
-        }
-      }, 10)
+      commentScrollLoop.start()
     })
   }
 }
@@ -115,9 +119,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (scrollTimer) {
-    clearInterval(scrollTimer)
-  }
+  commentScrollLoop.stop()
 })
 
 watch(
