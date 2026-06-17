@@ -203,7 +203,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoDao, UserInfo> impl
         //  - sa-token 等价路径:遍历所有有效 token → TokenSession 中取我们登录时塞入的 UserDetailDTO
         //  - 由于允许并发登录 (is-concurrent: true),同一用户可能有多个 token,需要按 userInfoId 去重
         //  - searchTokenValue(keyword, start, size, sortType) 第二参数 -1 表示不分页全量取
-        List<String> tokenList = StpUtil.searchTokenValue("", -1, 0, false);
+        List<String> tokenList = StpUtil.searchTokenValue("", 0, -1, false);
         Map<Integer, UserOnlineDTO> onlineMap = new HashMap<>();
         for (String token : tokenList) {
             // searchTokenValue 拿回来的是带前缀的完整 Redis key,需剥掉前缀拿到 raw token 才能查 TokenSession
@@ -217,12 +217,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoDao, UserInfo> impl
             if (Objects.isNull(tokenSession)) {
                 continue;
             }
-            Object loginUserObj = tokenSession.get(UserUtils.LOGIN_USER_KEY);
-            if (!(loginUserObj instanceof UserDetailDTO)) {
-                continue;
-            }
-            UserDetailDTO detail = (UserDetailDTO) loginUserObj;
-            if (Objects.isNull(detail.getUserInfoId())) {
+            UserDetailDTO detail = convertLoginUser(tokenSession.get(UserUtils.LOGIN_USER_KEY));
+            if (Objects.isNull(detail) || Objects.isNull(detail.getUserInfoId())) {
                 continue;
             }
             // 多 token 同账号去重:按 userInfoId 保留首个(行为与原 SessionRegistry.getAllPrincipals 去重一致)
@@ -275,6 +271,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoDao, UserInfo> impl
         }
         int idx = fullKey.lastIndexOf(':');
         return idx >= 0 ? fullKey.substring(idx + 1) : fullKey;
+    }
+
+    /**
+     * 兼容 sa-token Redis Jackson 反序列化后的登录用户对象形态。
+     *
+     * @param loginUserObj TokenSession 中存放的 loginUser
+     * @return 用户详情 DTO,无法解析时返回 null
+     */
+    private UserDetailDTO convertLoginUser(Object loginUserObj) {
+        if (Objects.isNull(loginUserObj)) {
+            return null;
+        }
+        if (loginUserObj instanceof UserDetailDTO) {
+            return (UserDetailDTO) loginUserObj;
+        }
+        return JSON.parseObject(JSON.toJSONString(loginUserObj), UserDetailDTO.class);
     }
 
 }
