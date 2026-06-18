@@ -102,24 +102,40 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoDao, UserInfo> impl
     public String updateUserAvatar(MultipartFile file) {
         // 头像上传
         String avatar = uploadStrategyContext.executeUploadStrategy(file, FilePathEnum.AVATAR.getPath());
+        UserDetailDTO loginUser = UserUtils.getLoginUser();
         // 更新用户信息
         UserInfo userInfo = UserInfo.builder()
-                .id(UserUtils.getLoginUser().getUserInfoId())
+                .id(loginUser.getUserInfoId())
                 .avatar(avatar)
                 .build();
         userInfoDao.updateById(userInfo);
+        refreshLoginUserAvatar(loginUser, avatar);
         return avatar;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String updateUserAvatar(String avatar) {
+        String trimmedAvatar = avatar.trim();
+        UserDetailDTO loginUser = UserUtils.getLoginUser();
         UserInfo userInfo = UserInfo.builder()
-                .id(UserUtils.getLoginUser().getUserInfoId())
-                .avatar(avatar.trim())
+                .id(loginUser.getUserInfoId())
+                .avatar(trimmedAvatar)
                 .build();
         userInfoDao.updateById(userInfo);
-        return avatar.trim();
+        refreshLoginUserAvatar(loginUser, trimmedAvatar);
+        return trimmedAvatar;
+    }
+
+    /**
+     * 同步刷新当前 TokenSession 中的登录用户头像。
+     *
+     * @param loginUser 当前会话登录用户
+     * @param avatar    新头像地址
+     */
+    private void refreshLoginUserAvatar(UserDetailDTO loginUser, String avatar) {
+        loginUser.setAvatar(avatar);
+        StpUtil.getTokenSession().set(UserUtils.LOGIN_USER_KEY, loginUser);
     }
 
     @Transactional(rollbackFor = Exception.class)
