@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   getArticleCategory,
+  getArticleLikes,
   getArticleReadTime,
   getArticleSummary,
   getArticleTitle,
@@ -48,6 +49,17 @@ describe('homeColumnsContent', () => {
     ]
 
     expect(getHotArticles(articles).map((item) => item.id)).toEqual([2, 3, 4])
+  })
+
+  it('cleans article summaries and reads like counts for feed cards', () => {
+    const article = {
+      articleContent: '<p>First&nbsp;line</p><p>Second <strong>line</strong></p>',
+      likeCount: 7
+    }
+
+    expect(getArticleSummary(article)).toBe('First line Second line')
+    expect(getArticleLikes(article)).toBe(7)
+    expect(getArticleLikes({})).toBe(0)
   })
 
   it('normalizes categories and short numbers', () => {

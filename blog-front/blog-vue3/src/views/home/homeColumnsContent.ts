@@ -60,6 +60,7 @@ export function getArticleSummary(article: ArticleItem) {
     '那些在日常里被记录下来的片段，最终都会成为抵达远方的路。'
 
   return source
+    .replace(/<\/(p|div|section|article|h[1-6]|li|br)>/gi, ' ')
     .replace(/<\/?[^>]*>/g, '')
     .replace(/&nbsp;/gi, ' ')
     .replace(/\s+/g, ' ')
@@ -69,6 +70,10 @@ export function getArticleSummary(article: ArticleItem) {
 
 export function getArticleViews(article: ArticleItem) {
   return article.viewCount ?? article.viewsCount ?? article.likeCount ?? 0
+}
+
+export function getArticleLikes(article: ArticleItem) {
+  return article.likeCount ?? 0
 }
 
 export function getArticleReadTime(article: ArticleItem) {

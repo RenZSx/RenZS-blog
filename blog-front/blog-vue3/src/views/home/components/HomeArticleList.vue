@@ -76,6 +76,13 @@
                     <v-icon size="14" color="#ff7242">mdi-comment-outline</v-icon>
                     {{ item.commentCount ?? item.commentCounts ?? 0 }} 评论
                   </span>
+                  <span class="card-meta-like">
+                    <v-icon size="14" color="#eb5055">mdi-thumb-up-outline</v-icon>
+                    {{ getArticleLikes(item) }} 点赞
+                  </span>
+                </div>
+                <div class="card-summary">
+                  {{ getArticleSummary(item) }}
                 </div>
                 <div class="card-footer">
                   <router-link :to="'/categories/' + item.categoryId" class="card-category">
@@ -172,6 +179,7 @@
 <script setup lang="ts">
 import { computed, ref, type ComponentPublicInstance } from 'vue'
 import { formatTime } from '@/utils/filters'
+import { getArticleLikes, getArticleSummary } from '../homeColumnsContent'
 
 interface Tag {
   id: number
@@ -574,6 +582,7 @@ defineExpose({
 .card-meta-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 6px;
   color: #7c8797;
@@ -582,10 +591,22 @@ defineExpose({
 }
 
 .card-meta-hot,
-.card-meta-comment {
+.card-meta-comment,
+.card-meta-like {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+.card-summary {
+  margin-bottom: 12px;
+  color: #111;
+  font-size: 0.74rem;
+  line-height: 1.55;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .card-footer {

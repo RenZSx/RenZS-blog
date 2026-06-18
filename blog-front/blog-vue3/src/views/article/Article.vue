@@ -523,7 +523,10 @@ onBeforeUnmount(() => {
 .article-container {
   position: relative;
   z-index: 2;
-  max-width: 1680px;
+  display: grid !important;
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 1000px) minmax(300px, 1fr);
+  column-gap: 36px;
+  max-width: 1720px;
   margin: 326px auto 56px !important;
   padding: 0 28px;
   align-items: flex-start;
@@ -531,37 +534,37 @@ onBeforeUnmount(() => {
 }
 
 .article-main-column {
+  grid-column: 2;
+  width: 100%;
   max-width: 1000px;
-  padding-right: 22px;
+  padding-right: 0;
+  padding-left: 0;
 }
 
 .article-side-column {
+  grid-column: 3;
+  width: min(100%, 340px);
   max-width: 340px;
-  padding-left: 22px;
+  justify-self: end;
+  padding-left: 0;
   align-self: stretch;
 }
 
 .article-shell {
   overflow: hidden;
   margin-top: -325px;
-  border: 1px solid var(--card-border-accent);
+  border: 0;
   border-radius: var(--card-radius-lg) !important;
-  background: var(--card-surface-elevated);
-  box-shadow: var(--card-shadow-raised);
-  transition: border-color var(--transition-normal),
-    box-shadow var(--transition-normal), transform var(--transition-normal);
+  background: var(--bg-primary);
+  box-shadow: none;
 }
 
 .article-shell:hover {
-  border-color: var(--card-border-accent-hover);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: none;
 }
 
 .article-shell:before {
-  content: "";
-  display: block;
-  height: 4px;
-  background: linear-gradient(90deg, #49b1f5, #6c8dff, #8f6bff);
+  display: none;
 }
 
 .article-wrapper :deep(.v-image__image),
@@ -585,6 +588,7 @@ hr {
 
 @media (max-width: 759px) {
   .article-container {
+    display: block !important;
     margin: 130px auto 20px !important;
     padding: 0 12px;
   }
@@ -757,44 +761,44 @@ hr {
 }
 
 .article-shell .article-markdown table {
-  display: block;
-  overflow-x: auto;
+  display: table;
   width: 100%;
-  border: 1px solid var(--card-border-accent);
-  border-radius: 16px;
-  border-collapse: separate;
+  min-width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  border-collapse: collapse;
   border-spacing: 0;
-  background: var(--card-surface-soft);
-  box-shadow: var(--card-shadow-soft);
+  background: transparent;
+  box-shadow: none;
 }
 
 .article-shell .article-markdown table thead th {
-  background: linear-gradient(180deg, rgba(73, 177, 245, 0.16), rgba(73, 177, 245, 0.08));
-  color: #152033;
+  background: transparent;
+  color: inherit;
   font-weight: 700;
 }
 
 .article-shell .article-markdown table tbody tr:nth-child(even) {
-  background: rgba(73, 177, 245, 0.055);
+  background: transparent;
 }
 
 .article-shell .article-markdown table tbody tr {
-  transition: background var(--transition-fast);
+  background: transparent;
 }
 
 .article-shell .article-markdown table tbody tr:hover {
-  background: rgba(73, 177, 245, 0.1);
+  background: transparent;
 }
 
 .article-shell .article-markdown table th,
 .article-shell .article-markdown table td {
   padding: 0.9rem 1rem;
-  border-bottom: 1px solid var(--card-border-soft);
+  border: 1px solid var(--border-color);
   white-space: nowrap;
 }
 
 .article-shell .article-markdown table tr:last-child td {
-  border-bottom: none;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .article-shell .article-markdown hr {
