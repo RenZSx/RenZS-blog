@@ -7,7 +7,7 @@
     <SideNavBar/>
 
     <!-- 主内容区域 -->
-    <v-main :class="{ 'auth-main': isStandaloneAuth }">
+    <v-main :class="{ 'auth-main': isStandaloneAuth, 'start-main': isStartPage }">
       <router-view v-slot="{ Component, route }">
         <transition name="fade" mode="out-in">
           <component :is="Component" :key="route.fullPath" />
@@ -19,7 +19,7 @@
     <InitialPopup v-if="!isStandaloneAuth" />
 
     <!-- 页脚 -->
-    <Footer v-if="!isStandaloneAuth" />
+    <Footer v-if="!isStandaloneAuth && !isStartPage" />
 
     <!-- 返回顶部 -->
     <BackTop v-if="!isStandaloneAuth" />
@@ -34,6 +34,9 @@
     <ChatRoom
       v-if="!isStandaloneAuth && !hideFloatingChatRoom && blogInfoStore.blogInfo.websiteConfig?.isChatRoom"
     />
+
+    <!-- 全站樱花特效；用户可通过浮动开关随时开启或关闭。 -->
+    <SakuraEffect />
   </v-app>
 </template>
 
@@ -57,6 +60,7 @@ import NoticePopupContainer from '@/components/notice/NoticePopupContainer.vue'
 // 其他组件
 import InitialPopup from '@/components/InitialPopup.vue'
 import ChatRoom from '@/components/ChatRoom.vue'
+import SakuraEffect from '@/components/SakuraEffect.vue'
 
 // Stores
 import { useBlogInfoStore } from '@/stores/blogInfo'
@@ -81,6 +85,7 @@ const userStore = useUserStore()
 const { start: startNoticeSocket, disconnect: disconnectNoticeSocket } = useNoticeSocket()
 const standaloneAuthRoutes = new Set(['/auth', '/login', '/register', '/forgot-password'])
 const isStandaloneAuth = computed(() => route.meta.layout === 'auth')
+const isStartPage = computed(() => route.path === '/home/start')
 const hideFloatingChatRoom = computed(() => route.path === '/message' || route.path === '/chat')
 
 function redirectToAuthPage(
@@ -218,6 +223,15 @@ watch(
 
 .auth-main .auth-screen {
   width: 100%;
+  min-height: 100vh;
+}
+
+.start-main {
+  padding-top: 0 !important;
+  min-height: 100vh;
+}
+
+.start-main .start-page {
   min-height: 100vh;
 }
 

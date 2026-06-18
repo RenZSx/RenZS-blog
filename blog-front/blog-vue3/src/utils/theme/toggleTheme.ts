@@ -9,6 +9,7 @@ type ViewTransitionDocument = Document & {
 interface ToggleThemeOptions {
   x?: number
   y?: number
+  lightweight?: boolean
 }
 
 function applyTheme(theme: ThemeInstance) {
@@ -20,7 +21,7 @@ function applyTheme(theme: ThemeInstance) {
 export function toggleTheme(theme: ThemeInstance, options: ToggleThemeOptions = {}) {
   const viewTransitionDocument = document as ViewTransitionDocument
 
-  if (!viewTransitionDocument.startViewTransition) {
+  if (options.lightweight || !viewTransitionDocument.startViewTransition) {
     return applyTheme(theme)
   }
 

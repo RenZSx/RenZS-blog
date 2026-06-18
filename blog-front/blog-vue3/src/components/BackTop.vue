@@ -14,7 +14,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { createScrollFrameScheduler } from '@/utils/scrollFrame'
 
 const isShow = ref('')
-const visibleStyle = 'opacity: 1;transform: translateX(-38px);'
+const visibleStyle = 'opacity: 1;transform: translateY(0);pointer-events: auto;'
 const backTopScheduler = createScrollFrameScheduler(updateBackTopVisibility)
 
 function backTop() {
@@ -49,27 +49,44 @@ onUnmounted(() => {
 
 <style scoped>
 .rightside {
-  z-index: 4;
   position: fixed;
-  right: 12px;
-  bottom: 85px;
-  transition: all 0.5s;
+  right: 18px;
+  bottom: 88px;
+  z-index: 1110;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
 }
 
 .rightside-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  background-color: #49b1f5;
-  color: #fff;
-  font-size: 16px;
+  width: 34px;
+  height: 34px;
+  border-radius: 5px;
+  background: transparent;
+  color: #050505;
+  filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.18));
+  font-size: 27px;
   cursor: pointer;
-  border-radius: 4px;
+  transition: transform 0.18s ease, color 0.18s ease;
 }
 
 .rightside-icon:hover {
-  background-color: #ff7242;
+  color: #111;
+  transform: translateY(-1px);
+}
+
+:global(.dark) .rightside-icon {
+  color: rgba(248, 250, 252, 0.96);
+}
+
+@media (max-width: 759px) {
+  .rightside {
+    right: 12px;
+    bottom: 70px;
+  }
 }
 </style>

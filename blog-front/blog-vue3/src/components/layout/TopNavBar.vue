@@ -16,13 +16,6 @@
       </div>
       <div style="margin-left: auto">
         <a @click="openSearch"><v-icon>mdi-magnify</v-icon></a>
-        <a
-          :title="themeButtonTitle"
-          style="margin-left: 10px; font-size: 20px"
-          @click="handleThemeToggle"
-        >
-          <v-icon>{{ themeIcon }}</v-icon>
-        </a>
         <a @click="openDrawer" style="margin-left: 10px; font-size: 20px">
           <v-icon>mdi-menu</v-icon>
         </a>
@@ -145,15 +138,6 @@
           </a>
         </div>
         <div class="menus-item">
-          <a
-              class="menu-btn"
-              :title="themeButtonTitle"
-              @click="handleThemeToggle"
-          >
-            <v-icon size="18">{{ themeIcon }}</v-icon> {{ themeButtonText }}
-          </a>
-        </div>
-        <div class="menus-item">
           <a class="menu-btn" v-if="!userStore.avatar" @click="openLogin">
             <v-icon size="18">mdi-login</v-icon> 登录
           </a>
@@ -201,7 +185,6 @@ import { useNoticeStore } from '@/stores/notice'
 import { useBlogInfoStore } from '@/stores/blogInfo'
 import { logout } from '@/api/user'
 import { useToast } from '@/composables/useToast'
-import { toggleTheme } from '@/utils/theme/toggleTheme'
 import { createScrollFrameScheduler } from '@/utils/scrollFrame'
 import { getTopNavBaseClass } from './topNavBehavior'
 
@@ -223,9 +206,6 @@ const navScrollScheduler = createScrollFrameScheduler(updateNavOnScroll)
 const blogInfo = computed(() => blogInfoStore.blogInfo)
 const websiteConfig = computed(() => blogInfo.value.websiteConfig || {})
 const isDark = computed(() => theme.global.current.value.dark)
-const themeIcon = computed(() => isDark.value ? 'mdi-moon-waning-crescent' : 'mdi-white-balance-sunny')
-const themeButtonText = computed(() => isDark.value ? '白天' : '黑夜')
-const themeButtonTitle = computed(() => isDark.value ? '切换白天模式' : '切换黑夜模式')
 // 头像角标直接复用通知仓库的未读数，避免顶部导航和通知页出现两套不同步状态。
 const hasNoticeBadge = computed(() => userStore.isLoggedIn && noticeStore.unreadCount > 0)
 // 未读数过大时统一折叠为 99+，防止角标宽度把头像布局撑开。
@@ -247,6 +227,7 @@ const isLetterPage = computed(() => route.path.startsWith('/letter'))
 const isOverlayRoute = computed(() => {
   return (
     route.path === '/' ||
+    route.path === '/home/start' ||
     route.path.startsWith('/albums') ||
     route.path.startsWith('/love') ||
     route.path.startsWith('/letter')
@@ -318,13 +299,6 @@ async function handleLogout() {
   } catch (error) {
     useToast({ type: 'error', message: '注销失败' })
   }
-}
-
-function handleThemeToggle(event: MouseEvent) {
-  toggleTheme(theme, {
-    x: event.clientX,
-    y: event.clientY
-  })
 }
 
 onMounted(() => {
