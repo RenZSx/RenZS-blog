@@ -22,6 +22,18 @@
       </el-button>
       <!-- 条件筛选 -->
       <div style="margin-left:auto">
+        <el-select
+          v-model="status"
+          clearable
+          size="small"
+          placeholder="审核状态"
+          style="width:120px;margin-right:1rem"
+          @change="searchLinks"
+        >
+          <el-option label="待审核" :value="0" />
+          <el-option label="已通过" :value="1" />
+          <el-option label="已拒绝" :value="2" />
+        </el-select>
         <el-input
           v-model="keywords"
           prefix-icon="el-icon-search"
@@ -51,18 +63,30 @@
       <!-- 表格列 -->
       <el-table-column type="selection" width="55" />
       <el-table-column
-        prop="linkAvatar"
-        label="链接头像"
+        prop="linkCover"
+        label="链接封面"
         align="center"
-        width="180"
+        width="150"
       >
         <template slot-scope="scope">
-          <img :src="scope.row.linkAvatar" width="40" height="40" />
+          <img
+            :src="scope.row.linkCover"
+            width="120"
+            height="60"
+            style="object-fit:cover"
+          />
         </template>
       </el-table-column>
       <el-table-column prop="linkName" label="链接名" align="center" />
       <el-table-column prop="linkAddress" label="链接地址" align="center" />
       <el-table-column prop="linkIntro" label="链接介绍" align="center" />
+      <el-table-column label="审核状态" align="center" width="100">
+        <template slot-scope="scope">
+          <el-tag :type="statusTagType(scope.row.linkStatus)">
+            {{ statusText(scope.row.linkStatus) }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="createTime"
         label="创建时间"
@@ -75,14 +99,30 @@
         </template>
       </el-table-column>
       <!-- 列操作 -->
-      <el-table-column label="操作" align="center" width="160">
+      <el-table-column label="操作" align="center" width="260">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="openModel(scope.row)">
             编辑
           </el-button>
+          <el-button
+            v-if="scope.row.linkStatus !== 1"
+            type="success"
+            size="mini"
+            @click="reviewLink(scope.row.id, 1)"
+          >
+            通过
+          </el-button>
+          <el-button
+            v-if="scope.row.linkStatus !== 2"
+            type="warning"
+            size="mini"
+            @click="reviewLink(scope.row.id, 2)"
+          >
+            拒绝
+          </el-button>
           <el-popconfirm
             title="确定删除吗？"
-            style="margin-left:1rem"
+            style="margin-left:0.5rem"
             @confirm="deleteLink(scope.row.id)"
           >
             <el-button size="mini" type="danger" slot="reference">
@@ -124,14 +164,21 @@
         <el-form-item label="链接名">
           <el-input style="width:250px" v-model="linkForm.linkName" />
         </el-form-item>
-        <el-form-item label="链接头像">
-          <el-input style="width:250px" v-model="linkForm.linkAvatar" />
+        <el-form-item label="链接封面">
+          <el-input style="width:250px" v-model="linkForm.linkCover" />
         </el-form-item>
         <el-form-item label="链接地址">
           <el-input style="width:250px" v-model="linkForm.linkAddress" />
         </el-form-item>
         <el-form-item label="链接介绍">
           <el-input style="width:250px" v-model="linkForm.linkIntro" />
+        </el-form-item>
+        <el-form-item label="审核状态">
+          <el-select style="width:250px" v-model="linkForm.linkStatus">
+            <el-option label="待审核" :value="0" />
+            <el-option label="已通过" :value="1" />
+            <el-option label="已拒绝" :value="2" />
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer">
@@ -145,6 +192,12 @@
 </template>
 
 <script>
+/**
+ * 功能说明: 后台友链管理页。
+ * 作者: OpenAI Codex
+ * 创建时间: 2026-07-05
+ * 用途概述: 管理友链申请、审核状态、手动新增和删除。
+ */
 export default {
   created() {
     this.listLinks();
@@ -159,17 +212,47 @@ export default {
       linkForm: {
         id: null,
         linkName: "",
-        linkAvatar: "",
+        linkCover: "",
         linkIntro: "",
-        linkAddress: ""
+        linkAddress: "",
+        linkStatus: 1
       },
       keywords: null,
+      status: null,
       current: 1,
       size: 10,
       count: 0
     };
   },
   methods: {
+    /**
+     * 获取审核状态显示文案。
+     *
+     * @param {number} status 审核状态。
+     * @returns {string} 状态文案。
+     */
+    statusText(status) {
+      const statusMap = {
+        0: "待审核",
+        1: "已通过",
+        2: "已拒绝"
+      };
+      return statusMap[status] || "未知";
+    },
+    /**
+     * 获取 Element UI 标签类型。
+     *
+     * @param {number} status 审核状态。
+     * @returns {string} 标签类型。
+     */
+    statusTagType(status) {
+      const typeMap = {
+        0: "info",
+        1: "success",
+        2: "danger"
+      };
+      return typeMap[status] || "info";
+    },
     selectionChange(linkList) {
       this.linkIdList = [];
       linkList.forEach(item => {
@@ -211,6 +294,33 @@ export default {
         this.deleteFlag = false;
       });
     },
+    /**
+     * 审核友链申请，只修改状态，不覆盖申请内容。
+     *
+     * @param {number} id 友链 ID。
+     * @param {number} linkStatus 审核状态。
+     */
+    reviewLink(id, linkStatus) {
+      this.axios
+        .put("/api/admin/links/review", {
+          id,
+          linkStatus
+        })
+        .then(({ data }) => {
+          if (data.flag) {
+            this.$notify.success({
+              title: "成功",
+              message: data.message
+            });
+            this.listLinks();
+          } else {
+            this.$notify.error({
+              title: "失败",
+              message: data.message
+            });
+          }
+        });
+    },
     openModel(link) {
       if (link != null) {
         this.linkForm = JSON.parse(JSON.stringify(link));
@@ -218,9 +328,11 @@ export default {
       } else {
         this.linkForm.id = null;
         this.linkForm.linkName = "";
-        this.linkForm.linkAvatar = "";
+        this.linkForm.linkCover = "";
         this.linkForm.linkIntro = "";
         this.linkForm.linkAddress = "";
+        // 后台手动新增默认已通过，前台申请才默认待审核。
+        this.linkForm.linkStatus = 1;
         this.$refs.linkTitle.innerHTML = "添加友链";
       }
       this.addOrEdit = true;
@@ -230,8 +342,8 @@ export default {
         this.$message.error("友链名不能为空");
         return false;
       }
-      if (this.linkForm.linkAvatar.trim() == "") {
-        this.$message.error("友链头像不能为空");
+      if (this.linkForm.linkCover.trim() == "") {
+        this.$message.error("友链封面不能为空");
         return false;
       }
       if (this.linkForm.linkIntro.trim() == "") {
@@ -259,12 +371,14 @@ export default {
       });
     },
     listLinks() {
+      this.loading = true;
       this.axios
         .get("/api/admin/links", {
           params: {
             current: this.current,
             size: this.size,
-            keywords: this.keywords
+            keywords: this.keywords,
+            status: this.status
           }
         })
         .then(({ data }) => {
