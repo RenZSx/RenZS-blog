@@ -20,7 +20,7 @@
         :style="{ animationDelay: `${Math.min(idx * 60, 300)}ms` }"
         @click="openLink(link)"
       >
-        <image class="link-avatar" :src="link.linkAvatar" mode="aspectFill" />
+        <image class="link-cover" :src="link.linkCover" mode="aspectFill" />
         <view class="link-info">
           <text class="link-name">{{ link.linkName }}</text>
           <text class="link-intro text-ellipsis-2">{{ link.linkIntro || '' }}</text>
@@ -154,7 +154,7 @@ onShow(() => {
   background: var(--bg-soft);
 }
 
-.link-avatar {
+.link-cover {
   width: 96rpx;
   height: 96rpx;
   border-radius: 20rpx;
