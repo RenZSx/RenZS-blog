@@ -514,10 +514,13 @@
 .dark .home-side-card .comment-time,
 .dark .home-side-card .comment-text,
 .dark .home-toolbar-card .home-toolbar-message,
-.dark .home-feed-card .card-excerpt,
 .dark .article-card .article-content,
 .dark .no-more {
   color: var(--text-secondary) !important;
+}
+
+.dark .home-feed-card .card-summary {
+  color: #fff !important;
 }
 
 .dark .home-profile-card .home-profile-name,
