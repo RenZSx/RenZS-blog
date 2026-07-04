@@ -5,6 +5,7 @@ import com.chen.blog.common.annotation.OptLog;
 import com.chen.blog.module.friendLink.service.FriendLinkService;
 import com.chen.blog.module.friendLink.dto.FriendLinkBackDTO;
 import com.chen.blog.module.friendLink.dto.FriendLinkDTO;
+import com.chen.blog.module.friendLink.vo.FriendLinkReviewVO;
 import com.chen.blog.module.friendLink.vo.FriendLinkVO;
 import com.chen.blog.common.domain.vo.*;
 import io.swagger.annotations.Api;
@@ -42,6 +43,19 @@ public class FriendLinkController {
     }
 
     /**
+     * 提交友链申请。
+     *
+     * @param friendLinkVO 友链申请信息
+     * @return {@link Result<>}
+     */
+    @ApiOperation(value = "提交友链申请")
+    @PostMapping("/links/apply")
+    public Result<?> applyFriendLink(@Valid @RequestBody FriendLinkVO friendLinkVO) {
+        friendLinkService.applyFriendLink(friendLinkVO);
+        return Result.ok();
+    }
+
+    /**
      * 查看后台友链列表
      *
      * @param condition 条件
@@ -68,6 +82,20 @@ public class FriendLinkController {
     }
 
     /**
+     * 审核友链申请。
+     *
+     * @param friendLinkReviewVO 审核信息
+     * @return {@link Result<>}
+     */
+    @OptLog(optType = SAVE_OR_UPDATE)
+    @ApiOperation(value = "审核友链申请")
+    @PutMapping("/admin/links/review")
+    public Result<?> reviewFriendLink(@Valid @RequestBody FriendLinkReviewVO friendLinkReviewVO) {
+        friendLinkService.reviewFriendLink(friendLinkReviewVO);
+        return Result.ok();
+    }
+
+    /**
      * 删除友链
      *
      * @param linkIdList 友链id列表
@@ -82,4 +110,3 @@ public class FriendLinkController {
     }
 
 }
-

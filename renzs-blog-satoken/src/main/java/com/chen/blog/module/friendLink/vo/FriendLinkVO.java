@@ -35,24 +35,30 @@ public class FriendLinkVO {
     private String linkName;
 
     /**
-     * 链接头像
+     * 链接封面
      */
-    @NotBlank(message = "链接头像不能为空")
-    @ApiModelProperty(name = "linkAvatar", value = "友链头像", dataType = "String", required = true)
-    private String linkAvatar;
+    @NotBlank(message = "链接封面不能为空")
+    @ApiModelProperty(name = "linkCover", value = "友链封面", dataType = "String", required = true)
+    private String linkCover;
 
     /**
      * 链接地址
      */
     @NotBlank(message = "链接地址不能为空")
-    @ApiModelProperty(name = "linkAddress", value = "友链头像", dataType = "String", required = true)
+    @ApiModelProperty(name = "linkAddress", value = "友链地址", dataType = "String", required = true)
     private String linkAddress;
 
     /**
      * 介绍
      */
     @NotBlank(message = "链接介绍不能为空")
-    @ApiModelProperty(name = "linkIntro", value = "友链头像", dataType = "String", required = true)
+    @ApiModelProperty(name = "linkIntro", value = "友链介绍", dataType = "String", required = true)
     private String linkIntro;
+
+    /**
+     * 审核状态 0=待审核 1=已通过 2=已拒绝
+     */
+    @ApiModelProperty(name = "linkStatus", value = "审核状态", dataType = "Integer")
+    private Integer linkStatus;
 
 }

@@ -1,13 +1,16 @@
 package com.chen.blog.module.friendLink.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
-
-import java.time.LocalDateTime;
-
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 /**
  * 友链列表
@@ -34,9 +37,9 @@ public class FriendLink {
     private String linkName;
 
     /**
-     * 链接头像
+     * 链接封面
      */
-    private String linkAvatar;
+    private String linkCover;
 
     /**
      * 链接地址
@@ -47,6 +50,11 @@ public class FriendLink {
      * 介绍
      */
     private String linkIntro;
+
+    /**
+     * 审核状态 0=待审核 1=已通过 2=已拒绝
+     */
+    private Integer linkStatus;
 
     /**
      * 创建时间

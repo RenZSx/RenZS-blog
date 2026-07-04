@@ -29,9 +29,9 @@ public class FriendLinkBackDTO {
     private String linkName;
 
     /**
-     * 链接头像
+     * 链接封面
      */
-    private String linkAvatar;
+    private String linkCover;
 
     /**
      * 链接地址
@@ -42,6 +42,11 @@ public class FriendLinkBackDTO {
      * 链接介绍
      */
     private String linkIntro;
+
+    /**
+     * 审核状态 0=待审核 1=已通过 2=已拒绝
+     */
+    private Integer linkStatus;
 
     /**
      * 创建时间

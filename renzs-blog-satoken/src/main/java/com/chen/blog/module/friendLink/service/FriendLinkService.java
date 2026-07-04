@@ -1,11 +1,12 @@
 package com.chen.blog.module.friendLink.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.chen.blog.common.domain.vo.ConditionVO;
 import com.chen.blog.common.domain.vo.PageResult;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.chen.blog.module.friendLink.dto.FriendLinkBackDTO;
 import com.chen.blog.module.friendLink.dto.FriendLinkDTO;
 import com.chen.blog.module.friendLink.entity.FriendLink;
+import com.chen.blog.module.friendLink.vo.FriendLinkReviewVO;
 import com.chen.blog.module.friendLink.vo.FriendLinkVO;
 
 import java.util.List;
@@ -40,5 +41,18 @@ public interface FriendLinkService extends IService<FriendLink> {
      */
     void saveOrUpdateFriendLink(FriendLinkVO friendLinkVO);
 
-}
+    /**
+     * 提交友链申请。
+     *
+     * @param friendLinkVO 友链申请信息
+     */
+    void applyFriendLink(FriendLinkVO friendLinkVO);
 
+    /**
+     * 审核友链申请。
+     *
+     * @param friendLinkReviewVO 审核信息
+     */
+    void reviewFriendLink(FriendLinkReviewVO friendLinkReviewVO);
+
+}
