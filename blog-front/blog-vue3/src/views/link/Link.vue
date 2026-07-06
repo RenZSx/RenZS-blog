@@ -144,7 +144,7 @@
 
       <!-- 链接列表 -->
       <div class="link-title mb-4">
-        <v-icon class="link-title-icon">mdi-link-variant</v-icon> 青出于蓝
+        <v-icon class="link-title-icon">mdi-link-variant</v-icon> 友情链接
       </div>
       <v-row class="link-grid">
         <v-col
