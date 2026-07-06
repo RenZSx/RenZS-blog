@@ -22,8 +22,8 @@ export function searchArticles(params: { keywords: string; current: number }) {
 }
 
 // 文章归档
-export function getArchives() {
-  return request.get('/api/articles/archives')
+export function getArchives(params: { current: number; size?: number } = { current: 1 }) {
+  return request.get('/api/articles/archives', { params })
 }
 
 // 条件查询文章

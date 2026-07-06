@@ -103,7 +103,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
         Page<Article> page = new Page<>(PageUtils.getCurrent(), PageUtils.getSize());
         // 获取分页数据
         Page<Article> articlePage = articleDao.selectPage(page, new LambdaQueryWrapper<Article>()
-                .select(Article::getId, Article::getArticleTitle, Article::getCreateTime).orderByDesc(Article::getCreateTime)
+                .select(Article::getId, Article::getArticleTitle, Article::getArticleCover, Article::getCreateTime).orderByDesc(Article::getCreateTime)
                 .eq(Article::getIsDelete, FALSE)
                 .in(Article::getStatus, PUBLIC.getStatus(), RECOMMEND.getStatus()));
         List<ArchiveDTO> archiveDTOList = BeanCopyUtils.copyList(articlePage.getRecords(), ArchiveDTO.class);

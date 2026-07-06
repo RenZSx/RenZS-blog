@@ -31,6 +31,11 @@ public class ArchiveDTO {
     private String articleTitle;
 
     /**
+     * 文章封面
+     */
+    private String articleCover;
+
+    /**
      * 发表时间
      */
     private LocalDateTime createTime;
