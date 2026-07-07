@@ -29,4 +29,9 @@ public class TagDTO {
      */
     private String tagName;
 
+    /**
+     * 文章数量
+     */
+    private Integer articleCount;
+
 }

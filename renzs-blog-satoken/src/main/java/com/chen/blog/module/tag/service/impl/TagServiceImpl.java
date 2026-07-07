@@ -21,7 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 标签服务
@@ -42,6 +44,9 @@ public class TagServiceImpl extends ServiceImpl<TagDao, Tag> implements TagServi
         List<Tag> tagList = tagDao.selectList(null);
         // 转换DTO
         List<TagDTO> tagDTOList = BeanCopyUtils.copyList(tagList, TagDTO.class);
+        Map<Integer, Long> articleCountMap = articleTagDao.selectList(null).stream()
+                .collect(Collectors.groupingBy(ArticleTag::getTagId, Collectors.counting()));
+        tagDTOList.forEach(tag -> tag.setArticleCount(articleCountMap.getOrDefault(tag.getId(), 0L).intValue()));
         // 查询标签数量
         Integer count = tagDao.selectCount(null);
         return new PageResult<>(tagDTOList, count);
@@ -95,4 +100,3 @@ public class TagServiceImpl extends ServiceImpl<TagDao, Tag> implements TagServi
     }
 
 }
-
