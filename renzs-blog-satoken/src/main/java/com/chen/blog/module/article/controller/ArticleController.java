@@ -182,6 +182,20 @@ public class ArticleController {
     }
 
     /**
+     * 生成文章AI总结
+     *
+     * @param articleId 文章id
+     * @return {@link Result<String>} AI总结
+     */
+    @OptLog(optType = UPDATE)
+    @ApiOperation(value = "生成文章AI总结")
+    @ApiImplicitParam(name = "articleId", value = "文章id", required = true, dataType = "Integer")
+    @PostMapping("/admin/articles/{articleId}/ai-summary")
+    public Result<String> generateArticleSummary(@PathVariable("articleId") Integer articleId) {
+        return Result.ok(articleService.generateArticleSummary(articleId));
+    }
+
+    /**
      * 根据id查看文章
      *
      * @param articleId 文章id
@@ -351,4 +365,3 @@ public class ArticleController {
         return Result.ok();
     }
 }
-

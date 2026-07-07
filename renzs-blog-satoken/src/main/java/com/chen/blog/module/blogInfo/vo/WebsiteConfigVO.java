@@ -185,4 +185,52 @@ public class WebsiteConfigVO {
     @ApiModelProperty(name = "isMusicPlayer", value = "是否开启音乐", required = true, dataType = "Integer")
     private Integer isMusicPlayer;
 
+    /**
+     * 是否开启AI文章总结
+     */
+    @ApiModelProperty(name = "isAiSummary", value = "是否开启AI文章总结", dataType = "Integer")
+    private Integer isAiSummary;
+
+    /**
+     * AI接口地址
+     */
+    @ApiModelProperty(name = "aiApiUrl", value = "AI接口地址", dataType = "String")
+    private String aiApiUrl;
+
+    /**
+     * AI接口密钥
+     */
+    @ApiModelProperty(name = "aiApiKey", value = "AI接口密钥", dataType = "String")
+    private String aiApiKey;
+
+    /**
+     * AI模型名称
+     */
+    @ApiModelProperty(name = "aiModel", value = "AI模型名称", dataType = "String")
+    private String aiModel;
+
+    /**
+     * AI接口类型 chat_completions / responses
+     */
+    @ApiModelProperty(name = "aiApiType", value = "AI接口类型", dataType = "String")
+    private String aiApiType;
+
+    /**
+     * AI推理强度
+     */
+    @ApiModelProperty(name = "aiReasoningEffort", value = "AI推理强度", dataType = "String")
+    private String aiReasoningEffort;
+
+    /**
+     * 是否关闭AI响应存储
+     */
+    @ApiModelProperty(name = "aiDisableResponseStorage", value = "是否关闭AI响应存储", dataType = "Integer")
+    private Integer aiDisableResponseStorage;
+
+    /**
+     * AI总结系统提示词
+     */
+    @ApiModelProperty(name = "aiSummaryPrompt", value = "AI总结系统提示词", dataType = "String")
+    private String aiSummaryPrompt;
+
 }

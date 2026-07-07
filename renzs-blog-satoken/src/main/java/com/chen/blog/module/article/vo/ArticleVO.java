@@ -43,6 +43,24 @@ public class ArticleVO {
     private String articleContent;
 
     /**
+     * AI文章总结
+     */
+    @ApiModelProperty(name = "aiSummary", value = "AI文章总结", dataType = "String")
+    private String aiSummary;
+
+    /**
+     * AI总结状态 0未生成 1已生成 2已审核
+     */
+    @ApiModelProperty(name = "aiSummaryStatus", value = "AI总结状态", dataType = "Integer")
+    private Integer aiSummaryStatus;
+
+    /**
+     * AI总结生成时间
+     */
+    @ApiModelProperty(name = "aiSummaryTime", value = "AI总结生成时间", dataType = "LocalDateTime")
+    private java.time.LocalDateTime aiSummaryTime;
+
+    /**
      * 文章封面
      */
     @ApiModelProperty(name = "articleCover", value = "文章缩略图", dataType = "String")

@@ -36,6 +36,9 @@
         <result column="article_cover" property="articleCover"/>
         <result column="article_title" property="articleTitle"/>
         <result column="article_content" property="articleContent"/>
+        <result column="ai_summary" property="aiSummary"/>
+        <result column="ai_summary_status" property="aiSummaryStatus"/>
+        <result column="ai_summary_time" property="aiSummaryTime"/>
         <result column="nickname" property="nickname"/>
         <result column="avatar" property="avatar"/>
         <result column="type" property="type"/>
@@ -54,6 +57,9 @@
         <id column="id" property="id"/>
         <result column="article_cover" property="articleCover"/>
         <result column="article_title" property="articleTitle"/>
+        <result column="ai_summary" property="aiSummary"/>
+        <result column="ai_summary_status" property="aiSummaryStatus"/>
+        <result column="ai_summary_time" property="aiSummaryTime"/>
         <result column="create_time" property="createTime"/>
         <result column="type" property="type"/>
         <result column="is_top" property="isTop"/>
@@ -237,6 +243,9 @@
 	 article_cover,
 	 article_title,
 	 article_content,
+     CASE WHEN ai_summary_status = 2 THEN ai_summary ELSE NULL END AS ai_summary,
+     ai_summary_status,
+     ai_summary_time,
 	 a.type,
 	 a.original_url,
 	 a.create_time,
@@ -264,6 +273,9 @@
         a.id,
         article_cover,
         article_title,
+        ai_summary,
+        ai_summary_status,
+        ai_summary_time,
         type,
         is_top,
         a.is_delete,
@@ -278,6 +290,9 @@
         id,
         article_cover,
         article_title,
+        ai_summary,
+        ai_summary_status,
+        ai_summary_time,
         type,
         is_top,
         is_delete,

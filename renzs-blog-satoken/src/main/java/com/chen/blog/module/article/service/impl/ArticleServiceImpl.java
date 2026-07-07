@@ -2,6 +2,10 @@ package com.chen.blog.module.article.service.impl;
 
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -39,17 +43,24 @@ import com.chen.blog.common.util.PageUtils;
 import com.chen.blog.common.util.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.chen.blog.common.constant.CommonConst.ARTICLE_SET;
 import static com.chen.blog.common.constant.CommonConst.FALSE;
+import static com.chen.blog.common.constant.CommonConst.TRUE;
 import static com.chen.blog.common.constant.RedisPrefixConst.*;
 import static com.chen.blog.common.enums.CommentTypeEnum.ARTICLE;
 import static com.chen.blog.common.enums.ArticleStatusEnum.DRAFT;
@@ -70,6 +81,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
      * 首页每个文章分组展示数量
      */
     private static final int HOME_SECTION_ARTICLE_SIZE = 6;
+    /**
+     * AI总结默认系统提示词
+     */
+    private static final String DEFAULT_AI_SUMMARY_PROMPT = "你是博客文章总结助手。请用中文总结文章，控制在80到160字，语言自然，不要编造文章中没有的内容，适合展示在文章详情页顶部。";
+    /**
+     * 发送给AI模型的正文最大长度，避免长文超过模型上下文。
+     */
+    private static final int AI_SUMMARY_CONTENT_LIMIT = 8000;
+    /**
+     * AI总结状态：已生成，等待后台审核。
+     */
+    private static final int AI_SUMMARY_GENERATED = 1;
+    /**
+     * AI接口类型：Responses API。
+     */
+    private static final String AI_API_TYPE_RESPONSES = "responses";
+    /**
+     * AI接口类型：Chat Completions API。
+     */
+    private static final String AI_API_TYPE_CHAT_COMPLETIONS = "chat_completions";
 
     @Autowired
     private ArticleDao articleDao;
@@ -97,6 +128,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
     private NoticeService noticeService;
     @Autowired
     private CommentDao commentDao;
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Override
     public PageResult<ArchiveDTO> listArchives() {
@@ -439,6 +472,29 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
     }
 
     @Override
+    public String generateArticleSummary(Integer articleId) {
+        Article article = articleDao.selectById(articleId);
+        if (Objects.isNull(article)) {
+            throw new BizException("文章不存在");
+        }
+        WebsiteConfigVO websiteConfig = blogInfoService.getWebsiteConfig();
+        validateAiSummaryConfig(websiteConfig);
+
+        String summary = requestAiSummary(article, websiteConfig);
+        if (StrUtil.isBlank(summary)) {
+            throw new BizException("AI未返回有效总结");
+        }
+        Article updateArticle = Article.builder()
+                .id(articleId)
+                .aiSummary(summary)
+                .aiSummaryStatus(AI_SUMMARY_GENERATED)
+                .aiSummaryTime(LocalDateTime.now())
+                .build();
+        articleDao.updateById(updateArticle);
+        return summary;
+    }
+
+    @Override
     public ArticleVO getArticleBackById(Integer articleId) {
         // 查询文章信息
         Article article = articleDao.selectById(articleId);
@@ -507,6 +563,285 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
                     .collect(Collectors.toList());
             articleTagService.saveBatch(articleTagList);
         }
+    }
+
+    /**
+     * 校验AI总结配置，配置来自tb_website_config.config。
+     *
+     * @param websiteConfig 网站配置
+     */
+    private void validateAiSummaryConfig(WebsiteConfigVO websiteConfig) {
+        if (!Integer.valueOf(TRUE).equals(websiteConfig.getIsAiSummary())) {
+            throw new BizException("AI文章总结未开启");
+        }
+        if (StrUtil.isBlank(websiteConfig.getAiApiUrl())) {
+            throw new BizException("请先配置AI接口地址");
+        }
+        if (StrUtil.isBlank(websiteConfig.getAiApiKey())) {
+            throw new BizException("请先配置AI接口密钥");
+        }
+        if (StrUtil.isBlank(websiteConfig.getAiModel())) {
+            throw new BizException("请先配置AI模型名称");
+        }
+    }
+
+    /**
+     * 调用OpenAI兼容接口生成文章总结。
+     *
+     * @param article       文章信息
+     * @param websiteConfig 网站AI配置
+     * @return AI总结
+     */
+    private String requestAiSummary(Article article, WebsiteConfigVO websiteConfig) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.setBearerAuth(websiteConfig.getAiApiKey());
+
+        Map<String, Object> requestBody = isResponsesApi(websiteConfig)
+                ? buildResponsesSummaryRequest(article, websiteConfig)
+                : buildChatSummaryRequest(article, websiteConfig);
+
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    websiteConfig.getAiApiUrl(),
+                    new HttpEntity<>(requestBody, headers),
+                    String.class
+            );
+            return parseAiSummaryResponse(response.getBody(), websiteConfig);
+        } catch (BizException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error(StrUtil.format("AI文章总结生成失败,文章id:{},堆栈:{}", article.getId(), ExceptionUtil.stacktraceToString(e)));
+            throw new BizException("AI文章总结生成失败");
+        }
+    }
+
+    /**
+     * 构造Chat Completions格式的总结请求体。
+     *
+     * @param article       文章信息
+     * @param websiteConfig 网站AI配置
+     * @return Chat Completions请求体
+     */
+    private Map<String, Object> buildChatSummaryRequest(Article article, WebsiteConfigVO websiteConfig) {
+        Map<String, Object> requestBody = new LinkedHashMap<>();
+        requestBody.put("model", websiteConfig.getAiModel());
+        requestBody.put("temperature", 0.3);
+        requestBody.put("messages", buildAiSummaryMessages(article, websiteConfig));
+        return requestBody;
+    }
+
+    /**
+     * 构造Responses格式的总结请求体。
+     *
+     * @param article       文章信息
+     * @param websiteConfig 网站AI配置
+     * @return Responses请求体
+     */
+    private Map<String, Object> buildResponsesSummaryRequest(Article article, WebsiteConfigVO websiteConfig) {
+        Map<String, Object> requestBody = new LinkedHashMap<>();
+        requestBody.put("model", websiteConfig.getAiModel());
+        requestBody.put("instructions", StrUtil.blankToDefault(websiteConfig.getAiSummaryPrompt(), DEFAULT_AI_SUMMARY_PROMPT));
+        requestBody.put("input", buildArticleSummaryUserPrompt(article));
+
+        if (StrUtil.isNotBlank(websiteConfig.getAiReasoningEffort())) {
+            Map<String, Object> reasoning = new LinkedHashMap<>();
+            reasoning.put("effort", websiteConfig.getAiReasoningEffort());
+            requestBody.put("reasoning", reasoning);
+        }
+        if (Integer.valueOf(TRUE).equals(websiteConfig.getAiDisableResponseStorage())) {
+            requestBody.put("store", false);
+        }
+        return requestBody;
+    }
+
+    /**
+     * 构造AI总结消息列表。
+     *
+     * @param article       文章信息
+     * @param websiteConfig 网站AI配置
+     * @return OpenAI兼容messages
+     */
+    private List<Map<String, String>> buildAiSummaryMessages(Article article, WebsiteConfigVO websiteConfig) {
+        String systemPrompt = StrUtil.blankToDefault(websiteConfig.getAiSummaryPrompt(), DEFAULT_AI_SUMMARY_PROMPT);
+        String userPrompt = buildArticleSummaryUserPrompt(article);
+
+        List<Map<String, String>> messages = new ArrayList<>();
+        messages.add(buildAiMessage("system", systemPrompt));
+        messages.add(buildAiMessage("user", userPrompt));
+        return messages;
+    }
+
+    /**
+     * 构造文章总结用户提示词。
+     *
+     * @param article 文章信息
+     * @return 用户提示词
+     */
+    private String buildArticleSummaryUserPrompt(Article article) {
+        String articleContent = normalizeArticleContent(article.getArticleContent());
+        if (articleContent.length() > AI_SUMMARY_CONTENT_LIMIT) {
+            articleContent = articleContent.substring(0, AI_SUMMARY_CONTENT_LIMIT);
+        }
+        return "文章标题：" + article.getArticleTitle() + "\n\n文章内容：\n" + articleContent;
+    }
+
+    /**
+     * 构造AI消息对象。
+     *
+     * @param role    角色
+     * @param content 内容
+     * @return 消息对象
+     */
+    private Map<String, String> buildAiMessage(String role, String content) {
+        Map<String, String> message = new LinkedHashMap<>();
+        message.put("role", role);
+        message.put("content", content);
+        return message;
+    }
+
+    /**
+     * 解析OpenAI兼容响应体。
+     *
+     * @param responseBody 响应JSON
+     * @return AI总结文本
+     */
+    private String parseAiSummaryResponse(String responseBody, WebsiteConfigVO websiteConfig) {
+        if (StrUtil.isBlank(responseBody)) {
+            throw new BizException("AI接口返回为空");
+        }
+        String trimmedBody = responseBody.trim();
+        if (!trimmedBody.startsWith("{")) {
+            log.warn("AI接口返回非JSON内容:{}", abbreviateAiResponse(trimmedBody));
+            throw new BizException("AI接口返回的不是JSON，请检查AI接口地址是否为" + getExpectedAiEndpointName(websiteConfig));
+        }
+        JSONObject responseJson;
+        try {
+            responseJson = JSON.parseObject(trimmedBody);
+        } catch (JSONException e) {
+            log.warn("AI接口JSON解析失败,响应片段:{}", abbreviateAiResponse(trimmedBody));
+            throw new BizException("AI接口返回JSON格式不正确");
+        }
+        JSONObject error = responseJson.getJSONObject("error");
+        if (error != null) {
+            throw new BizException("AI接口返回错误：" + error.getString("message"));
+        }
+        if (isResponsesApi(websiteConfig)) {
+            return parseResponsesSummaryContent(responseJson);
+        }
+        return parseChatSummaryContent(responseJson);
+    }
+
+    /**
+     * 解析Chat Completions响应内容。
+     *
+     * @param responseJson 响应JSON
+     * @return AI总结文本
+     */
+    private String parseChatSummaryContent(JSONObject responseJson) {
+        JSONArray choices = responseJson.getJSONArray("choices");
+        if (choices == null || choices.isEmpty()) {
+            throw new BizException("AI接口未返回choices");
+        }
+        JSONObject message = choices.getJSONObject(0).getJSONObject("message");
+        if (message == null) {
+            throw new BizException("AI接口返回格式不正确");
+        }
+        return StrUtil.trim(message.getString("content"));
+    }
+
+    /**
+     * 解析Responses响应内容。
+     *
+     * @param responseJson 响应JSON
+     * @return AI总结文本
+     */
+    private String parseResponsesSummaryContent(JSONObject responseJson) {
+        String outputText = responseJson.getString("output_text");
+        if (StrUtil.isNotBlank(outputText)) {
+            return StrUtil.trim(outputText);
+        }
+
+        JSONArray output = responseJson.getJSONArray("output");
+        if (output == null || output.isEmpty()) {
+            throw new BizException("AI接口未返回output");
+        }
+        StringBuilder contentBuilder = new StringBuilder();
+        for (int i = 0; i < output.size(); i++) {
+            JSONObject outputItem = output.getJSONObject(i);
+            JSONArray content = outputItem.getJSONArray("content");
+            if (content == null || content.isEmpty()) {
+                continue;
+            }
+            for (int j = 0; j < content.size(); j++) {
+                JSONObject contentItem = content.getJSONObject(j);
+                String text = contentItem.getString("text");
+                if (StrUtil.isNotBlank(text)) {
+                    contentBuilder.append(text);
+                }
+            }
+        }
+        String summary = StrUtil.trim(contentBuilder.toString());
+        if (StrUtil.isBlank(summary)) {
+            throw new BizException("AI接口未返回可用文本");
+        }
+        return summary;
+    }
+
+    /**
+     * 判断当前配置是否使用Responses API。
+     *
+     * @param websiteConfig 网站AI配置
+     * @return 是否为Responses API
+     */
+    private boolean isResponsesApi(WebsiteConfigVO websiteConfig) {
+        String apiType = StrUtil.blankToDefault(websiteConfig.getAiApiType(), AI_API_TYPE_CHAT_COMPLETIONS);
+        return AI_API_TYPE_RESPONSES.equalsIgnoreCase(apiType)
+                || (StrUtil.isBlank(websiteConfig.getAiApiType()) && websiteConfig.getAiApiUrl().contains("/responses"));
+    }
+
+    /**
+     * 获取当前配置期望的AI接口名称。
+     *
+     * @param websiteConfig 网站AI配置
+     * @return 接口名称
+     */
+    private String getExpectedAiEndpointName(WebsiteConfigVO websiteConfig) {
+        return isResponsesApi(websiteConfig) ? "responses地址" : "chat/completions地址";
+    }
+
+    /**
+     * 截断AI响应体，避免日志中写入过长HTML或敏感内容。
+     *
+     * @param responseBody AI接口响应体
+     * @return 截断后的响应片段
+     */
+    private String abbreviateAiResponse(String responseBody) {
+        if (StrUtil.isBlank(responseBody)) {
+            return "";
+        }
+        String compactBody = responseBody.replaceAll("\\s+", " ").trim();
+        return compactBody.length() > 240 ? compactBody.substring(0, 240) + "..." : compactBody;
+    }
+
+    /**
+     * 清理Markdown和HTML中影响总结的噪音。
+     *
+     * @param content 文章正文
+     * @return 适合提交给AI模型的正文
+     */
+    private String normalizeArticleContent(String content) {
+        if (StrUtil.isBlank(content)) {
+            return "";
+        }
+        return content
+                .replaceAll("(?s)```.*?```", " ")
+                .replaceAll("!\\[[^]]*]\\([^)]*\\)", " ")
+                .replaceAll("<[^>]+>", " ")
+                .replaceAll("[#>*_`~\\-]+", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
 }

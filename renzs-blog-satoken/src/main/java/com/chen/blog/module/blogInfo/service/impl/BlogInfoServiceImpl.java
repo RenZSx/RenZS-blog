@@ -90,6 +90,8 @@ public class BlogInfoServiceImpl implements BlogInfoService {
         String viewsCount = Optional.ofNullable(count).orElse(0).toString();
         // 查询网站配置
         WebsiteConfigVO websiteConfig = this.getWebsiteConfig();
+        // AI密钥仅供后台和服务端内部使用，前台站点信息接口不能下发密钥。
+        websiteConfig.setAiApiKey(null);
         // 查询页面图片
         List<PageVO> pageVOList = pageService.listPages();
         // 封装数据

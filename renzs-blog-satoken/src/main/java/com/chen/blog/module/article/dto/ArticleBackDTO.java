@@ -38,6 +38,21 @@ public class ArticleBackDTO {
     private String articleTitle;
 
     /**
+     * AI文章总结
+     */
+    private String aiSummary;
+
+    /**
+     * AI总结状态 0未生成 1已生成 2已审核
+     */
+    private Integer aiSummaryStatus;
+
+    /**
+     * AI总结生成时间
+     */
+    private LocalDateTime aiSummaryTime;
+
+    /**
      * 发表时间
      */
     private LocalDateTime createTime;

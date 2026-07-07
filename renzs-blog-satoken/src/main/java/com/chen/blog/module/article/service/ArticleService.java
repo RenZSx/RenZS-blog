@@ -135,5 +135,12 @@ public interface ArticleService extends IService<Article> {
      * @return 文章分页结果
      */
     PageResult<ArticlePreviewDTO> searchArticles(ConditionVO condition);
-}
 
+    /**
+     * 生成文章AI总结
+     *
+     * @param articleId 文章id
+     * @return AI总结内容
+     */
+    String generateArticleSummary(Integer articleId);
+}
