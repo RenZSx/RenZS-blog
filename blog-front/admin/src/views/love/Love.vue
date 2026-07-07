@@ -38,6 +38,7 @@
             <el-upload
               class="love-background-uploader"
               action="/api/admin/config/images"
+              :headers="$uploadHeaders()"
               :show-file-list="false"
               :on-success="handleBackgroundSuccess"
             >

@@ -63,6 +63,7 @@
           <el-dropdown-item>
             <el-upload
               action="/api/admin/articles/import"
+              :headers="$uploadHeaders()"
               multiple
               :limit="9"
               :show-file-list="false"
@@ -74,6 +75,7 @@
           <el-dropdown-item
             ><el-upload
               action="/api/admin/articles/import?type=hexo"
+              :headers="$uploadHeaders()"
               multiple
               :limit="9"
               :show-file-list="false"

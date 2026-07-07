@@ -53,6 +53,7 @@
             drag
             :show-file-list="false"
             action="/api/admin/config/images"
+            :headers="$uploadHeaders()"
             multiple
             :before-upload="beforeUpload"
             :on-success="uploadCover"

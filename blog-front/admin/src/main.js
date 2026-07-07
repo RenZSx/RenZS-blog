@@ -44,6 +44,14 @@ Vue.use(ElementUI);
 Vue.config.productionTip = false;
 Vue.prototype.$moment = dayjs;
 
+function buildUploadHeaders() {
+  const token = localStorage.getItem("token");
+  // el-upload sends native XHR requests, so it must carry auth headers explicitly.
+  return token ? { Authorization: "Bearer " + token } : {};
+}
+
+Vue.prototype.$uploadHeaders = buildUploadHeaders;
+
 Vue.filter("date", function(value, formatStr = "YYYY-MM-DD") {
   return dayjs(value).format(formatStr);
 });

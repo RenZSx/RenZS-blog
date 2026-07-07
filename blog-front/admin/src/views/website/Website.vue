@@ -12,6 +12,7 @@
             <el-upload
               class="avatar-uploader"
               action="/api/admin/config/images"
+              :headers="$uploadHeaders()"
               :show-file-list="false"
               :on-success="handleWebsiteAvatarSuccess"
             >
@@ -159,6 +160,7 @@
                 <el-upload
                   class="avatar-uploader"
                   action="/api/admin/config/images"
+                  :headers="$uploadHeaders()"
                   :show-file-list="false"
                   :on-success="handleUserAvatarSuccess"
                 >
@@ -176,6 +178,7 @@
                 <el-upload
                   class="avatar-uploader"
                   action="/api/admin/config/images"
+                  :headers="$uploadHeaders()"
                   :show-file-list="false"
                   :on-success="handleTouristAvatarSuccess"
                 >
@@ -193,6 +196,7 @@
             <el-upload
               class="cover-uploader"
               action="/api/admin/config/images"
+              :headers="$uploadHeaders()"
               :before-upload="beforeUpload"
               :show-file-list="false"
               :on-success="handleArticleCoverSuccess"
@@ -241,6 +245,7 @@
                 <el-upload
                   class="avatar-uploader"
                   action="/api/admin/config/images"
+                  :headers="$uploadHeaders()"
                   :show-file-list="false"
                   :on-success="handleWeiXinSuccess"
                 >
@@ -258,6 +263,7 @@
                 <el-upload
                   class="avatar-uploader"
                   action="/api/admin/config/images"
+                  :headers="$uploadHeaders()"
                   :show-file-list="false"
                   :on-success="handleAlipaySuccess"
                 >

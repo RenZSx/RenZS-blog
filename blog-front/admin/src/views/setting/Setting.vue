@@ -7,6 +7,7 @@
           <el-upload
             class="avatar-uploader"
             action="/api/users/avatar"
+            :headers="$uploadHeaders()"
             :show-file-list="false"
             :on-success="updateAvatar"
           >

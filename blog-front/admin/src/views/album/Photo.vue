@@ -111,6 +111,7 @@
         <el-upload
           v-show="uploadList.length > 0"
           action="/api/admin/photos/albums/cover"
+          :headers="$uploadHeaders()"
           list-type="picture-card"
           :file-list="uploadList"
           multiple
@@ -125,6 +126,7 @@
             v-show="uploadList.length == 0"
             drag
             action="/api/admin/photos/albums/cover"
+            :headers="$uploadHeaders()"
             multiple
             :before-upload="beforeUpload"
             :on-success="upload"

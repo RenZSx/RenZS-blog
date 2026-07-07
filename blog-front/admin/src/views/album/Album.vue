@@ -97,6 +97,7 @@
             :show-file-list="false"
             :before-upload="beforeUpload"
             action="/api/admin/photos/albums/cover"
+            :headers="$uploadHeaders()"
             multiple
             :on-success="uploadCover"
           >
