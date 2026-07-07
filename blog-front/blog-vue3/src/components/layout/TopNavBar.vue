@@ -101,7 +101,7 @@
                 <v-icon size="16">mdi-comment-text</v-icon> 说说
               </router-link>
             </li>
-            <li>
+            <li v-if="isChatRoomEnabled">
               <router-link to="/chat">
                 <v-icon size="16">mdi-chat</v-icon> 聊天室
               </router-link>
@@ -206,6 +206,7 @@ const navScrollScheduler = createScrollFrameScheduler(updateNavOnScroll)
 const blogInfo = computed(() => blogInfoStore.blogInfo)
 const websiteConfig = computed(() => blogInfo.value.websiteConfig || {})
 const isDark = computed(() => theme.global.current.value.dark)
+const isChatRoomEnabled = computed(() => Number(websiteConfig.value.isChatRoom) === 1)
 // 头像角标直接复用通知仓库的未读数，避免顶部导航和通知页出现两套不同步状态。
 const hasNoticeBadge = computed(() => userStore.isLoggedIn && noticeStore.unreadCount > 0)
 // 未读数过大时统一折叠为 99+，防止角标宽度把头像布局撑开。

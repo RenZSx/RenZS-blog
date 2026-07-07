@@ -77,7 +77,7 @@
           <v-icon size="18">mdi-comment-text</v-icon> 说说
         </router-link>
       </div>
-      <div class="menus-item">
+      <div v-if="isChatRoomEnabled" class="menus-item">
         <router-link to="/chat">
           <v-icon size="18">mdi-chat</v-icon> 聊天室
         </router-link>
@@ -154,6 +154,7 @@ const blogInfoStore = useBlogInfoStore()
 
 const blogInfo = computed(() => blogInfoStore.blogInfo)
 const websiteConfig = computed(() => blogInfo.value.websiteConfig || {})
+const isChatRoomEnabled = computed(() => Number(websiteConfig.value.isChatRoom) === 1)
 
 const drawer = computed({
   get: () => uiStore.drawer,

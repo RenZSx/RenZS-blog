@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-page">
+  <div v-if="shouldRenderChatPage" class="chat-page">
     <div class="banner" :style="cover">
       <h1 class="banner-title animated fadeInDown">聊天室</h1>
     </div>
@@ -198,7 +198,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onUnmounted, nextTick, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useBlogInfoStore } from '@/stores/blogInfo'
 import { useUserStore } from '@/stores/user'
 import { useToast } from '@/composables/useToast'
@@ -217,6 +218,7 @@ import {
 
 const blogInfoStore = useBlogInfoStore()
 const userStore = useUserStore()
+const router = useRouter()
 
 const content = ref('')
 const count = ref(0)
@@ -241,6 +243,7 @@ const contextMenu = ref<{
 })
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+let intentionallyClosed = false
 
 const cover = computed(() => {
   const pageList = blogInfoStore.blogInfo.pageList || []
@@ -252,6 +255,10 @@ const cover = computed(() => {
 const isChatRoomEnabled = computed(() => {
   return Number(blogInfoStore.blogInfo?.websiteConfig?.isChatRoom) === 1
 })
+
+const isBlogInfoLoaded = computed(() => blogInfoStore.loaded)
+
+const shouldRenderChatPage = computed(() => isBlogInfoLoaded.value && isChatRoomEnabled.value)
 
 const defaultAvatar = computed(() => {
   return blogInfoStore.blogInfo?.websiteConfig?.touristAvatar || ''
@@ -358,6 +365,18 @@ function stopReconnect() {
   isRetrying.value = false
 }
 
+function closeWebSocket() {
+  stopHeartbeat()
+  stopReconnect()
+  const socket = websocket.value
+  websocket.value = null
+  if (socket) {
+    intentionallyClosed = true
+    socket.close()
+  }
+  websocketStatus.value = 'closed'
+}
+
 function scheduleReconnect() {
   if (!isChatRoomEnabled.value || reconnectTimer || isRetrying.value) return
   isRetrying.value = true
@@ -383,6 +402,18 @@ function startHeartbeat() {
 }
 
 function connect() {
+  if (!isChatRoomEnabled.value) {
+    closeWebSocket()
+    return
+  }
+
+  if (
+    websocket.value &&
+    (websocket.value.readyState === WebSocket.OPEN || websocket.value.readyState === WebSocket.CONNECTING)
+  ) {
+    return
+  }
+
   // 聊天室和通知模块共用同一套地址解析规则，本地开发时走 Vite 的 ws 代理。
   const wsUrl = resolveChatSocketUrl(blogInfoStore.blogInfo?.websiteConfig?.websocketUrl)
   if (!wsUrl) {
@@ -392,6 +423,7 @@ function connect() {
 
   websocketStatus.value = 'connecting'
   try {
+    intentionallyClosed = false
     websocket.value = new WebSocket(wsUrl)
 
     websocket.value.onerror = () => {
@@ -435,6 +467,10 @@ function connect() {
     websocket.value.onclose = () => {
       stopHeartbeat()
       websocketStatus.value = 'closed'
+      if (intentionallyClosed) {
+        intentionallyClosed = false
+        return
+      }
       scheduleReconnect()
     }
   } catch (error) {
@@ -570,21 +606,29 @@ function sendMessage() {
   showEmojiPanel.value = false
 }
 
-onMounted(() => {
-  fetchClientIp()
-  fetchClientLocation()
-  if (isChatRoomEnabled.value) {
+watch(
+  [isBlogInfoLoaded, isChatRoomEnabled],
+  ([loaded, enabled]) => {
+    if (!loaded) {
+      return
+    }
+
+    if (!enabled) {
+      closeWebSocket()
+      router.replace('/404')
+      return
+    }
+
+    fetchClientIp()
+    fetchClientLocation()
     connect()
-  }
-})
+  },
+  { immediate: true }
+)
 
 onUnmounted(() => {
-  stopHeartbeat()
-  stopReconnect()
+  closeWebSocket()
   closeContextMenu()
-  if (websocket.value) {
-    websocket.value.close()
-  }
 })
 </script>
 

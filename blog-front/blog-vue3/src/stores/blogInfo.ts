@@ -100,10 +100,12 @@ function normalizeBlogInfo(info: Partial<BlogInfo>): BlogInfo {
 export const useBlogInfoStore = defineStore('blogInfo', () => {
   // State
   const blogInfo = ref<BlogInfo>(createDefaultBlogInfo())
+  const loaded = ref(false)
 
   // Actions
   function setBlogInfo(info: Partial<BlogInfo>) {
     blogInfo.value = normalizeBlogInfo(info)
+    loaded.value = true
   }
 
   function updateWebsiteConfig(config: Partial<WebsiteConfig>) {
@@ -121,6 +123,7 @@ export const useBlogInfoStore = defineStore('blogInfo', () => {
   return {
     // State
     blogInfo,
+    loaded,
     // Actions
     setBlogInfo,
     updateWebsiteConfig,
