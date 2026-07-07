@@ -1055,9 +1055,22 @@ hr {
 // Code block wrapper — keeps header + pre visually connected
 .article-shell .code-block {
   margin: 0 0 0.5rem 0;
+  border: 1px solid rgba(154, 169, 196, 0.16);
   border-radius: 10px;
+  background: #0f141c;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+
+.article-shell .code-block pre {
+  background: linear-gradient(180deg, #121720 0%, #0f141c 100%) !important;
+  color: rgba(248, 250, 255, 0.96) !important;
+}
+
+.article-shell .code-block pre code {
+  background: transparent !important;
+  color: inherit !important;
 }
 
 // Step 1: Code block container - macOS dark style
@@ -1067,8 +1080,8 @@ hr {
   padding: 0 !important;
   border: none;
   border-radius: 0 !important;
-  background: linear-gradient(180deg, #2d2d2d 0%, #1a1a1a 100%) !important;
-  color: #e6e6e6 !important;
+  background: linear-gradient(180deg, #121720 0%, #0f141c 100%) !important;
+  color: rgba(248, 250, 255, 0.96) !important;
   font-size: 14px !important;
   line-height: 1.6 !important;
   overflow: hidden !important;
@@ -1077,9 +1090,9 @@ hr {
 // Step 3: macOS title bar
 .article-shell .code-header {
   padding: 12px 16px;
-  background: linear-gradient(180deg, #3a3a3a 0%, #2d2d2d 100%);
+  background: linear-gradient(180deg, #121720 0%, #0f141c 100%);
   border-radius: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(154, 169, 196, 0.16);
   display: flex;
   align-items: center;
   gap: 8px;
