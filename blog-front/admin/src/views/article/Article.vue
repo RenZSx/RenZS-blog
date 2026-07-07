@@ -25,6 +25,16 @@
       >
         发布文章
       </el-button>
+      <el-button
+        type="primary"
+        size="medium"
+        :loading="aiSummaryGenerating"
+        :disabled="article.id == null"
+        @click="generateAiSummary"
+        style="margin-left:10px"
+      >
+        生成AI总结
+      </el-button>
     </div>
     <!-- 文章内容 -->
     <mavon-editor
@@ -139,6 +149,21 @@
             </el-button>
           </el-popover>
         </el-form-item>
+        <el-form-item label="AI总结">
+          <el-input
+            v-model="article.aiSummary"
+            type="textarea"
+            :rows="4"
+            placeholder="可点击编辑页顶部的生成AI总结，也可以手动填写"
+          />
+        </el-form-item>
+        <el-form-item label="AI总结状态">
+          <el-radio-group v-model="article.aiSummaryStatus">
+            <el-radio :label="0">未生成</el-radio>
+            <el-radio :label="1">已生成</el-radio>
+            <el-radio :label="2">已审核</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="文章类型">
           <el-select v-model="article.type" placeholder="请选择类型">
             <el-option
@@ -214,11 +239,17 @@ export default {
     if (articleId) {
       this.axios.get("/api/admin/articles/" + articleId).then(({ data }) => {
         this.article = data.data;
+        if (this.article.aiSummaryStatus == null) {
+          this.article.aiSummaryStatus = 0;
+        }
       });
     } else {
       const article = sessionStorage.getItem("article");
       if (article) {
         this.article = JSON.parse(article);
+        if (this.article.aiSummaryStatus == null) {
+          this.article.aiSummaryStatus = 0;
+        }
       }
     }
   },
@@ -230,6 +261,7 @@ export default {
     return {
       addOrEdit: false,
       autoSave: true,
+      aiSummaryGenerating: false,
       categoryName: "",
       tagName: "",
       categoryList: [],
@@ -252,6 +284,9 @@ export default {
         id: null,
         articleTitle: this.$moment(new Date()).format("YYYY-MM-DD"),
         articleContent: "",
+        aiSummary: "",
+        aiSummaryStatus: 0,
+        aiSummaryTime: null,
         articleCover: "",
         categoryName: null,
         tagNameList: [],
@@ -327,6 +362,33 @@ export default {
               });
           });
       }
+    },
+    generateAiSummary() {
+      if (this.article.id == null) {
+        this.$message.warning("请先保存文章后再生成AI总结");
+        return;
+      }
+      this.aiSummaryGenerating = true;
+      this.axios
+        .post(`/api/admin/articles/${this.article.id}/ai-summary`)
+        .then(({ data }) => {
+          if (data.flag) {
+            this.article.aiSummary = data.data;
+            this.article.aiSummaryStatus = 1;
+            this.$notify.success({
+              title: "成功",
+              message: "AI总结生成成功"
+            });
+          } else {
+            this.$notify.error({
+              title: "失败",
+              message: data.message
+            });
+          }
+        })
+        .finally(() => {
+          this.aiSummaryGenerating = false;
+        });
     },
     saveArticleDraft() {
       if (this.article.articleTitle.trim() == "") {

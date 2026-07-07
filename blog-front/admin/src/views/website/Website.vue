@@ -303,6 +303,101 @@
           </el-button>
         </el-form>
       </el-tab-pane>
+      <!-- AI配置 -->
+      <el-tab-pane label="AI配置" name="ai">
+        <el-form
+          label-width="120px"
+          :model="websiteConfigForm"
+          label-position="left"
+        >
+          <el-form-item label="AI总结状态">
+            <el-radio-group v-model="websiteConfigForm.isAiSummary">
+              <el-radio :label="0">关闭</el-radio>
+              <el-radio :label="1">开启</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="接口地址">
+            <el-input
+              v-model="websiteConfigForm.aiApiUrl"
+              size="small"
+              style="width:520px"
+              placeholder="例如 http://45.138.71.218:8080/v1/responses"
+            />
+          </el-form-item>
+          <el-form-item label="接口类型">
+            <el-select
+              v-model="websiteConfigForm.aiApiType"
+              size="small"
+              style="width:220px"
+            >
+              <el-option label="Chat Completions" value="chat_completions" />
+              <el-option label="Responses" value="responses" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="接口密钥">
+            <el-input
+              v-model="websiteConfigForm.aiApiKey"
+              size="small"
+              style="width:520px"
+              type="password"
+              show-password
+              placeholder="用于服务端调用，不会下发给前台"
+            />
+          </el-form-item>
+          <el-form-item label="模型名称">
+            <el-input
+              v-model="websiteConfigForm.aiModel"
+              size="small"
+              style="width:520px"
+              placeholder="例如 gpt-4o-mini / deepseek-chat"
+            />
+          </el-form-item>
+          <el-form-item
+            label="推理强度"
+            v-show="websiteConfigForm.aiApiType === 'responses'"
+          >
+            <el-select
+              v-model="websiteConfigForm.aiReasoningEffort"
+              size="small"
+              style="width:220px"
+              placeholder="可选"
+            >
+              <el-option label="低" value="low" />
+              <el-option label="中" value="medium" />
+              <el-option label="高" value="high" />
+              <el-option label="极高" value="xhigh" />
+            </el-select>
+          </el-form-item>
+          <el-form-item
+            label="关闭响应存储"
+            v-show="websiteConfigForm.aiApiType === 'responses'"
+          >
+            <el-radio-group
+              v-model="websiteConfigForm.aiDisableResponseStorage"
+            >
+              <el-radio :label="0">否</el-radio>
+              <el-radio :label="1">是</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="总结提示词">
+            <el-input
+              v-model="websiteConfigForm.aiSummaryPrompt"
+              style="width:520px"
+              type="textarea"
+              :rows="5"
+              placeholder="留空时使用系统默认提示词"
+            />
+          </el-form-item>
+          <el-button
+            type="primary"
+            size="medium"
+            style="margin-left:7.5rem"
+            @click="updateWebsiteConfig"
+          >
+            修改
+          </el-button>
+        </el-form>
+      </el-tab-pane>
     </el-tabs>
   </el-card>
 </template>
@@ -343,7 +438,15 @@ export default {
         isEmailNotice: 1,
         isEmailRegister: 1,
         isCommentReview: 0,
-        isMessageReview: 0
+        isMessageReview: 0,
+        isAiSummary: 0,
+        aiApiUrl: "",
+        aiApiKey: "",
+        aiModel: "",
+        aiApiType: "chat_completions",
+        aiReasoningEffort: "high",
+        aiDisableResponseStorage: 1,
+        aiSummaryPrompt: ""
       },
       activeName: "info"
     };
@@ -351,7 +454,10 @@ export default {
   methods: {
     getWebsiteConfig() {
       this.axios.get("/api/admin/website/config").then(({ data }) => {
-        this.websiteConfigForm = data.data;
+        this.websiteConfigForm = {
+          ...this.websiteConfigForm,
+          ...data.data
+        };
       });
     },
     beforeUpload(file) {
