@@ -40,11 +40,8 @@
               :alt="getPhotoTitle(item, index)"
               loading="lazy"
               decoding="async"
+              :fetchpriority="index < 4 ? 'high' : 'low'"
             />
-          </div>
-          <div class="photo-card__body">
-            <h3>{{ getPhotoTitle(item, index) }}</h3>
-            <p v-if="getPhotoDesc(item)">{{ getPhotoDesc(item) }}</p>
           </div>
         </article>
       </section>
@@ -176,9 +173,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onActivated, onDeactivated, onMounted, onUnmounted, ref } from 'vue'
 import { useBlogInfoStore } from '@/stores/blogInfo'
 import request from '@/api/request'
+
+defineOptions({
+  name: 'Album'
+})
 
 interface PhotoAlbum {
   id: number
@@ -197,6 +198,34 @@ interface PhotoItem {
 
 type PhotoResponseItem = string | PhotoItem
 
+interface AlbumCacheSnapshot {
+  albums: PhotoAlbum[]
+  activeAlbumId: number | null
+  savedAt: number
+}
+
+interface PhotoPageCacheSnapshot {
+  albumId: number
+  current: number
+  size: number
+  photos: PhotoResponseItem[]
+  savedAt: number
+}
+
+interface LoadPhotoOptions {
+  preferCache?: boolean
+  silent?: boolean
+  force?: boolean
+}
+
+const ALBUM_CACHE_KEY = 'blog:album:list:v1'
+const PHOTO_CACHE_KEY_PREFIX = 'blog:album:photos:v1'
+const ALBUM_CACHE_TTL = 10 * 60 * 1000
+const PHOTO_CACHE_TTL = 10 * 60 * 1000
+const MAX_MEMORY_PHOTO_CACHE = 18
+const albumMemoryCache = ref<AlbumCacheSnapshot | null>(null)
+const photoMemoryCache = new Map<string, PhotoPageCacheSnapshot>()
+
 const blogInfoStore = useBlogInfoStore()
 
 const photoAlbumList = ref<PhotoAlbum[]>([])
@@ -210,6 +239,8 @@ const previewVisible = ref(false)
 const previewIndex = ref(0)
 const previewScale = ref(1)
 const previewRotate = ref(0)
+const activePhotoRequestKey = ref('')
+let previewKeydownBound = false
 
 const activeAlbum = computed(() => {
   return photoAlbumList.value.find((item) => item.id === activeAlbumId.value)
@@ -239,6 +270,142 @@ function getPageCover() {
   const pageList = blogInfoStore.blogInfo.pageList || []
   const albumPage = pageList.find((item) => item.pageLabel === 'album')
   return albumPage?.pageCover || ''
+}
+
+function isCacheFresh(savedAt: number, ttl: number) {
+  return Date.now() - savedAt < ttl
+}
+
+function cloneAlbums(albums: PhotoAlbum[]) {
+  return albums.map((item) => ({ ...item }))
+}
+
+function clonePhotos(photos: PhotoResponseItem[]) {
+  return photos.map((item) => (typeof item === 'string' ? item : { ...item }))
+}
+
+function readSessionCache<T>(key: string) {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const rawCache = window.sessionStorage.getItem(key)
+    return rawCache ? (JSON.parse(rawCache) as T) : null
+  } catch (error) {
+    console.warn('读取相册缓存失败:', error)
+    window.sessionStorage.removeItem(key)
+    return null
+  }
+}
+
+function writeSessionCache(key: string, value: unknown) {
+  if (typeof window === 'undefined') return
+
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(value))
+  } catch (error) {
+    console.warn('写入相册缓存失败:', error)
+  }
+}
+
+function getPhotoPageCacheKey(albumId: number, page: number, pageSize: number) {
+  return `${PHOTO_CACHE_KEY_PREFIX}:${albumId}:${page}:${pageSize}`
+}
+
+function rememberPhotoPageCache(cacheKey: string, snapshot: PhotoPageCacheSnapshot) {
+  photoMemoryCache.set(cacheKey, snapshot)
+
+  if (photoMemoryCache.size > MAX_MEMORY_PHOTO_CACHE) {
+    const firstCacheKey = photoMemoryCache.keys().next().value
+    if (firstCacheKey) {
+      photoMemoryCache.delete(firstCacheKey)
+    }
+  }
+}
+
+function saveAlbumCache(activeId = activeAlbumId.value) {
+  const snapshot: AlbumCacheSnapshot = {
+    albums: cloneAlbums(photoAlbumList.value),
+    activeAlbumId: activeId,
+    savedAt: Date.now()
+  }
+
+  albumMemoryCache.value = snapshot
+  writeSessionCache(ALBUM_CACHE_KEY, snapshot)
+}
+
+function savePhotoPageCache(albumId: number, page: number, pageSize: number, photos: PhotoResponseItem[]) {
+  const cacheKey = getPhotoPageCacheKey(albumId, page, pageSize)
+  const snapshot: PhotoPageCacheSnapshot = {
+    albumId,
+    current: page,
+    size: pageSize,
+    photos: clonePhotos(photos),
+    savedAt: Date.now()
+  }
+
+  rememberPhotoPageCache(cacheKey, snapshot)
+  writeSessionCache(cacheKey, snapshot)
+}
+
+function readAlbumCache() {
+  return albumMemoryCache.value || readSessionCache<AlbumCacheSnapshot>(ALBUM_CACHE_KEY)
+}
+
+function readPhotoPageCache(albumId: number, page: number, pageSize: number) {
+  const cacheKey = getPhotoPageCacheKey(albumId, page, pageSize)
+  const memoryCache = photoMemoryCache.get(cacheKey)
+
+  if (memoryCache) {
+    return memoryCache
+  }
+
+  const sessionCache = readSessionCache<PhotoPageCacheSnapshot>(cacheKey)
+  if (sessionCache) {
+    rememberPhotoPageCache(cacheKey, sessionCache)
+  }
+  return sessionCache
+}
+
+function applyAlbumList(albums: PhotoAlbum[], preferredAlbumId?: number | null) {
+  photoAlbumList.value = cloneAlbums(albums)
+  assignAlbumTagStyles(photoAlbumList.value)
+
+  if (!photoAlbumList.value.length) {
+    activeAlbumId.value = null
+    photoList.value = []
+    return
+  }
+
+  const nextActiveAlbumId = preferredAlbumId ?? activeAlbumId.value
+  const hasActiveAlbum = photoAlbumList.value.some((item) => item.id === nextActiveAlbumId)
+  activeAlbumId.value = hasActiveAlbum ? nextActiveAlbumId : photoAlbumList.value[0].id
+}
+
+function applyPhotoPageCache(snapshot: PhotoPageCacheSnapshot | null, allowStale = false) {
+  if (!snapshot) return false
+  if (!allowStale && !isCacheFresh(snapshot.savedAt, PHOTO_CACHE_TTL)) return false
+
+  photoList.value = clonePhotos(snapshot.photos)
+  hasMore.value = snapshot.photos.length > 0
+  syncActiveAlbumPhotoCount()
+  return true
+}
+
+function restoreAlbumCache() {
+  const snapshot = readAlbumCache()
+  if (!snapshot) return false
+
+  applyAlbumList(snapshot.albums, snapshot.activeAlbumId)
+  return isCacheFresh(snapshot.savedAt, ALBUM_CACHE_TTL)
+}
+
+function restoreCurrentPhotoCache(allowStale = true) {
+  if (!activeAlbumId.value) return false
+
+  return applyPhotoPageCache(
+    readPhotoPageCache(activeAlbumId.value, current.value, size.value),
+    allowStale
+  )
 }
 
 /**
@@ -330,40 +497,90 @@ function syncActiveAlbumPhotoCount() {
 }
 
 async function listPhotoAlbums() {
+  const hasFreshAlbumCache = restoreAlbumCache()
+  const currentPhotoCache = activeAlbumId.value
+    ? readPhotoPageCache(activeAlbumId.value, current.value, size.value)
+    : null
+  const hasPhotoCache = applyPhotoPageCache(currentPhotoCache, true)
+  const hasFreshPhotoCache = currentPhotoCache
+    ? isCacheFresh(currentPhotoCache.savedAt, PHOTO_CACHE_TTL)
+    : false
+
+  if (hasFreshAlbumCache && hasFreshPhotoCache) {
+    return
+  }
+
+  if (hasFreshAlbumCache) {
+    await loadPhotos({
+      preferCache: true,
+      silent: hasPhotoCache
+    })
+    return
+  }
+
   try {
     const { data } = await request.get('/api/photos/albums')
-    photoAlbumList.value = data.data || []
-    assignAlbumTagStyles(photoAlbumList.value)
-    activeAlbumId.value = photoAlbumList.value[0]?.id ?? null
+    const preferredAlbumId = activeAlbumId.value
+    applyAlbumList(data.data || [], preferredAlbumId)
+    saveAlbumCache(activeAlbumId.value)
 
     if (activeAlbumId.value) {
-      await loadPhotos()
+      await loadPhotos({
+        preferCache: true,
+        silent: photoList.value.length > 0
+      })
     }
   } catch (error) {
     console.error('获取相册列表失败:', error)
   }
 }
 
-async function loadPhotos() {
-  if (!activeAlbumId.value || loading.value || !hasMore.value) return
+async function loadPhotos(options: LoadPhotoOptions = {}) {
+  if (!activeAlbumId.value || loading.value) return
 
-  loading.value = true
+  const albumId = activeAlbumId.value
+  const page = current.value
+  const pageSize = size.value
+  const cacheKey = getPhotoPageCacheKey(albumId, page, pageSize)
+  let restoredFromCache = false
+
+  if (options.preferCache) {
+    const cachedPage = readPhotoPageCache(albumId, page, pageSize)
+    const hasFreshCache = applyPhotoPageCache(cachedPage)
+
+    if (hasFreshCache && !options.force) {
+      return
+    }
+
+    restoredFromCache = applyPhotoPageCache(cachedPage, true)
+  }
+
+  activePhotoRequestKey.value = cacheKey
+  loading.value = !options.silent && !restoredFromCache
   try {
-    const { data } = await request.get(`/api/albums/${activeAlbumId.value}/photos`, {
+    const { data } = await request.get(`/api/albums/${albumId}/photos`, {
       params: {
-        current: current.value,
-        size: size.value
+        current: page,
+        size: pageSize
       }
     })
+
+    if (activePhotoRequestKey.value !== cacheKey) {
+      return
+    }
 
     const photos = data.data?.photoList || []
     photoList.value = photos
     hasMore.value = photos.length > 0
     syncActiveAlbumPhotoCount()
+    saveAlbumCache(activeAlbumId.value)
+    savePhotoPageCache(albumId, page, pageSize, photos)
   } catch (error) {
     console.error('获取照片失败:', error)
   } finally {
-    loading.value = false
+    if (activePhotoRequestKey.value === cacheKey) {
+      loading.value = false
+    }
   }
 }
 
@@ -372,17 +589,27 @@ async function changeAlbum(album: PhotoAlbum) {
 
   activeAlbumId.value = album.id
   resetPhotoState()
+  restoreCurrentPhotoCache(true)
   await nextTick()
-  await loadPhotos()
+  await loadPhotos({
+    preferCache: true,
+    silent: photoList.value.length > 0
+  })
 }
 
 async function changePhotoPage(page: number) {
   if (loading.value || page < 1 || page > totalPages.value || page === current.value) return
 
   current.value = page
-  photoList.value = []
+  const hasCachedPage = restoreCurrentPhotoCache(true)
+  if (!hasCachedPage) {
+    photoList.value = []
+  }
   await nextTick()
-  await loadPhotos()
+  await loadPhotos({
+    preferCache: true,
+    silent: hasCachedPage
+  })
   window.scrollTo({
     behavior: 'smooth',
     top: 140
@@ -427,10 +654,6 @@ function getPhotoTitle(photo: PhotoResponseItem, index: number) {
   const fileName = decodeURIComponent(getPhotoSrc(photo).split('/').pop()?.split('?')[0] || '')
   const title = fileName.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim()
   return title || fallbackTitle
-}
-
-function getPhotoDesc(photo: PhotoResponseItem) {
-  return typeof photo === 'string' ? activeAlbum.value?.albumDesc || '' : photo.photoDesc || ''
 }
 
 function resetPreview() {
@@ -497,13 +720,36 @@ function handlePreviewKeydown(event: KeyboardEvent) {
   }
 }
 
+function bindPreviewKeydown() {
+  if (previewKeydownBound) return
+
+  window.addEventListener('keydown', handlePreviewKeydown)
+  previewKeydownBound = true
+}
+
+function unbindPreviewKeydown() {
+  if (!previewKeydownBound) return
+
+  window.removeEventListener('keydown', handlePreviewKeydown)
+  previewKeydownBound = false
+}
+
 onMounted(() => {
   listPhotoAlbums()
-  window.addEventListener('keydown', handlePreviewKeydown)
+  bindPreviewKeydown()
+})
+
+onActivated(() => {
+  bindPreviewKeydown()
+})
+
+onDeactivated(() => {
+  closePreview()
+  unbindPreviewKeydown()
 })
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handlePreviewKeydown)
+  unbindPreviewKeydown()
 })
 </script>
 
@@ -619,7 +865,7 @@ onUnmounted(() => {
 
 .photo-card {
   overflow: hidden;
-  padding: 8px 8px 0;
+  padding: 8px;
   border: 1px solid rgba(203, 213, 225, 0.9);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.88);
@@ -656,25 +902,6 @@ onUnmounted(() => {
   transition: transform 0.35s ease;
   /* 提示浏览器把 transform 提升为合成层，hover 缩放走 GPU，避免主线程重排 */
   will-change: transform;
-}
-
-.photo-card__body {
-  padding: 8px 4px 6px;
-}
-
-.photo-card__body h3 {
-  margin: 0;
-  color: #111;
-  font-size: 15px;
-  font-weight: 900;
-  line-height: 1.35;
-}
-
-.photo-card__body p {
-  margin: 3px 0 0;
-  color: #8a8a8a;
-  font-size: 13px;
-  line-height: 1.4;
 }
 
 .photo-pagination {
@@ -865,14 +1092,6 @@ onUnmounted(() => {
 .dark .photo-card:hover {
   border-color: rgba(125, 211, 252, 0.45);
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.38);
-}
-
-.dark .photo-card__body h3 {
-  color: rgba(248, 250, 252, 0.94);
-}
-
-.dark .photo-card__body p {
-  color: rgba(203, 213, 225, 0.66);
 }
 
 .dark .photo-pagination__button {

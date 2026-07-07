@@ -10,7 +10,9 @@
     <v-main :class="{ 'auth-main': isStandaloneAuth, 'start-main': isStartPage }">
       <router-view v-slot="{ Component, route }">
         <transition name="fade" mode="out-in">
-          <component :is="Component" :key="route.fullPath" />
+          <KeepAlive include="Album">
+            <component :is="Component" :key="route.name === 'Album' ? 'Album' : route.fullPath" />
+          </KeepAlive>
         </transition>
       </router-view>
     </v-main>
