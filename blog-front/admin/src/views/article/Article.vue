@@ -186,6 +186,7 @@
             class="upload-cover"
             drag
             action="/api/admin/articles/images"
+            :headers="uploadHeaders"
             multiple
             :before-upload="beforeUpload"
             :on-success="uploadCover"
@@ -322,6 +323,10 @@ export default {
       this.addOrEdit = true;
     },
     uploadCover(response) {
+      if (!response.flag) {
+        this.$message.error(response.message || "上传封面失败");
+        return;
+      }
       this.article.articleCover = response.data;
     },
     beforeUpload(file) {
@@ -563,6 +568,11 @@ export default {
     }
   },
   computed: {
+    uploadHeaders() {
+      const token = localStorage.getItem("token");
+      // el-upload 不走 axios 拦截器，需要在组件上传时手动携带 sa-token 认证头。
+      return token ? { Authorization: "Bearer " + token } : {};
+    },
     tagClass() {
       return function(item) {
         const index = this.article.tagNameList.indexOf(item.tagName);
