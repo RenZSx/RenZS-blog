@@ -13,6 +13,22 @@
     <v-row class="article-container">
       <v-col cols="12" md="8" lg="8" class="article-main-column">
         <v-card class="article-wrapper article-shell">
+          <section v-if="shouldShowAiSummary" class="article-ai-summary">
+            <div class="article-ai-summary__avatar">
+              <v-icon size="24">mdi-robot-excited-outline</v-icon>
+            </div>
+            <div class="article-ai-summary__body">
+              <strong>小双</strong>
+              <p class="article-ai-summary__text" :aria-label="article.aiSummary">
+                <span>{{ typedAiSummary }}</span>
+                <span
+                  v-if="aiSummaryTyping"
+                  class="article-ai-summary__cursor"
+                  aria-hidden="true"
+                />
+              </p>
+            </div>
+          </section>
           <ArticleContent
             :content="article.articleContent"
             ref="articleContentRef"
@@ -135,6 +151,9 @@ const lastReservedHistoryProgress = ref(0)
 const lastReservedHistoryAt = ref(0)
 const historyReportInFlight = ref(false)
 const queuedForcedHistoryProgress = ref(0)
+const typedAiSummary = ref('')
+const aiSummaryTyping = ref(false)
+const aiSummaryTypingTimer = ref<number | null>(null)
 
 // State
 const loading = ref(true)
@@ -161,16 +180,23 @@ const isLiked = computed(() => {
 })
 const isCollected = computed(() => collectStore.isCollected(article.value.id))
 const currentPreviewImage = computed(() => imgList.value[previewIndex.value] || '')
+const shouldShowAiSummary = computed(() => {
+  return Boolean(article.value.aiSummary && article.value.aiSummaryStatus === 2)
+})
 
 // Methods
 async function getArticle() {
   loading.value = true
   imgList.value = []
+  clearAiSummaryTypingTimer()
+  typedAiSummary.value = ''
+  aiSummaryTyping.value = false
   try {
     const { data } = await fetchArticle(route.path)
     document.title = data.data.articleTitle
     article.value = data.data
     article.value.articleContent = markdownToHtml(article.value.articleContent)
+    startAiSummaryTyping()
     loading.value = false
 
     await nextTick()
@@ -296,6 +322,37 @@ function showPrevImage() {
 function showNextImage() {
   if (!imgList.value.length) return
   previewIndex.value = (previewIndex.value + 1) % imgList.value.length
+}
+
+function clearAiSummaryTypingTimer() {
+  if (aiSummaryTypingTimer.value !== null) {
+    window.clearInterval(aiSummaryTypingTimer.value)
+    aiSummaryTypingTimer.value = null
+  }
+}
+
+function startAiSummaryTyping() {
+  clearAiSummaryTypingTimer()
+  typedAiSummary.value = ''
+  aiSummaryTyping.value = false
+
+  if (!shouldShowAiSummary.value) {
+    return
+  }
+
+  // 使用 Array.from 逐字符拆分，避免中文和部分特殊字符被截断。
+  const summaryChars = Array.from(article.value.aiSummary)
+  let currentIndex = 0
+  aiSummaryTyping.value = true
+  aiSummaryTypingTimer.value = window.setInterval(() => {
+    typedAiSummary.value += summaryChars[currentIndex]
+    currentIndex += 1
+
+    if (currentIndex >= summaryChars.length) {
+      clearAiSummaryTypingTimer()
+      aiSummaryTyping.value = false
+    }
+  }, 45)
 }
 
 function handlePreviewKeydown(event: KeyboardEvent) {
@@ -431,6 +488,7 @@ onBeforeUnmount(() => {
   if (clipboard.value) {
     clipboard.value.destroy()
   }
+  clearAiSummaryTypingTimer()
   document.body.style.overflow = ''
   tocbot.destroy()
 })
@@ -567,6 +625,78 @@ onBeforeUnmount(() => {
   display: none;
 }
 
+.article-ai-summary {
+  display: flex;
+  gap: 14px;
+  box-sizing: border-box;
+  width: min(calc(100% - 108px), 860px);
+  margin: 24px auto 14px;
+  padding: 18px 20px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+}
+
+.article-ai-summary__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
+}
+
+.article-ai-summary__body {
+  min-width: 0;
+}
+
+.article-ai-summary__body strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #1f2d3d;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.article-ai-summary__body p {
+  margin: 0;
+  color: #34445a;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.article-ai-summary__text {
+  min-height: 1.8em;
+}
+
+.article-ai-summary__cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-left: 3px;
+  vertical-align: -0.16em;
+  border-radius: 999px;
+  background: #2563eb;
+  animation: ai-summary-cursor 0.86s steps(2, start) infinite;
+}
+
+@keyframes ai-summary-cursor {
+  0%,
+  45% {
+    opacity: 1;
+  }
+
+  46%,
+  100% {
+    opacity: 0;
+  }
+}
+
 .article-wrapper :deep(.v-image__image),
 .article-wrapper :deep(.v-image__placeholder) {
   border-radius: inherit;
@@ -619,6 +749,12 @@ hr {
   .article-shell {
     margin-top: -125px;
     border-radius: 18px !important;
+  }
+
+  .article-ai-summary {
+    width: calc(100% - 36px);
+    margin: 16px auto 8px;
+    padding: 15px 16px;
   }
 
   hr {
