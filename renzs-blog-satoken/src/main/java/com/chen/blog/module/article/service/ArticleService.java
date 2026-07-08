@@ -143,4 +143,29 @@ public interface ArticleService extends IService<Article> {
      * @return AI总结内容
      */
     String generateArticleSummary(Integer articleId);
+
+    /**
+     * 根据当前文章内容推荐标签。
+     *
+     * @param articleVO 文章信息
+     * @return 标签名称列表
+     */
+    List<String> recommendArticleTags(ArticleVO articleVO);
+
+    /**
+     * 根据当前文章内容生成SEO信息。
+     *
+     * @param articleVO 文章信息
+     * @return SEO信息
+     */
+    ArticleSeoDTO generateArticleSeo(ArticleVO articleVO);
+
+    /**
+     * 围绕文章内容回答读者问题。
+     *
+     * @param articleId 文章id
+     * @param question  问题
+     * @return AI回答
+     */
+    String answerArticleQuestion(Integer articleId, String question);
 }

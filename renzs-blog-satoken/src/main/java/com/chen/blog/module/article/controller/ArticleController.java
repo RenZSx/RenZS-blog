@@ -10,6 +10,7 @@ import com.chen.blog.module.article.service.ArticleHistoryService;
 import com.chen.blog.module.article.service.ArticleService;
 import com.chen.blog.module.article.strategy.context.ArticleImportStrategyContext;
 import com.chen.blog.module.article.vo.ArticleTopVO;
+import com.chen.blog.module.article.vo.ArticleAiQuestionVO;
 import com.chen.blog.module.article.vo.ArticleVO;
 import com.chen.blog.common.domain.vo.*;
 import com.chen.blog.common.enums.FilePathEnum;
@@ -196,6 +197,32 @@ public class ArticleController {
     }
 
     /**
+     * AI推荐文章标签
+     *
+     * @param articleVO 当前编辑中的文章信息
+     * @return {@link Result<List<String>>} 标签名称列表
+     */
+    @OptLog(optType = SAVE_OR_UPDATE)
+    @ApiOperation(value = "AI推荐文章标签")
+    @PostMapping("/admin/articles/ai-tags")
+    public Result<List<String>> recommendArticleTags(@Valid @RequestBody ArticleVO articleVO) {
+        return Result.ok(articleService.recommendArticleTags(articleVO));
+    }
+
+    /**
+     * AI生成文章SEO信息
+     *
+     * @param articleVO 当前编辑中的文章信息
+     * @return {@link Result<ArticleSeoDTO>} SEO信息
+     */
+    @OptLog(optType = SAVE_OR_UPDATE)
+    @ApiOperation(value = "AI生成文章SEO信息")
+    @PostMapping("/admin/articles/ai-seo")
+    public Result<ArticleSeoDTO> generateArticleSeo(@Valid @RequestBody ArticleVO articleVO) {
+        return Result.ok(articleService.generateArticleSeo(articleVO));
+    }
+
+    /**
      * 根据id查看文章
      *
      * @param articleId 文章id
@@ -206,6 +233,20 @@ public class ArticleController {
     @GetMapping("/articles/{articleId}")
     public Result<ArticleDTO> getArticleById(@PathVariable("articleId") Integer articleId) {
         return Result.ok(articleService.getArticleById(articleId));
+    }
+
+    /**
+     * AI文章问答
+     *
+     * @param articleId 文章id
+     * @param questionVO 问题
+     * @return {@link Result<String>} AI回答
+     */
+    @ApiOperation(value = "AI文章问答")
+    @PostMapping("/articles/{articleId}/ai-question")
+    public Result<String> answerArticleQuestion(@PathVariable("articleId") Integer articleId,
+                                                @Valid @RequestBody ArticleAiQuestionVO questionVO) {
+        return Result.ok(articleService.answerArticleQuestion(articleId, questionVO.getQuestion()));
     }
 
     /**

@@ -39,6 +39,10 @@
         <result column="ai_summary" property="aiSummary"/>
         <result column="ai_summary_status" property="aiSummaryStatus"/>
         <result column="ai_summary_time" property="aiSummaryTime"/>
+        <result column="seo_title" property="seoTitle"/>
+        <result column="seo_description" property="seoDescription"/>
+        <result column="seo_keywords" property="seoKeywords"/>
+        <result column="seo_og_description" property="seoOgDescription"/>
         <result column="nickname" property="nickname"/>
         <result column="avatar" property="avatar"/>
         <result column="type" property="type"/>
@@ -246,6 +250,10 @@
      CASE WHEN ai_summary_status = 2 THEN ai_summary ELSE NULL END AS ai_summary,
      ai_summary_status,
      ai_summary_time,
+     seo_title,
+     seo_description,
+     seo_keywords,
+     seo_og_description,
 	 a.type,
 	 a.original_url,
 	 a.create_time,

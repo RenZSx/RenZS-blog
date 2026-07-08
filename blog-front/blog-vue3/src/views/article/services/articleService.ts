@@ -7,3 +7,7 @@ export function fetchArticle(path: string) {
 export function sendArticleLike(articleId: number) {
   return request.post('/api/articles/' + articleId + '/like')
 }
+
+export function askArticleQuestion(articleId: number, question: string) {
+  return request.post('/api/articles/' + articleId + '/ai-question', { question })
+}

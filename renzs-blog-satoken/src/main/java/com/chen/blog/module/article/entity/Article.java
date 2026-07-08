@@ -70,6 +70,26 @@ public class Article {
     private LocalDateTime aiSummaryTime;
 
     /**
+     * SEO标题
+     */
+    private String seoTitle;
+
+    /**
+     * SEO描述
+     */
+    private String seoDescription;
+
+    /**
+     * SEO关键词
+     */
+    private String seoKeywords;
+
+    /**
+     * Open Graph分享描述
+     */
+    private String seoOgDescription;
+
+    /**
      * 文章类型
      */
     private Integer type;

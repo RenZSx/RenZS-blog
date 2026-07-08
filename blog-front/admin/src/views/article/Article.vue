@@ -35,6 +35,24 @@
       >
         生成AI总结
       </el-button>
+      <el-button
+        type="success"
+        size="medium"
+        :loading="aiTagGenerating"
+        @click="generateAiTags"
+        style="margin-left:10px"
+      >
+        AI推荐标签
+      </el-button>
+      <el-button
+        type="warning"
+        size="medium"
+        :loading="aiSeoGenerating"
+        @click="generateAiSeo"
+        style="margin-left:10px"
+      >
+        生成SEO
+      </el-button>
     </div>
     <!-- 文章内容 -->
     <mavon-editor
@@ -164,6 +182,42 @@
             <el-radio :label="2">已审核</el-radio>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="SEO标题">
+          <el-input
+            v-model="article.seoTitle"
+            maxlength="100"
+            show-word-limit
+            placeholder="可点击编辑页顶部的生成SEO自动填写"
+          />
+        </el-form-item>
+        <el-form-item label="SEO描述">
+          <el-input
+            v-model="article.seoDescription"
+            type="textarea"
+            :rows="3"
+            maxlength="255"
+            show-word-limit
+            placeholder="用于搜索引擎description"
+          />
+        </el-form-item>
+        <el-form-item label="SEO关键词">
+          <el-input
+            v-model="article.seoKeywords"
+            maxlength="255"
+            show-word-limit
+            placeholder="多个关键词用英文逗号分隔"
+          />
+        </el-form-item>
+        <el-form-item label="分享描述">
+          <el-input
+            v-model="article.seoOgDescription"
+            type="textarea"
+            :rows="3"
+            maxlength="255"
+            show-word-limit
+            placeholder="用于Open Graph社交分享"
+          />
+        </el-form-item>
         <el-form-item label="文章类型">
           <el-select v-model="article.type" placeholder="请选择类型">
             <el-option
@@ -263,6 +317,8 @@ export default {
       addOrEdit: false,
       autoSave: true,
       aiSummaryGenerating: false,
+      aiTagGenerating: false,
+      aiSeoGenerating: false,
       categoryName: "",
       tagName: "",
       categoryList: [],
@@ -288,6 +344,10 @@ export default {
         aiSummary: "",
         aiSummaryStatus: 0,
         aiSummaryTime: null,
+        seoTitle: "",
+        seoDescription: "",
+        seoKeywords: "",
+        seoOgDescription: "",
         articleCover: "",
         categoryName: null,
         tagNameList: [],
@@ -393,6 +453,77 @@ export default {
         })
         .finally(() => {
           this.aiSummaryGenerating = false;
+        });
+    },
+    validateAiBaseContent() {
+      if (this.article.articleTitle.trim() == "") {
+        this.$message.error("文章标题不能为空");
+        return false;
+      }
+      if (this.article.articleContent.trim() == "") {
+        this.$message.error("文章内容不能为空");
+        return false;
+      }
+      return true;
+    },
+    generateAiTags() {
+      if (!this.validateAiBaseContent()) {
+        return;
+      }
+      this.aiTagGenerating = true;
+      this.axios
+        .post("/api/admin/articles/ai-tags", this.article)
+        .then(({ data }) => {
+          if (data.flag) {
+            data.data.forEach(tagName => {
+              if (
+                this.article.tagNameList.indexOf(tagName) == -1 &&
+                this.article.tagNameList.length < 3
+              ) {
+                this.article.tagNameList.push(tagName);
+              }
+            });
+            this.$notify.success({
+              title: "成功",
+              message: "AI标签推荐成功"
+            });
+          } else {
+            this.$notify.error({
+              title: "失败",
+              message: data.message
+            });
+          }
+        })
+        .finally(() => {
+          this.aiTagGenerating = false;
+        });
+    },
+    generateAiSeo() {
+      if (!this.validateAiBaseContent()) {
+        return;
+      }
+      this.aiSeoGenerating = true;
+      this.axios
+        .post("/api/admin/articles/ai-seo", this.article)
+        .then(({ data }) => {
+          if (data.flag) {
+            this.article.seoTitle = data.data.seoTitle || "";
+            this.article.seoDescription = data.data.seoDescription || "";
+            this.article.seoKeywords = data.data.seoKeywords || "";
+            this.article.seoOgDescription = data.data.seoOgDescription || "";
+            this.$notify.success({
+              title: "成功",
+              message: "AI SEO生成成功"
+            });
+          } else {
+            this.$notify.error({
+              title: "失败",
+              message: data.message
+            });
+          }
+        })
+        .finally(() => {
+          this.aiSeoGenerating = false;
         });
     },
     saveArticleDraft() {

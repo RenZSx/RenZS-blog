@@ -61,6 +61,30 @@ public class ArticleVO {
     private java.time.LocalDateTime aiSummaryTime;
 
     /**
+     * SEO标题
+     */
+    @ApiModelProperty(name = "seoTitle", value = "SEO标题", dataType = "String")
+    private String seoTitle;
+
+    /**
+     * SEO描述
+     */
+    @ApiModelProperty(name = "seoDescription", value = "SEO描述", dataType = "String")
+    private String seoDescription;
+
+    /**
+     * SEO关键词
+     */
+    @ApiModelProperty(name = "seoKeywords", value = "SEO关键词", dataType = "String")
+    private String seoKeywords;
+
+    /**
+     * Open Graph分享描述
+     */
+    @ApiModelProperty(name = "seoOgDescription", value = "Open Graph分享描述", dataType = "String")
+    private String seoOgDescription;
+
+    /**
      * 文章封面
      */
     @ApiModelProperty(name = "articleCover", value = "文章缩略图", dataType = "String")

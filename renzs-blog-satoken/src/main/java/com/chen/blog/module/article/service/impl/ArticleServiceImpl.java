@@ -2,6 +2,7 @@ package com.chen.blog.module.article.service.impl;
 
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
@@ -53,6 +54,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -101,6 +103,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
      * AI接口类型：Chat Completions API。
      */
     private static final String AI_API_TYPE_CHAT_COMPLETIONS = "chat_completions";
+    /**
+     * AI标签推荐系统提示词
+     */
+    private static final String AI_TAG_PROMPT = "你是博客文章标签助手。请根据文章标题和正文推荐1到3个中文标签，标签要短、清晰、适合技术博客归档。只返回JSON：{\"tags\":[\"标签1\",\"标签2\"]}";
+    /**
+     * AI SEO生成系统提示词
+     */
+    private static final String AI_SEO_PROMPT = "你是博客SEO助手。请根据文章标题和正文生成SEO信息，只返回JSON：{\"seoTitle\":\"不超过60字\",\"seoDescription\":\"不超过120字\",\"seoKeywords\":\"关键词1,关键词2,关键词3\",\"seoOgDescription\":\"适合社交分享的不超过120字描述\"}";
+    /**
+     * 文章问答系统提示词
+     */
+    private static final String AI_QUESTION_PROMPT = "你是博客文章问答助手。只能依据给定文章内容回答问题；如果文章中没有相关信息，请直接说明文章中没有提到。回答使用中文，简洁准确。";
 
     @Autowired
     private ArticleDao articleDao;
@@ -495,6 +509,82 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
     }
 
     @Override
+    public List<String> recommendArticleTags(ArticleVO articleVO) {
+        WebsiteConfigVO websiteConfig = blogInfoService.getWebsiteConfig();
+        validateAiSummaryConfig(websiteConfig);
+        String aiText = requestAiText(
+                AI_TAG_PROMPT,
+                buildArticleEditUserPrompt(articleVO),
+                0.2,
+                websiteConfig,
+                "AI文章标签推荐失败"
+        );
+        JSONObject jsonObject = parseAiJsonObject(aiText, "AI标签推荐");
+        JSONArray tagArray = jsonObject.getJSONArray("tags");
+        if (tagArray == null || tagArray.isEmpty()) {
+            throw new BizException("AI未返回有效标签");
+        }
+        List<String> tagList = new ArrayList<>();
+        for (int i = 0; i < tagArray.size() && tagList.size() < 3; i++) {
+            String tagName = StrUtil.trim(tagArray.getString(i));
+            if (StrUtil.isNotBlank(tagName) && !tagList.contains(tagName)) {
+                tagList.add(tagName);
+            }
+        }
+        if (CollectionUtils.isEmpty(tagList)) {
+            throw new BizException("AI未返回有效标签");
+        }
+        return tagList;
+    }
+
+    @Override
+    public ArticleSeoDTO generateArticleSeo(ArticleVO articleVO) {
+        WebsiteConfigVO websiteConfig = blogInfoService.getWebsiteConfig();
+        validateAiSummaryConfig(websiteConfig);
+        String aiText = requestAiText(
+                AI_SEO_PROMPT,
+                buildArticleEditUserPrompt(articleVO),
+                0.2,
+                websiteConfig,
+                "AI文章SEO生成失败"
+        );
+        JSONObject jsonObject = parseAiJsonObject(aiText, "AI文章SEO");
+        ArticleSeoDTO seoDTO = ArticleSeoDTO.builder()
+                .seoTitle(trimToLength(jsonObject.getString("seoTitle"), 100))
+                .seoDescription(trimToLength(jsonObject.getString("seoDescription"), 255))
+                .seoKeywords(trimToLength(jsonObject.getString("seoKeywords"), 255))
+                .seoOgDescription(trimToLength(jsonObject.getString("seoOgDescription"), 255))
+                .build();
+        if (StrUtil.isBlank(seoDTO.getSeoDescription()) && StrUtil.isBlank(seoDTO.getSeoKeywords())) {
+            throw new BizException("AI未返回有效SEO信息");
+        }
+        return seoDTO;
+    }
+
+    @Override
+    public String answerArticleQuestion(Integer articleId, String question) {
+        StpUtil.checkLogin();
+        Article article = articleDao.selectById(articleId);
+        if (Objects.isNull(article) || !Integer.valueOf(FALSE).equals(article.getIsDelete())
+                || !(PUBLIC.getStatus().equals(article.getStatus()) || RECOMMEND.getStatus().equals(article.getStatus()))) {
+            throw new BizException("文章不存在");
+        }
+        WebsiteConfigVO websiteConfig = blogInfoService.getWebsiteConfig();
+        validateAiSummaryConfig(websiteConfig);
+        String aiText = requestAiText(
+                AI_QUESTION_PROMPT,
+                buildArticleQuestionUserPrompt(article, question),
+                0.2,
+                websiteConfig,
+                "AI文章问答失败"
+        );
+        if (StrUtil.isBlank(aiText)) {
+            throw new BizException("AI未返回有效回答");
+        }
+        return aiText;
+    }
+
+    @Override
     public ArticleVO getArticleBackById(Integer articleId) {
         // 查询文章信息
         Article article = articleDao.selectById(articleId);
@@ -603,18 +693,114 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
                 : buildChatSummaryRequest(article, websiteConfig);
 
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(
-                    websiteConfig.getAiApiUrl(),
-                    new HttpEntity<>(requestBody, headers),
-                    String.class
-            );
-            return parseAiSummaryResponse(response.getBody(), websiteConfig);
+            return parseAiSummaryResponse(executeAiRequest(requestBody, headers, websiteConfig), websiteConfig);
         } catch (BizException e) {
             throw e;
         } catch (Exception e) {
             log.error(StrUtil.format("AI文章总结生成失败,文章id:{},堆栈:{}", article.getId(), ExceptionUtil.stacktraceToString(e)));
             throw new BizException("AI文章总结生成失败");
         }
+    }
+
+    /**
+     * 调用OpenAI兼容接口获取普通文本结果。
+     *
+     * @param systemPrompt  系统提示词
+     * @param userPrompt    用户提示词
+     * @param temperature   采样温度
+     * @param websiteConfig 网站AI配置
+     * @param errorMessage  失败提示
+     * @return AI文本
+     */
+    private String requestAiText(String systemPrompt,
+                                 String userPrompt,
+                                 double temperature,
+                                 WebsiteConfigVO websiteConfig,
+                                 String errorMessage) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.setBearerAuth(websiteConfig.getAiApiKey());
+
+        Map<String, Object> requestBody = isResponsesApi(websiteConfig)
+                ? buildResponsesTextRequest(systemPrompt, userPrompt, websiteConfig)
+                : buildChatTextRequest(systemPrompt, userPrompt, temperature, websiteConfig);
+
+        try {
+            return parseAiSummaryResponse(executeAiRequest(requestBody, headers, websiteConfig), websiteConfig);
+        } catch (BizException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error(StrUtil.format("{},堆栈:{}", errorMessage, ExceptionUtil.stacktraceToString(e)));
+            throw new BizException(errorMessage);
+        }
+    }
+
+    /**
+     * 发送AI请求并按UTF-8解码响应体。
+     *
+     * @param requestBody   请求体
+     * @param headers       请求头
+     * @param websiteConfig 网站AI配置
+     * @return 响应JSON文本
+     */
+    private String executeAiRequest(Map<String, Object> requestBody, HttpHeaders headers, WebsiteConfigVO websiteConfig) {
+        ResponseEntity<byte[]> response = restTemplate.postForEntity(
+                websiteConfig.getAiApiUrl(),
+                new HttpEntity<>(requestBody, headers),
+                byte[].class
+        );
+        byte[] responseBody = response.getBody();
+        return Objects.isNull(responseBody) ? "" : new String(responseBody, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * 构造Chat Completions通用请求体。
+     *
+     * @param systemPrompt  系统提示词
+     * @param userPrompt    用户提示词
+     * @param temperature   采样温度
+     * @param websiteConfig 网站AI配置
+     * @return Chat Completions请求体
+     */
+    private Map<String, Object> buildChatTextRequest(String systemPrompt,
+                                                     String userPrompt,
+                                                     double temperature,
+                                                     WebsiteConfigVO websiteConfig) {
+        Map<String, Object> requestBody = new LinkedHashMap<>();
+        requestBody.put("model", websiteConfig.getAiModel());
+        requestBody.put("temperature", temperature);
+        List<Map<String, String>> messages = new ArrayList<>();
+        messages.add(buildAiMessage("system", systemPrompt));
+        messages.add(buildAiMessage("user", userPrompt));
+        requestBody.put("messages", messages);
+        return requestBody;
+    }
+
+    /**
+     * 构造Responses通用请求体。
+     *
+     * @param systemPrompt  系统提示词
+     * @param userPrompt    用户提示词
+     * @param websiteConfig 网站AI配置
+     * @return Responses请求体
+     */
+    private Map<String, Object> buildResponsesTextRequest(String systemPrompt,
+                                                          String userPrompt,
+                                                          WebsiteConfigVO websiteConfig) {
+        Map<String, Object> requestBody = new LinkedHashMap<>();
+        requestBody.put("model", websiteConfig.getAiModel());
+        requestBody.put("instructions", systemPrompt);
+        requestBody.put("input", userPrompt);
+        if (StrUtil.isNotBlank(websiteConfig.getAiReasoningEffort())) {
+            Map<String, Object> reasoning = new LinkedHashMap<>();
+            reasoning.put("effort", websiteConfig.getAiReasoningEffort());
+            requestBody.put("reasoning", reasoning);
+        }
+        if (Integer.valueOf(TRUE).equals(websiteConfig.getAiDisableResponseStorage())) {
+            requestBody.put("store", false);
+        }
+        return requestBody;
     }
 
     /**
@@ -685,6 +871,37 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
             articleContent = articleContent.substring(0, AI_SUMMARY_CONTENT_LIMIT);
         }
         return "文章标题：" + article.getArticleTitle() + "\n\n文章内容：\n" + articleContent;
+    }
+
+    /**
+     * 构造后台编辑态文章提示词。
+     *
+     * @param articleVO 后台编辑中的文章
+     * @return 用户提示词
+     */
+    private String buildArticleEditUserPrompt(ArticleVO articleVO) {
+        String articleContent = normalizeArticleContent(articleVO.getArticleContent());
+        if (articleContent.length() > AI_SUMMARY_CONTENT_LIMIT) {
+            articleContent = articleContent.substring(0, AI_SUMMARY_CONTENT_LIMIT);
+        }
+        return "文章标题：" + articleVO.getArticleTitle() + "\n\n文章内容：\n" + articleContent;
+    }
+
+    /**
+     * 构造文章问答提示词。
+     *
+     * @param article  文章
+     * @param question 读者问题
+     * @return 用户提示词
+     */
+    private String buildArticleQuestionUserPrompt(Article article, String question) {
+        String articleContent = normalizeArticleContent(article.getArticleContent());
+        if (articleContent.length() > AI_SUMMARY_CONTENT_LIMIT) {
+            articleContent = articleContent.substring(0, AI_SUMMARY_CONTENT_LIMIT);
+        }
+        return "文章标题：" + article.getArticleTitle()
+                + "\n\n文章内容：\n" + articleContent
+                + "\n\n读者问题：\n" + StrUtil.trim(question);
     }
 
     /**
@@ -787,6 +1004,49 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
             throw new BizException("AI接口未返回可用文本");
         }
         return summary;
+    }
+
+    /**
+     * 从AI文本中提取JSON对象。
+     *
+     * @param aiText  AI返回文本
+     * @param context 当前业务上下文
+     * @return JSON对象
+     */
+    private JSONObject parseAiJsonObject(String aiText, String context) {
+        if (StrUtil.isBlank(aiText)) {
+            throw new BizException(context + "返回为空");
+        }
+        String jsonText = aiText.trim();
+        if (jsonText.startsWith("```")) {
+            jsonText = jsonText.replaceFirst("(?s)^```(?:json)?\\s*", "").replaceFirst("(?s)\\s*```$", "");
+        }
+        int start = jsonText.indexOf('{');
+        int end = jsonText.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            jsonText = jsonText.substring(start, end + 1);
+        }
+        try {
+            return JSON.parseObject(jsonText);
+        } catch (JSONException e) {
+            log.warn("{} JSON解析失败,AI返回:{}", context, abbreviateAiResponse(aiText));
+            throw new BizException(context + "返回格式不正确");
+        }
+    }
+
+    /**
+     * 裁剪字符串到指定长度。
+     *
+     * @param value  原始字符串
+     * @param length 最大长度
+     * @return 裁剪后的字符串
+     */
+    private String trimToLength(String value, int length) {
+        String text = StrUtil.trim(value);
+        if (StrUtil.isBlank(text)) {
+            return "";
+        }
+        return text.length() > length ? text.substring(0, length) : text;
     }
 
     /**

@@ -42,6 +42,45 @@
             @like="handleLike"
             @collect="handleCollect"
           />
+          <section class="article-ai-chat">
+            <div class="article-ai-chat__header">
+              <div>
+                <strong>问这篇文章</strong>
+                <span>基于正文内容回答</span>
+              </div>
+              <v-icon size="22">mdi-robot-outline</v-icon>
+            </div>
+            <div v-if="aiAnswerList.length" class="article-ai-chat__messages">
+              <div
+                v-for="(item, index) in aiAnswerList"
+                :key="index"
+                class="article-ai-chat__message"
+              >
+                <p class="article-ai-chat__question">{{ item.question }}</p>
+                <p class="article-ai-chat__answer">{{ item.answer }}</p>
+              </div>
+            </div>
+            <div class="article-ai-chat__form">
+              <v-textarea
+                v-model="aiQuestion"
+                variant="outlined"
+                rows="2"
+                auto-grow
+                hide-details
+                density="comfortable"
+                placeholder="输入你想问的问题"
+                @keydown.ctrl.enter.prevent="submitAiQuestion"
+              />
+              <v-btn
+                color="primary"
+                :loading="aiQuestionLoading"
+                :disabled="!aiQuestion.trim()"
+                @click="submitAiQuestion"
+              >
+                提问
+              </v-btn>
+            </div>
+          </section>
           <ArticleRecommend :article="article" />
           <!-- 分割线 -->
           <hr />
@@ -117,7 +156,7 @@ import ArticleActions from './components/ArticleActions.vue'
 import ArticleRecommend from './components/ArticleRecommend.vue'
 import ArticleSidebar from './components/ArticleSidebar.vue'
 import Comment from '@/components/Comment.vue'
-import { fetchArticle, sendArticleLike } from './services/articleService'
+import { askArticleQuestion, fetchArticle, sendArticleLike } from './services/articleService'
 import markdownToHtml from '@/utils/markdown'
 import { useCollectStore } from '@/stores/collect'
 import { useHistoryStore } from '@/stores/history'
@@ -154,6 +193,9 @@ const queuedForcedHistoryProgress = ref(0)
 const typedAiSummary = ref('')
 const aiSummaryTyping = ref(false)
 const aiSummaryTypingTimer = ref<number | null>(null)
+const aiQuestion = ref('')
+const aiQuestionLoading = ref(false)
+const aiAnswerList = ref<Array<{ question: string; answer: string }>>([])
 
 // State
 const loading = ref(true)
@@ -193,8 +235,8 @@ async function getArticle() {
   aiSummaryTyping.value = false
   try {
     const { data } = await fetchArticle(route.path)
-    document.title = data.data.articleTitle
     article.value = data.data
+    applyArticleSeo()
     article.value.articleContent = markdownToHtml(article.value.articleContent)
     startAiSummaryTyping()
     loading.value = false
@@ -252,6 +294,54 @@ async function getArticle() {
     console.error('获取文章失败:', error)
     loading.value = false
   }
+}
+
+async function submitAiQuestion() {
+  const question = aiQuestion.value.trim()
+  if (!question) return
+  if (!userStore.userId) {
+    openLoginRequiredPrompt({ redirect: route.fullPath })
+    return
+  }
+  aiQuestionLoading.value = true
+  try {
+    const { data } = await askArticleQuestion(article.value.id, question)
+    if (data.flag) {
+      aiAnswerList.value.unshift({
+        question,
+        answer: data.data
+      })
+      aiQuestion.value = ''
+    } else {
+      useToast({ type: 'error', message: data.message || 'AI回答失败' })
+    }
+  } finally {
+    aiQuestionLoading.value = false
+  }
+}
+
+function applyArticleSeo() {
+  const seoTitle = article.value.seoTitle || article.value.articleTitle
+  document.title = seoTitle
+  updateMetaTag('description', article.value.seoDescription || article.value.aiSummary || '')
+  updateMetaTag('keywords', article.value.seoKeywords || '')
+  updateMetaTag('og:title', seoTitle, 'property')
+  updateMetaTag(
+    'og:description',
+    article.value.seoOgDescription || article.value.seoDescription || article.value.aiSummary || '',
+    'property'
+  )
+}
+
+function updateMetaTag(name: string, content: string, attr: 'name' | 'property' = 'name') {
+  if (!content) return
+  let meta = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`)
+  if (!meta) {
+    meta = document.createElement('meta')
+    meta.setAttribute(attr, name)
+    document.head.appendChild(meta)
+  }
+  meta.setAttribute('content', content)
 }
 
 async function handleLike() {
@@ -697,6 +787,74 @@ onBeforeUnmount(() => {
   }
 }
 
+.article-ai-chat {
+  box-sizing: border-box;
+  width: min(calc(100% - 108px), 860px);
+  margin: 24px auto 8px;
+  padding: 18px 20px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.article-ai-chat__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  color: #1f2d3d;
+}
+
+.article-ai-chat__header strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.article-ai-chat__header span {
+  display: block;
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.article-ai-chat__messages {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.article-ai-chat__message {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.article-ai-chat__question,
+.article-ai-chat__answer {
+  margin: 0;
+  line-height: 1.75;
+}
+
+.article-ai-chat__question {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.article-ai-chat__answer {
+  margin-top: 6px;
+  color: #334155;
+  white-space: pre-wrap;
+}
+
+.article-ai-chat__form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
 .article-wrapper :deep(.v-image__image),
 .article-wrapper :deep(.v-image__placeholder) {
   border-radius: inherit;
@@ -755,6 +913,16 @@ hr {
     width: calc(100% - 36px);
     margin: 16px auto 8px;
     padding: 15px 16px;
+  }
+
+  .article-ai-chat {
+    width: calc(100% - 36px);
+    margin: 18px auto 8px;
+    padding: 15px 16px;
+  }
+
+  .article-ai-chat__form {
+    grid-template-columns: 1fr;
   }
 
   hr {
