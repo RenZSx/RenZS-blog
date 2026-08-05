@@ -76,11 +76,12 @@
         </p>
       </div>
 
-      <router-link class="love-letter-card" to="/letter">
-        <div class="love-letter-card__cover">
-          <span>{{ loveConfig.subtitle || '飞车传信' }}</span>
-        </div>
-      </router-link>
+      <FlyingLetterCard
+        class="love-letter-card"
+        :label="loveConfig.subtitle || '飞车传信'"
+        :departing="letterDeparting"
+        @activate="openLetter"
+      />
     </section>
   </div>
 </template>
@@ -89,7 +90,9 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import dayjs from 'dayjs'
 import { useTheme } from 'vuetify'
+import { useRouter } from 'vue-router'
 import { getLoveConfig } from '@/api/love'
+import FlyingLetterCard from './FlyingLetterCard.vue'
 
 interface LoveConfig {
   title: string
@@ -103,6 +106,7 @@ interface LoveConfig {
 
 
 const theme = useTheme()
+const router = useRouter()
 const isDark = computed(() => theme.global.current.value.dark)
 const petals = [1, 2, 3, 4, 5, 6, 7, 8]
 const defaultLovers = [
@@ -138,6 +142,8 @@ const elapsedParts = ref({
 })
 const countdownText = ref('0天0时0分0秒')
 const timer = ref<ReturnType<typeof setInterval> | null>(null)
+const navigationTimer = ref<ReturnType<typeof setTimeout> | null>(null)
+const letterDeparting = ref(false)
 
 const heroStyle = computed(() => {
   const background = loveConfig.value.background
@@ -194,6 +200,21 @@ async function loadLoveConfig() {
   updateTimers()
 }
 
+function openLetter() {
+  if (letterDeparting.value) {
+    return
+  }
+  sessionStorage.setItem('letter-arrival-source', 'love')
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    router.push('/letter')
+    return
+  }
+  letterDeparting.value = true
+  navigationTimer.value = setTimeout(() => {
+    router.push('/letter')
+  }, 560)
+}
+
 
 onMounted(async () => {
   await loadLoveConfig()
@@ -205,6 +226,10 @@ onUnmounted(() => {
     // 离开页面时清理定时器，防止路由切换后继续计算。
     clearInterval(timer.value)
     timer.value = null
+  }
+  if (navigationTimer.value) {
+    clearTimeout(navigationTimer.value)
+    navigationTimer.value = null
   }
 })
 </script>
@@ -409,37 +434,7 @@ onUnmounted(() => {
 .love-letter-card {
   position: relative;
   z-index: 1;
-  display: block;
-  width: min(340px, 82vw);
-  height: 120px;
   margin: 48px auto 0;
-  overflow: hidden;
-  border-radius: 16px;
-  text-decoration: none;
-  box-shadow: 0 14px 24px rgba(0, 35, 50, 0.18);
-  transition: box-shadow 0.24s ease, transform 0.24s ease;
-}
-
-.love-letter-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 34px rgba(0, 35, 50, 0.24);
-}
-
-.love-letter-card__cover {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-  background:
-    linear-gradient(90deg, rgba(4, 39, 57, 0.62), rgba(4, 39, 57, 0.18) 48%, rgba(4, 39, 57, 0.06)),
-    url('/images/love-letter-bg.svg') center / cover no-repeat;
-}
-
-.love-letter-card__cover span {
-  color: #fff;
-  font-size: 24px;
-  font-weight: 900;
-  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.34);
 }
 
 .love-petal {
