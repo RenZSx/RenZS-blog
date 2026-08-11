@@ -7,7 +7,13 @@
     <SideNavBar/>
 
     <!-- 主内容区域 -->
-    <v-main :class="{ 'auth-main': isStandaloneAuth, 'start-main': isStartPage }">
+    <v-main
+      :class="{
+        'auth-main': isStandaloneAuth,
+        'start-main': isStartPage,
+        'about-overlay-main': isAboutPage
+      }"
+    >
       <router-view v-slot="{ Component, route }">
         <transition name="fade" mode="out-in">
           <KeepAlive include="Album">
@@ -88,6 +94,7 @@ const { start: startNoticeSocket, disconnect: disconnectNoticeSocket } = useNoti
 const standaloneAuthRoutes = new Set(['/auth', '/login', '/register', '/forgot-password'])
 const isStandaloneAuth = computed(() => route.meta.layout === 'auth')
 const isStartPage = computed(() => route.path === '/home/start')
+const isAboutPage = computed(() => route.path === '/about')
 const hideFloatingChatRoom = computed(() => route.path === '/message' || route.path === '/chat')
 
 function redirectToAuthPage(

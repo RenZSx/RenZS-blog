@@ -2,10 +2,16 @@
   <v-app-bar
     :class="[
       navClass,
-      { 'nav-albums-overlay': isAlbumsPage, 'nav-love-overlay': isLovePage, 'nav-letter-overlay': isLetterPage }
+      {
+        'nav-albums-overlay': isAlbumsPage,
+        'nav-love-overlay': isLovePage,
+        'nav-letter-overlay': isLetterPage,
+        'nav-about-overlay': isAboutPage
+      }
     ]"
     flat
     height="60"
+    :absolute="isAboutPage"
   >
     <!-- 手机端导航栏 -->
     <div class="d-md-none nav-mobile-container">
@@ -225,13 +231,15 @@ const noticeBadgeText = computed(() => {
 const isAlbumsPage = computed(() => route.path.startsWith('/albums'))
 const isLovePage = computed(() => route.path.startsWith('/love'))
 const isLetterPage = computed(() => route.path.startsWith('/letter'))
+const isAboutPage = computed(() => route.path === '/about')
 const isOverlayRoute = computed(() => {
   return (
     route.path === '/' ||
     route.path === '/home/start' ||
     route.path.startsWith('/albums') ||
     route.path.startsWith('/love') ||
-    route.path.startsWith('/letter')
+    route.path.startsWith('/letter') ||
+    route.path === '/about'
   )
 })
 
@@ -666,6 +674,32 @@ ul {
 :global(.dark) .menus-submenu a:hover {
   background: linear-gradient(135deg, rgba(87, 163, 232, 0.92), rgba(90, 125, 255, 0.92));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* 关于页首屏导航只负责叠加在封面上，不引入另一套主题。 */
+.nav-about-overlay.nav {
+  position: absolute !important;
+  top: 0 !important;
+  background: transparent !important;
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+.nav-about-overlay.nav a {
+  color: #eee !important;
+}
+
+.nav-about-overlay.nav .menus-submenu a {
+  color: #4c4948 !important;
+  text-shadow: none;
+}
+
+.nav-about-overlay.nav .menus-submenu a:hover {
+  color: #fff !important;
+}
+
+:global(.dark) .nav-about-overlay.nav .menus-submenu a {
+  color: rgba(236, 242, 252, 0.92) !important;
 }
 
 :global(.dark) .user-avatar-badge {

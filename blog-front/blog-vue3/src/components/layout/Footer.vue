@@ -39,6 +39,10 @@ const websiteConfig = computed(() => blogInfo.value.websiteConfig || {})
 </script>
 
 <style scoped>
+.v-footer {
+  padding: 0 !important;
+}
+
 .footer-wrap {
   width: 100%;
   line-height: 1;
