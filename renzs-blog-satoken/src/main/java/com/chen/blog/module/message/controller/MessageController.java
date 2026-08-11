@@ -22,8 +22,7 @@ import static com.chen.blog.common.constant.OptTypeConst.UPDATE;
 /**
  * 留言控制器
  *
- * @author xiaojie
- * @date 2021/07/29
+ * @author chenfuyun
  */
 @Api(tags = "留言模块")
 @RestController

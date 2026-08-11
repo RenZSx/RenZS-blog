@@ -6,8 +6,7 @@ import com.chen.blog.module.article.entity.ArticleTag;
 /**
  * 文章标签服务
  *
- * @author xiaojie
- * @date 2021/07/29
+ * @author chenfuyun
  */
 public interface ArticleTagService extends IService<ArticleTag> {
 

@@ -48,9 +48,8 @@ import static com.chen.blog.common.enums.ArticleStatusEnum.RECOMMEND;
 /**
  * 博客信息服务
  *
- * @author xiaojie
- * @date 2021/08/10
- * @since 2020-05-18
+ * @author chenfuyun
+
  */
 @Service
 public class BlogInfoServiceImpl implements BlogInfoService {

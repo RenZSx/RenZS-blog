@@ -23,8 +23,7 @@ import static com.chen.blog.common.constant.OptTypeConst.*;
 /**
  * 评论控制器
  *
- * @author xiaojie
- * @date 2021/07/29
+ * @author chenfuyun
  */
 @Api(tags = "评论模块")
 @RestController
