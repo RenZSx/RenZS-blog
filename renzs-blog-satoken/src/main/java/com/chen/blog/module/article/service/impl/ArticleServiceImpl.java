@@ -512,8 +512,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
     public List<String> recommendArticleTags(ArticleVO articleVO) {
         WebsiteConfigVO websiteConfig = blogInfoService.getWebsiteConfig();
         validateAiSummaryConfig(websiteConfig);
+
+        // 查询数据库中所有已存在的标签
+        List<Tag> existingTags = tagService.list();
+        List<String> existingTagNames = existingTags.stream()
+                .map(Tag::getTagName)
+                .collect(Collectors.toList());
+
+        // 构建增强的提示词，包含现有标签列表
+        String enhancedPrompt = buildEnhancedTagPrompt(existingTagNames);
+
         String aiText = requestAiText(
-                AI_TAG_PROMPT,
+                enhancedPrompt,
                 buildArticleEditUserPrompt(articleVO),
                 0.2,
                 websiteConfig,
@@ -902,6 +912,34 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
         return "文章标题：" + article.getArticleTitle()
                 + "\n\n文章内容：\n" + articleContent
                 + "\n\n读者问题：\n" + StrUtil.trim(question);
+    }
+
+    /**
+     * 构建增强的标签推荐提示词，包含现有标签列表。
+     *
+     * @param existingTagNames 数据库中已存在的标签列表
+     * @return 增强的提示词
+     */
+    private String buildEnhancedTagPrompt(List<String> existingTagNames) {
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("你是博客文章标签助手。请根据文章标题和正文推荐1到3个中文标签，");
+        prompt.append("标签要短、清晰、适合技术博客归档。");
+
+        // 如果有现有标签，引导AI优先使用
+        if (CollectionUtils.isNotEmpty(existingTagNames)) {
+            prompt.append("\n\n系统中已有以下标签，请优先从中选择最相关的：\n");
+            // 限制标签列表长度，避免提示词过长
+            int maxTags = Math.min(existingTagNames.size(), 100);
+            List<String> limitedTags = existingTagNames.subList(0, maxTags);
+            prompt.append(String.join("、", limitedTags));
+            if (existingTagNames.size() > maxTags) {
+                prompt.append("等");
+            }
+            prompt.append("\n\n如果已有标签都不合适，可以推荐新标签。");
+        }
+
+        prompt.append("\n\n只返回JSON：{\"tags\":[\"标签1\",\"标签2\"]}");
+        return prompt.toString();
     }
 
     /**
