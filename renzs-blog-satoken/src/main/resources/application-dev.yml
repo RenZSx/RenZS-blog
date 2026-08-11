@@ -1,0 +1,158 @@
+# 配置端口
+server:
+  port: 8088
+
+# 配置mysql数据库
+spring:
+  datasource:
+    #    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/chen-blog?serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: root
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      # 空闲连接存活最大时间，默认600000（10分钟）
+      idle-timeout: 180000
+      # 连接池最大连接数，默认是10
+      maximum-pool-size: 10
+      # 此属性控制从池返回的连接的默认自动提交行为,默认值：true
+      auto-commit: true
+      # 连接池名称
+      pool-name: MyHikariCP
+      # 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认1800000即30分钟
+      max-lifetime: 1800000
+      # 数据库连接超时时间,默认30秒，即30000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  # redis配置
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password:
+  # mq配置
+  #  rabbitmq:
+  #    host: 你的ip
+  #    port: 5672
+  #    username: rabbitmq用户名
+  #    password: rabbitmq密码
+  #    listener:
+  #      simple:
+  #        retry:
+  #          enabled: true
+  #          max-attempts: 3 #最大重试次数
+  #          initial-interval: 3000 #重试间隔时间（单位毫秒）
+  # es配置 若搜索模式为mysql可删除
+  #  elasticsearch:
+  #    rest:
+  #      uris: 你的IP:9200
+  # 邮箱配置
+  #  mail:
+  #    host: smtpdm.aliyun.com
+  #    username: renzs@chen.renzs.top
+  #    password: C1F2Y3d4de5
+  #    default-encoding: UTF-8
+  #    #阿里云SMTP端口号：25，80，465（SSL加密）
+  #    port: 465
+  #    properties:
+  #      mail: renzs@chen.renzs.top
+  #      smtp: smtpdm.aliyun.com
+  #      auth: true
+  #      socketFactory:
+  #      class: javax.net.ssl.SSLSocketFactory
+  # 上传图片大小限制
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size:  100MB
+rocketmq:
+  name-server:                   #mq地址
+  producer:
+    group: email-group
+# 配置MybatisPlus
+#mybatis-plus:
+#  mapper-locations: classpath:mapper/*.xml
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    map-underscore-to-camel-case: true
+
+#阿里云发送邮件
+aliyunmail:
+  accessKey: 阿里云邮件服务accessKey
+  secretKey: 阿里云邮件服务secretKey
+  endpoint: dm.aliyuncs.com
+  replyAddress: xxxxxxxxxx@qq.com
+  accountName:
+# 搜索模式 可选 elasticsearch或mysql
+search:
+  mode: mysql
+
+# 邮件发送模式 可选 mq(RocketMQ异步发送)或direct(直接调用发送)
+email:
+  mode: mq
+
+# 上传模式 可选 oss或local  （http://和最后的/一定不能去！！！）
+upload:
+  mode: oss
+  local:
+    # nginx映射本地文件路径，无域名则为 ip:83
+    url: http://你的文件上传子域名/
+    # 本地文件存储路径
+    path: /usr/local/upload/
+  #阿里云oss上传文件
+  oss:
+    url: 阿里云文件域名
+    endpoint: oss-cn-chengdu.aliyuncs.com
+    accessKeyId: 阿里云accessKeyId
+    accessKeySecret: 阿里云accessKeySecret
+    bucketName: 阿里云桶名称
+  #腾讯云cos上传文件
+  cos:
+    url:
+    secretId:
+    secretKey:
+    region:
+    bucketName:
+
+# 网站前台域名（邮件通知用）
+website:
+  url: 你的服务器ip或者域名
+
+#第三方配置信息
+qq:
+  app-id: QQ的APPID
+  check-token-url: https://graph.qq.com/oauth2.0/me?access_token={access_token}
+  user-info-url: https://graph.qq.com/user/get_user_info?openid={openid}&access_token={access_token}&oauth_consumer_key={oauth_consumer_key}
+
+weibo:
+  app-id: 微博APPID
+  app-secret: 微博APPSECRET
+  grant-type: authorization_code
+  redirect-url: 微博回调地址
+  access-token-url: https://api.weibo.com/oauth2/access_token
+  user-info-url: https://api.weibo.com/2/users/show.json?uid={uid}&access_token={access_token}
+
+#Gitee登录配置
+gitee:
+  app-id: gitee的APPID
+  app-secret: gitee的app-secret
+  grant-type: authorization_code
+  redirect-url: https://你的服务器ip或者域名/oauth/login/gitee
+  access-token-url: https://gitee.com/oauth/token
+  user-info-url: https://gitee.com/api/v5/user
+
+# sa-token 配置
+sa-token:
+  token-name: Authorization          # Header 字段名,使用 REST 标准 Authorization
+  token-prefix: Bearer               # 前端送 "Authorization: Bearer xxx",符合 OAuth2/JWT 业界惯例
+  timeout: 2592000                   # 30 天
+  active-timeout: -1                 # 永不冻结
+  is-concurrent: true                # 允许同账号并发登录
+  is-share: true                     # 共享同 token(多端共享)
+  max-login-count: 20                # 与原 maximumSessions(20) 等价
+  token-style: uuid
+  is-log: true                       # 开发环境开启 sa-token 日志,排查鉴权问题
+  is-read-cookie: false              # 关闭 Cookie 通道:全端(blog-vue3 / admin / App)统一 Header 鉴权
+  is-read-header: true               # 启用 Header 通道:Authorization Header 唯一鉴权方式
+  is-print: false
+  # 持久化使用上方 spring.redis 同一实例,由 sa-token-redis-jackson 自动接管
