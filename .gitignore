@@ -50,6 +50,8 @@ desktop.ini
 # 本地覆盖配置(若有)
 application-local.yml
 application-local.properties
+renzs-blog-satoken/src/main/resources/application-dev.yml
+renzs-blog-satoken/src/main/resources/application-pro.yml
 .env
 .env.local
 .env.*.local
