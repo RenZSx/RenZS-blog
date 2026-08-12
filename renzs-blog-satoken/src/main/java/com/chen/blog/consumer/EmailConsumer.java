@@ -6,6 +6,7 @@ import com.chen.blog.module.user.service.EmailSendService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -20,6 +21,7 @@ import javax.annotation.Resource;
  **/
 
 @Component
+@ConditionalOnProperty(name = "email.mode", havingValue = "mq")
 @RocketMQMessageListener(topic = MQPrefixConst.EMAIL_EXCHANGE,consumerGroup = "email-group")
 @Slf4j
 public class EmailConsumer implements RocketMQListener<EmailDTO> {
@@ -34,4 +36,3 @@ public class EmailConsumer implements RocketMQListener<EmailDTO> {
         emailSendService.sendEmails(emailDTO);
     }
 }
-

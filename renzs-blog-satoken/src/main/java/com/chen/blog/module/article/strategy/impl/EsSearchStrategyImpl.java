@@ -11,6 +11,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
  */
 @Log4j2
 @Service("esSearchStrategyImpl")
+@ConditionalOnProperty(name = "search.mode", havingValue = "elasticsearch")
 public class EsSearchStrategyImpl implements SearchStrategy {
 
     @Autowired

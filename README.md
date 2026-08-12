@@ -471,7 +471,7 @@ server {
 感谢以下开源项目：
 
 - [Spring Boot](https://spring.io/projects/spring-boot)
-- [Sa-Token](https://sa-token.cc)
+- [Sa-Token](https://sa-token.com/)
 - [Vue.js](https://vuejs.org)
 - [Element UI](https://element.eleme.io) / [Element Plus](https://element-plus.org)
 - [Vuetify](https://vuetifyjs.com)

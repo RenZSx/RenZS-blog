@@ -1,0 +1,118 @@
+server:
+  port: 8088
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:chen_blog}?useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true&allowPublicKeyRetrieval=true&characterEncoding=utf8&useUnicode=true
+    username: root
+    password: "${MYSQL_ROOT_PASSWORD:blog_password_123}"
+    hikari:
+      minimum-idle: 2
+      maximum-pool-size: 10
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    password: "${REDIS_PASSWORD:redis_password_123}"
+  data:
+    elasticsearch:
+      repositories:
+        enabled: ${ELASTICSEARCH_REPOSITORIES_ENABLED:false}
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+search:
+  mode: ${SEARCH_MODE:mysql}
+
+email:
+  mode: ${EMAIL_MODE:direct}
+
+upload:
+  mode: ${UPLOAD_MODE:local}
+  local:
+    path: ${UPLOAD_LOCAL_PATH:/app/upload/}
+    url: "${UPLOAD_BASE_URL:http://localhost:3000/upload/}"
+  oss:
+    url: "${OSS_URL:}"
+    endpoint: "${OSS_ENDPOINT:}"
+    accessKeyId: "${OSS_ACCESS_KEY_ID:}"
+    accessKeySecret: "${OSS_ACCESS_KEY_SECRET:}"
+    bucketName: "${OSS_BUCKET_NAME:}"
+  cos:
+    url: "${COS_URL:}"
+    secretId: "${COS_SECRET_ID:}"
+    secretKey: "${COS_SECRET_KEY:}"
+    region: "${COS_REGION:}"
+    bucketName: "${COS_BUCKET_NAME:}"
+
+aliyunmail:
+  accessKey: "${ALIYUNMAIL_ACCESS_KEY:}"
+  secretKey: "${ALIYUNMAIL_SECRET_KEY:}"
+  endpoint: "${ALIYUNMAIL_ENDPOINT:dm.aliyuncs.com}"
+  replyAddress: "${ALIYUNMAIL_REPLY_ADDRESS:}"
+  accountName: "${ALIYUNMAIL_ACCOUNT_NAME:}"
+
+website:
+  url: "${SITE_URL:http://localhost:3000}"
+
+qq:
+  app-id: "${QQ_APP_ID:}"
+  check-token-url: https://graph.qq.com/oauth2.0/me?access_token={access_token}
+  user-info-url: https://graph.qq.com/user/get_user_info?openid={openid}&access_token={access_token}&oauth_consumer_key={oauth_consumer_key}
+
+weibo:
+  app-id: "${WEIBO_APP_ID:}"
+  app-secret: "${WEIBO_APP_SECRET:}"
+  grant-type: authorization_code
+  redirect-url: "${WEIBO_REDIRECT_URL:}"
+  access-token-url: https://api.weibo.com/oauth2/access_token
+  user-info-url: https://api.weibo.com/2/users/show.json?uid={uid}&access_token={access_token}
+
+gitee:
+  app-id: "${GITEE_APP_ID:}"
+  app-secret: "${GITEE_APP_SECRET:}"
+  grant-type: authorization_code
+  redirect-url: "${GITEE_REDIRECT_URL:}"
+  access-token-url: https://gitee.com/oauth/token
+  user-info-url: https://gitee.com/api/v5/user
+
+sa-token:
+  token-name: Authorization
+  token-prefix: Bearer
+  timeout: 2592000
+  active-timeout: -1
+  is-concurrent: true
+  is-share: true
+  max-login-count: 20
+  token-style: uuid
+  is-log: false
+  is-read-cookie: false
+  is-read-header: true
+  is-print: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+  health:
+    elasticsearch:
+      enabled: false
+    rabbit:
+      enabled: false
+
+logging:
+  file:
+    name: /app/logs/blog.log

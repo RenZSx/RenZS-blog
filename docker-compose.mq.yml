@@ -1,0 +1,6 @@
+services:
+  backend:
+    environment:
+      EMAIL_MODE: mq
+      ROCKETMQ_NAME_SERVER: "${ROCKETMQ_NAME_SERVER:?Set ROCKETMQ_NAME_SERVER when using docker-compose.mq.yml}"
+      ROCKETMQ_PRODUCER_GROUP: "${ROCKETMQ_PRODUCER_GROUP:-email-group}"

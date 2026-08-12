@@ -5,6 +5,7 @@ import com.chen.blog.common.strategy.email.EmailStrategy;
 import com.chen.blog.module.user.dto.EmailDTO;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
  * @date 2026/05/20
  */
 @Service("mqEmailStrategyImpl")
+@ConditionalOnProperty(name = "email.mode", havingValue = "mq")
 public class MqEmailStrategyImpl implements EmailStrategy {
 
     @Autowired
