@@ -519,6 +519,67 @@
   color: var(--text-secondary) !important;
 }
 
+.dark .home-toolbar-card .home-toolbar {
+  border: 1px dashed #ff6b3d !important;
+  background: #000 !important;
+}
+
+.dark .home-toolbar-card .home-toolbar-message,
+.dark .home-toolbar-card .home-toolbar-notice {
+  color: #fff !important;
+}
+
+/* ========== 友链页面暗色表面与文字 ========== */
+.dark .link-container .link-info-box {
+  border-left-color: rgba(120, 145, 178, 0.72) !important;
+  background: #202630 !important;
+  color: #fff !important;
+}
+
+.dark .link-container .link-info-label,
+.dark .link-container .link-title,
+.dark .link-container .link-name {
+  color: #fff !important;
+}
+
+.dark .link-container .link-galaxy-entry,
+.dark .link-container .link-galaxy-panel,
+.dark .link-container .link-galaxy-form-card,
+.dark .link-container .link-card {
+  border-color: rgba(120, 145, 178, 0.34) !important;
+  background: #202630 !important;
+  color: #fff !important;
+}
+
+.dark .link-container .link-galaxy-entry-title,
+.dark .link-container .link-galaxy-header h2,
+.dark .link-container .link-galaxy-form-title {
+  color: #fff !important;
+}
+
+.dark .link-container .link-galaxy-entry-text,
+.dark .link-container .link-galaxy-header p,
+.dark .link-container .link-apply-form-note,
+.dark .link-container .link-apply-field,
+.dark .link-container .link-intro {
+  color: #d7dee8 !important;
+}
+
+.dark .link-container .link-galaxy-entry-action {
+  background: #5b82b6 !important;
+  color: #fff !important;
+}
+
+.dark .link-container .link-open-badge {
+  border-color: rgba(180, 196, 218, 0.42) !important;
+  background: rgba(45, 55, 70, 0.9) !important;
+  color: #d7dee8 !important;
+}
+
+.dark .link-container .link-meta {
+  color: #aeb9c8 !important;
+}
+
 .dark .home-feed-card .card-summary {
   color: #fff !important;
 }
