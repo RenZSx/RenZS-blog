@@ -1,15 +1,15 @@
 // 应用配置
 const config = {
-  // QQ 登录配置
-  QQ_APP_ID: '102120306',
+  // QQ 登录配置（修改为自己的appid（申请地址：https://connect.qq.com/manage.html#/））
+  QQ_APP_ID: '',
   QQ_REDIRECT_URI: 'https://www.renzs.top/oauth/login/qq',
 
-  // 微博登录配置
-  WEIBO_APP_ID: '2295018916',
+  // 微博登录配置（修改为自己申请的appid）
+  WEIBO_APP_ID: '',
   WEIBO_REDIRECT_URI: 'https://www.renzs.top/oauth/login/weibo',
 
-  // Gitee 登录配置
-  GITEE_CLIENT_ID: 'e18cd13f3902bc32ed9e9d87b2c21f970304cb9aa19bb033b364bc7b5e0b4499',
+  // Gitee 登录配置（修改为自己的id）
+  GITEE_CLIENT_ID: '',
   GITEE_REDIRECT_URI: 'https://www.renzs.top/oauth/login/gitee',
 
   // 腾讯验证码
