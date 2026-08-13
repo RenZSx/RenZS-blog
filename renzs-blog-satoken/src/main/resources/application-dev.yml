@@ -43,9 +43,9 @@ spring:
   #          max-attempts: 3 #最大重试次数
   #          initial-interval: 3000 #重试间隔时间（单位毫秒）
   # es配置 若搜索模式为mysql可删除
-  #  elasticsearch:
-  #    rest:
-  #      uris: 你的IP:9200
+  elasticsearch:
+    rest:
+      uris:
   # 邮箱配置
   #  mail:
   #    host: smtpdm.aliyun.com
@@ -65,8 +65,9 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size:  100MB
+
 rocketmq:
-  name-server:                   #mq地址
+  name-server:
   producer:
     group: email-group
 # 配置MybatisPlus

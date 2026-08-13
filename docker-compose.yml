@@ -61,8 +61,8 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: "${REDIS_PASSWORD:-redis_password_123}"
-      SEARCH_MODE: "${SEARCH_MODE:-mysql}"
-      EMAIL_MODE: "${EMAIL_MODE:-direct}"
+      SEARCH_MODE: mysql
+      EMAIL_MODE: direct
       UPLOAD_MODE: "${UPLOAD_MODE:-local}"
       UPLOAD_LOCAL_PATH: /app/upload/
       UPLOAD_BASE_URL: "${UPLOAD_BASE_URL:-http://localhost:3000/upload/}"
@@ -89,9 +89,6 @@ services:
       GITEE_APP_ID: "${GITEE_APP_ID:-}"
       GITEE_APP_SECRET: "${GITEE_APP_SECRET:-}"
       GITEE_REDIRECT_URL: "${GITEE_REDIRECT_URL:-}"
-      # Leave this unset by default. RocketMQ starter skips its beans when no name server is configured.
-      ROCKETMQ_NAME_SERVER: "${ROCKETMQ_NAME_SERVER:-}"
-      ROCKETMQ_PRODUCER_GROUP: "${ROCKETMQ_PRODUCER_GROUP:-email-group}"
       JAVA_OPTS: "${JAVA_OPTS:--Xms256m -Xmx512m}"
       TZ: "${TZ:-Asia/Shanghai}"
     ports:

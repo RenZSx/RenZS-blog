@@ -158,6 +158,8 @@ mvn spring-boot:run
 
 后端服务默认运行在 `http://localhost:8088`
 
+默认使用直接邮件和 MySQL 搜索，不需要 RocketMQ 或 Elasticsearch。需要对应服务时，在当前环境配置文件中填写地址，并将 `email.mode` 改为 `mq` 或将 `search.mode` 改为 `elasticsearch`；未选择的组件不会在启动时连接。
+
 ### 4. 启动前端
 
 #### 博客前台（Vue 3）
@@ -349,6 +351,8 @@ mvn clean package -DskipTests
 ```bash
 java -jar target/renzs-blog-satoken-0.0.1.jar --spring.profiles.active=pro
 ```
+
+生产环境启用 RocketMQ 或 Elasticsearch 时，在 `application-pro.yml` 中填写地址并切换对应的 mode。
 
 4. 使用 Nginx 反向代理（可选）
 

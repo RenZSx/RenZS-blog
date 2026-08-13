@@ -1,3 +1,14 @@
 spring:
   profiles:
     active: dev
+  data:
+    elasticsearch:
+      repositories:
+        enabled: false
+
+management:
+  health:
+    elasticsearch:
+      enabled: false
+    rabbit:
+      enabled: false

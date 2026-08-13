@@ -16,10 +16,6 @@ spring:
     host: ${REDIS_HOST:redis}
     port: ${REDIS_PORT:6379}
     password: "${REDIS_PASSWORD:redis_password_123}"
-  data:
-    elasticsearch:
-      repositories:
-        enabled: ${ELASTICSEARCH_REPOSITORIES_ENABLED:false}
   servlet:
     multipart:
       max-file-size: 100MB
@@ -31,10 +27,10 @@ mybatis-plus:
     map-underscore-to-camel-case: true
 
 search:
-  mode: ${SEARCH_MODE:mysql}
+  mode: mysql
 
 email:
-  mode: ${EMAIL_MODE:direct}
+  mode: direct
 
 upload:
   mode: ${UPLOAD_MODE:local}
@@ -107,12 +103,6 @@ management:
   endpoint:
     health:
       show-details: never
-  health:
-    elasticsearch:
-      enabled: false
-    rabbit:
-      enabled: false
-
 logging:
   file:
     name: /app/logs/blog.log

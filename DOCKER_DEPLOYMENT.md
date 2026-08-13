@@ -76,8 +76,6 @@ Copy-Item .env.example .env
 | `BACKEND_PORT` | `8088` | 后端宿主机端口 |
 | `SITE_URL` | `http://localhost:3000` | 邮件通知中的站点地址 |
 | `UPLOAD_BASE_URL` | `http://localhost:3000/upload/` | 本地上传文件的公开地址，必须以 `/` 结尾 |
-| `SEARCH_MODE` | `mysql` | 默认一键栈只支持 `mysql` |
-| `EMAIL_MODE` | `direct` | `direct` 或 `mq` |
 | `UPLOAD_MODE` | `local` | `local`、`oss` 或 `cos` |
 | `JAVA_OPTS` | `-Xms256m -Xmx512m` | 后端 JVM 参数 |
 
@@ -87,24 +85,9 @@ Copy-Item .env.example .env
 docker compose up -d --build --force-recreate
 ```
 
-### 邮件与 RocketMQ
+### 邮件
 
-默认配置关闭邮箱注册和邮件通知，也不需要 RocketMQ，避免空白凭据导致验证码请求失败。若要启用邮箱注册或邮件通知，需要在 `.env` 中设置 `ALIYUNMAIL_ACCESS_KEY`、`ALIYUNMAIL_SECRET_KEY`、`ALIYUNMAIL_REPLY_ADDRESS` 和 `ALIYUNMAIL_ACCOUNT_NAME`，再在后台网站配置中开启对应开关。
-
-若使用外部 RocketMQ，将 `EMAIL_MODE` 改为 `mq`，并设置：
-
-```dotenv
-ROCKETMQ_NAME_SERVER=rocketmq.example.com:9876
-ROCKETMQ_PRODUCER_GROUP=email-group
-```
-
-然后使用 MQ 覆盖文件启动：
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.mq.yml up -d --build
-```
-
-Compose 不会自动部署 RocketMQ；该地址必须可由后端容器访问。默认命令不会创建 RocketMQ producer。
+Docker 配置固定使用直接邮件模式，不需要 RocketMQ。默认配置关闭邮箱注册和邮件通知，避免空白凭据导致验证码请求失败。若要启用邮箱注册或邮件通知，需要在 `.env` 中设置 `ALIYUNMAIL_ACCESS_KEY`、`ALIYUNMAIL_SECRET_KEY`、`ALIYUNMAIL_REPLY_ADDRESS` 和 `ALIYUNMAIL_ACCOUNT_NAME`，再在后台网站配置中开启对应开关。
 
 ### OSS 或 COS 上传
 
