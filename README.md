@@ -29,6 +29,14 @@
 - 🚀 **高性能** - Redis 缓存、接口限流、SQL 优化
 
 ---
+## 在线体验
+
+- 博客地址：[https://www.renzs.top/](https://www.renzs.top/)
+- 后台地址：[https://chen.renzs.top/](https://chen.renzs.top/)
+- 测试账号：`test`
+- 测试密码：`test123`
+
+---
 
 ## 📦 项目结构
 
@@ -147,6 +155,8 @@ spring:
     port: 6379
     password: your_redis_password
 ```
+
+数据库脚本已初始化后台管理员，首次登录账号为 `admin`，密码为 `admin123`。登录后请及时修改默认密码。
 
 ### 3. 启动后端
 
