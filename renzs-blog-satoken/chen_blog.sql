@@ -11,7 +11,7 @@
  Target Server Version : 80043 (8.0.43)
  File Encoding         : 65001
 
- Date: 13/08/2026 14:28:10
+ Date: 13/08/2026 14:55:41
 */
 
 SET NAMES utf8mb4;
@@ -1069,5 +1069,6 @@ CREATE TABLE `tb_website_config`  (
 -- ----------------------------
 -- Records of tb_website_config
 -- ----------------------------
+INSERT INTO `tb_website_config` VALUES (1, '{}', '2026-08-13 14:54:33', '2026-08-13 14:54:35');
 
 SET FOREIGN_KEY_CHECKS = 1;
