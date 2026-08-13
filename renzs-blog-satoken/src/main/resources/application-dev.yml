@@ -89,7 +89,7 @@ search:
 
 # 邮件发送模式 可选 mq(RocketMQ异步发送)或direct(直接调用发送)
 email:
-  mode: mq
+  mode: direct
 
 # 上传模式 可选 oss或local  （http://和最后的/一定不能去！！！）
 upload:
