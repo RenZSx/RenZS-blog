@@ -212,12 +212,14 @@ public class CommentServiceImpl extends ServiceImpl<CommentDao, Comment> impleme
     @Override
     public List<CommentDTO> listNewComments() {
         // 1. 查询前15条有效评论（仅查必要字段）
-        List<Comment> comments = commentDao.selectList(new LambdaQueryWrapper<Comment>()
-                .select(Comment::getCommentContent, Comment::getCreateTime, Comment::getUserId)
-                .eq(Comment::getType, ARTICLE.getType())
-                .eq(Comment::getIsDelete, FALSE)
-                .orderByDesc(Comment::getCreateTime)
-                .last("limit 15"));
+        List<Comment> comments = Optional.ofNullable(ARTICLE)
+                .map(article -> commentDao.selectList(new LambdaQueryWrapper<Comment>()
+                        .select(Comment::getCommentContent, Comment::getCreateTime, Comment::getUserId)
+                        .eq(Comment::getType, article.getType())
+                        .eq(Comment::getIsDelete, FALSE)
+                        .orderByDesc(Comment::getCreateTime)
+                        .last("limit 15")))
+                .orElse(Collections.emptyList());
 
         // 2. 批量查询用户信息（解决N+1问题）
         // 提取所有评论的用户ID
@@ -225,7 +227,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentDao, Comment> impleme
                 .map(Comment::getUserId)
                 .collect(Collectors.toSet());
         // 批量查询用户信息，转成Map（key=userId，value=UserInfo）
-        Map<Integer, UserInfo> userInfoMap = userInfoDao.selectBatchIds(userIds).stream()
+        Map<Integer, UserInfo> userInfoMap = userIds.isEmpty()
+                ? Collections.emptyMap()
+                : userInfoDao.selectBatchIds(userIds).stream()
                 .collect(Collectors.toMap(UserInfo::getId, userInfo -> userInfo));
 
         // 3. 遍历评论，逐个创建CommentDTO并赋值
@@ -401,4 +405,3 @@ public class CommentServiceImpl extends ServiceImpl<CommentDao, Comment> impleme
     }
 
 }
-
