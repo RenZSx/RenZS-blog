@@ -8,6 +8,8 @@ import InnerLink from '@/layout/components/InnerLink'
 // 匹配views里面所有的.vue文件
 const modules = import.meta.glob('./../../views/**/*.vue')
 
+console.log('Available view modules:', Object.keys(modules))
+
 const usePermissionStore = defineStore(
   'permission',
   {
@@ -33,22 +35,47 @@ const usePermissionStore = defineStore(
         this.sidebarRouters = routes
       },
       generateRoutes(roles) {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
           // 向后端请求路由数据
+          // 博客后端接口: GET /admin/user/menus
+          // 响应拦截器已经返回了 res.data.data，所以这里直接使用 res
           getRouters().then(res => {
-            const sdata = JSON.parse(JSON.stringify(res.data))
-            const rdata = JSON.parse(JSON.stringify(res.data))
-            const defaultData = JSON.parse(JSON.stringify(res.data))
-            const sidebarRoutes = filterAsyncRouter(sdata)
-            const rewriteRoutes = filterAsyncRouter(rdata, false, true)
-            const defaultRoutes = filterAsyncRouter(defaultData)
+            console.log('原始菜单数据:', res)
+
+            // res 已经是菜单数组了，不需要再取 res.data
+            const menuData = Array.isArray(res) ? res : []
+
+            if (menuData.length === 0) {
+              console.warn('菜单数据为空')
+              reject('菜单数据为空')
+              return
+            }
+
+            console.log('处理后的菜单数据:', menuData)
+
+            // 处理菜单数据：添加 iconfont 前缀、转换组件路径
+            const processedData = JSON.parse(JSON.stringify(menuData))
+
+            const sidebarRoutes = filterAsyncRouter(processedData)
+            console.log('侧边栏路由:', sidebarRoutes)
+
+            // 动态路由权限过滤
             const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
-            asyncRoutes.forEach(route => { router.addRoute(route) })
-            this.setRoutes(rewriteRoutes)
+
+            // 注意: 路由添加由 permission.js 的路由守卫统一处理
+            // 这里只返回处理好的路由，不要在这里 addRoute
+            this.setRoutes(sidebarRoutes)
             this.setSidebarRouters(constantRoutes.concat(sidebarRoutes))
             this.setDefaultRoutes(sidebarRoutes)
-            this.setTopbarRoutes(defaultRoutes)
-            resolve(rewriteRoutes)
+            this.setTopbarRoutes(sidebarRoutes)
+
+            // 返回所有需要添加的路由（动态路由 + 菜单路由）
+            const allRoutes = asyncRoutes.concat(sidebarRoutes)
+            console.log('路由生成完成，待添加路由数:', allRoutes.length)
+            resolve(allRoutes)
+          }).catch(error => {
+            console.error('获取菜单失败:', error)
+            reject(error)
           })
         })
       }
@@ -56,11 +83,33 @@ const usePermissionStore = defineStore(
   })
 
 // 遍历后台传来的路由字符串，转换为组件对象
+// 博客后端返回格式: { name, path, component, icon, hidden, children }
+// component 格式: "Layout" 或 "/article/ArticleList"
 function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
   return asyncRouterMap.filter(route => {
     if (type && route.children) {
       route.children = filterChildren(route.children)
     }
+
+    // 处理图标: 添加 iconfont 前缀 (与 Vue2 menu.js 对齐)
+    if (route.icon && !route.icon.includes('iconfont')) {
+      route.icon = 'iconfont ' + route.icon
+    }
+
+    // 处理 meta 信息 (博客后端没有 meta 字段,需要构造)
+    if (!route.meta) {
+      route.meta = {
+        title: route.name,
+        icon: route.icon || '',
+        noCache: false
+      }
+    }
+
+    // 处理 hidden 字段
+    if (route.hidden === undefined) {
+      route.hidden = false
+    }
+
     if (route.component) {
       // Layout ParentView 组件特殊处理
       if (route.component === 'Layout') {
@@ -70,7 +119,12 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
       } else if (route.component === 'InnerLink') {
         route.component = InnerLink
       } else {
-        route.component = loadView(route.component)
+        // 博客后端组件路径格式: /article/ArticleList
+        // 需要转换为: article/ArticleList (去掉开头的斜杠)
+        const componentPath = route.component.startsWith('/')
+          ? route.component.substring(1)
+          : route.component
+        route.component = loadView(componentPath)
       }
     }
     if (route.children != null && route.children && route.children.length) {
