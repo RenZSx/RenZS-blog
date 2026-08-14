@@ -118,8 +118,8 @@ service.interceptors.response.use(res => {
       return Promise.reject('error')
     } else {
       // 成功: code === 20000 或 200
-      // 博客后端成功时返回 data 字段
-      return Promise.resolve(res.data.data || res.data)
+      // 返回完整响应 { flag, code, message, data }，业务代码需要 flag 判断
+      return Promise.resolve(res.data)
     }
   },
   error => {
