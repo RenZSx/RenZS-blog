@@ -70,7 +70,7 @@
 
 <script setup>
 import ScrollPane from './ScrollPane'
-import { getNormalPath } from '@/utils/ruoyi'
+import { resolveRoutePath } from '@/utils/ruoyi'
 import useTagsViewStore from '@/store/modules/tagsView'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
@@ -175,7 +175,8 @@ function filterAffixTags(routes, basePath = '') {
   let tags = []
   routes.forEach(route => {
     if (route.meta && route.meta.affix) {
-      const tagPath = getNormalPath(basePath + '/' + route.path)
+      // 子路径为绝对路径时不与父路径拼接(见 resolveRoutePath 说明)
+      const tagPath = resolveRoutePath(basePath, route.path)
       tags.push({
         fullPath: tagPath,
         path: tagPath,

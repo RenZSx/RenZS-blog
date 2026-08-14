@@ -30,7 +30,7 @@
 <script setup>
 import { isExternal } from '@/utils/validate'
 import AppLink from './Link'
-import { getNormalPath } from '@/utils/ruoyi'
+import { resolveRoutePath } from '@/utils/ruoyi'
 
 const props = defineProps({
   // route object
@@ -83,11 +83,14 @@ function resolvePath(routePath, routeQuery) {
   if (isExternal(props.basePath)) {
     return props.basePath
   }
+  // 使用 Vue Router 的嵌套路径语义: 子路径为绝对路径时不与父路径拼接。
+  // 博客后端菜单的子路径均为绝对路径(如 /articles),无条件拼接会得到
+  // 未注册的 /article-submenu/articles 而 404。
+  const resolved = resolveRoutePath(props.basePath, routePath)
   if (routeQuery) {
-    let query = JSON.parse(routeQuery)
-    return { path: getNormalPath(props.basePath + '/' + routePath), query: query }
+    return { path: resolved, query: JSON.parse(routeQuery) }
   }
-  return getNormalPath(props.basePath + '/' + routePath)
+  return resolved
 }
 
 function hasTitle(title){

@@ -222,6 +222,31 @@ export function getNormalPath(p) {
   return res
 }
 
+/**
+ * 按 Vue Router 4 的嵌套路由语义拼接父子路径。
+ *
+ * Vue Router 规定: 子路由 path 以 '/' 开头时视为绝对路径,直接作为最终
+ * 路径使用,不与父路径拼接;否则才与父路径相对拼接。
+ *
+ * 博客后端菜单下发的子路径均为绝对路径(如父 /article-submenu 下的子
+ * /articles),若无条件拼接会得到 /article-submenu/articles —— 该路径
+ * 并未注册,导致 404。
+ *
+ * @param {string} basePath 父路由路径
+ * @param {string} routePath 子路由路径
+ * @returns {string} 解析后的完整路径
+ */
+export function resolveRoutePath(basePath, routePath) {
+  // 子路径为绝对路径时直接返回,与 Vue Router 注册时的行为保持一致
+  if (routePath && routePath.charAt(0) === '/') {
+    return getNormalPath(routePath)
+  }
+  if (!basePath) {
+    return getNormalPath(routePath)
+  }
+  return getNormalPath(basePath + '/' + routePath)
+}
+
 // 验证是否为blob格式
 export function blobValidate(data) {
   return data.type !== 'application/json'

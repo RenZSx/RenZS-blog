@@ -78,7 +78,7 @@
 
 <script setup>
 import Fuse from 'fuse.js'
-import { getNormalPath } from '@/utils/ruoyi'
+import { resolveRoutePath } from '@/utils/ruoyi'
 import { isHttp } from '@/utils/validate'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
@@ -156,9 +156,9 @@ function generateRoutes(routes, basePath = '', prefixTitle = []) {
   let res = []
   for (const r of routes) {
     if (r.hidden) { continue }
-    const p = r.path.length > 0 && r.path[0] === '/' ? r.path : '/' + r.path
     const data = {
-      path: !isHttp(r.path) ? getNormalPath(basePath + p) : r.path,
+      // 子路径为绝对路径时不与父路径拼接(见 resolveRoutePath 说明)
+      path: !isHttp(r.path) ? resolveRoutePath(basePath, r.path) : r.path,
       title: [...prefixTitle],
       icon: ''
     }
