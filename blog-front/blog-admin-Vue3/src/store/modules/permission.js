@@ -49,10 +49,14 @@ const usePermissionStore = defineStore(
         return new Promise((resolve, reject) => {
           // 向后端请求路由数据
           // 博客后端接口: GET /admin/user/menus
-          // 响应拦截器已经返回了 res.data.data，所以这里直接使用 res
+          // 响应格式: { flag, code, message, data: MenuVO[] }
           getRouters().then(res => {
-            // 响应拦截器已剥离外层 Result 包装,res 即菜单数组
-            const menuData = Array.isArray(res) ? res : []
+            if (!res.flag || !res.data) {
+              reject(new Error(res.message || '获取菜单失败'))
+              return
+            }
+
+            const menuData = Array.isArray(res.data) ? res.data : []
 
             if (menuData.length === 0) {
               reject(new Error('菜单数据为空,请检查当前账号是否已分配菜单权限'))
