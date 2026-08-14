@@ -72,12 +72,13 @@ service.interceptors.request.use(config => {
     Promise.reject(error)
 })
 
-// 响应拦截器
+  // 响应拦截器
 service.interceptors.response.use(res => {
+    // 博客后端返回格式: { code, flag, message, data }
     // 未设置状态码则默认成功状态
     const code = res.data.code || 200
     // 获取错误信息
-    const msg = errorCode[code] || res.data.msg || errorCode['default']
+    const msg = errorCode[code] || res.data.message || res.data.msg || errorCode['default']
     // 二进制数据则直接返回
     if (res.request.responseType ===  'blob' || res.request.responseType ===  'arraybuffer') {
       return res.data
@@ -105,7 +106,8 @@ service.interceptors.response.use(res => {
       ElNotification.error({ title: msg })
       return Promise.reject('error')
     } else {
-      return  Promise.resolve(res.data)
+      // 博客后端成功时返回 data 字段
+      return Promise.resolve(res.data.data || res.data)
     }
   },
   error => {
