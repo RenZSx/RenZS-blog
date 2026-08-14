@@ -20,16 +20,17 @@ const useUserStore = defineStore(
       permissions: []
     }),
     actions: {
-      // 登录
+      // 登录 - 适配博客后端(不需要验证码)
       login(userInfo) {
         const username = userInfo.username.trim()
         const password = userInfo.password
-        const code = userInfo.code
-        const uuid = userInfo.uuid
         return new Promise((resolve, reject) => {
-          login(username, password, code, uuid).then(res => {
-            setToken(res.token)
-            this.token = res.token
+          login(username, password).then(res => {
+            // 博客后端返回格式: { tokenName, tokenValue, userInfo }
+            // 兼容处理: 如果返回的是 token 字段则直接使用,否则使用 tokenValue
+            const token = res.token || res.tokenValue
+            setToken(token)
+            this.token = token
             useLockStore().unlockScreen()
             resolve()
           }).catch(error => {

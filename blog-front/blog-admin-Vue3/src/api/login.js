@@ -1,12 +1,10 @@
 import request from '@/utils/request'
 
-// 登录方法
-export function login(username, password, code, uuid) {
+// 登录方法 - 博客后端不需要验证码
+export function login(username, password) {
   const data = {
     username,
-    password,
-    code,
-    uuid
+    password
   }
   return request({
     url: '/login',
@@ -56,7 +54,7 @@ export function logout() {
   })
 }
 
-// 获取验证码
+// 获取验证码 - 博客后端不需要,保留接口定义以兼容
 export function getCodeImg() {
   return request({
     url: '/captchaImage',

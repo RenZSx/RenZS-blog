@@ -79,23 +79,19 @@ const router = useRouter()
 const { proxy } = getCurrentInstance()
 
 const loginForm = ref({
-  username: "admin",
-  password: "admin123",
-  rememberMe: false,
-  code: "",
-  uuid: ""
+  username: "",
+  password: "",
+  rememberMe: false
 })
 
 const loginRules = {
   username: [{ required: true, trigger: "blur", message: "请输入您的账号" }],
-  password: [{ required: true, trigger: "blur", message: "请输入您的密码" }],
-  code: [{ required: true, trigger: "change", message: "请输入验证码" }]
+  password: [{ required: true, trigger: "blur", message: "请输入您的密码" }]
 }
 
-const codeUrl = ref("")
 const loading = ref(false)
-// 验证码开关
-const captchaEnabled = ref(true)
+// 验证码开关 - 博客后端不需要验证码
+const captchaEnabled = ref(false)
 // 注册开关
 const register = ref(false)
 const redirect = ref(undefined)
@@ -131,21 +127,7 @@ function handleLogin() {
         router.push({ path: redirect.value || "/", query: otherQueryParams })
       }).catch(() => {
         loading.value = false
-        // 重新获取验证码
-        if (captchaEnabled.value) {
-          getCode()
-        }
       })
-    }
-  })
-}
-
-function getCode() {
-  getCodeImg().then(res => {
-    captchaEnabled.value = res.captchaEnabled === undefined ? true : res.captchaEnabled
-    if (captchaEnabled.value) {
-      codeUrl.value = "data:image/gif;base64," + res.img
-      loginForm.value.uuid = res.uuid
     }
   })
 }
@@ -161,7 +143,6 @@ function getCookie() {
   }
 }
 
-getCode()
 getCookie()
 </script>
 
