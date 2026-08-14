@@ -28,15 +28,19 @@ const useUserStore = defineStore(
         const password = userInfo.password
         return new Promise((resolve, reject) => {
           login(username, password).then(res => {
-            // 博客后端返回格式: { tokenName, tokenValue, userInfo }
+            if (!res.flag || !res.data) {
+              reject(new Error(res.message || '登录失败'))
+              return
+            }
+            // 博客后端返回格式: { flag, code, message, data: { tokenName, tokenValue, userInfo } }
             // 兼容处理: 如果返回的是 token 字段则直接使用,否则使用 tokenValue
-            const token = res.token || res.tokenValue
+            const token = res.data.token || res.data.tokenValue
             setToken(token)
             this.token = token
 
             // 博客后端登录时一并返回用户信息,直接写入 store,
             // 免去登录后再多发一次 /users/current
-            this.setUserInfo(res.userInfo)
+            this.setUserInfo(res.data.userInfo)
 
             useLockStore().unlockScreen()
             resolve()
@@ -78,12 +82,13 @@ const useUserStore = defineStore(
       getInfo() {
         return new Promise((resolve, reject) => {
           getInfo().then(res => {
-            if (!res) {
-              reject(new Error('获取用户信息失败'))
+            if (!res.flag || !res.data) {
+              reject(new Error(res.message || '获取用户信息失败'))
               return
             }
-            this.setUserInfo(res)
-            resolve(res)
+            // 响应格式: { flag, code, message, data: UserInfoDTO }
+            this.setUserInfo(res.data)
+            resolve(res.data)
           }).catch(error => {
             reject(error)
           })
