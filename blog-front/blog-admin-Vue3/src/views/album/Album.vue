@@ -264,7 +264,7 @@ const handleCommand = (command) => {
 }
 
 const handleViewPhotos = (album) => {
-  router.push({ path: `/blog/album/photo/${album.id}` })
+  router.push({ path: `/albums/${album.id}` })
 }
 
 const handleSizeChange = (val) => {

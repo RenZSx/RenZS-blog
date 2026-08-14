@@ -223,7 +223,8 @@ const checkAll = ref(false)
 const uploadPhotos = ref('')
 const editFormRef = ref(null)
 
-const albumId = computed(() => route.params.id)
+// 后端菜单"照片管理"路径为 /albums/:albumId,参数名必须与之一致
+const albumId = computed(() => route.params.albumId)
 
 const queryParams = reactive({
   current: 1,
@@ -290,7 +291,7 @@ const getAlbumList = async () => {
 }
 
 const handleBack = () => {
-  router.push('/blog/album/list')
+  router.push('/albums')
 }
 
 const handleCheckAllChange = (val) => {

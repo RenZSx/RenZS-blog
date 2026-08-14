@@ -206,67 +206,26 @@ export function filterDynamicRoutes(routes) {
   return res
 }
 
+/**
+ * 按后端下发的组件路径直接解析出对应的 .vue 模块。
+ *
+ * 约定: src/views 下的文件路径必须与后端 tb_menu.component 字段一一对应。
+ * 例如后端返回 '/article/ArticleList.vue',则文件必须位于
+ * src/views/article/ArticleList.vue。新增页面只需按该约定放置文件并在
+ * 菜单表登记,无需修改本文件。
+ *
+ * @param {string} view 归一化后的组件路径,如 'article/ArticleList'
+ * @returns {Function|undefined} 懒加载函数,未找到时返回 undefined
+ */
 export const loadView = (view) => {
-  // Vue2 到 Vue3 的路径映射
-  // 后端返回格式: /home/Home.vue → 处理后: home/Home → 映射到: blog/home/index
-  const pathMap = {
-    // 首页
-    'home/Home': 'blog/home/index',
-
-    // 文章管理
-    'article/Article': 'blog/article/edit',
-    'article/ArticleList': 'blog/article/list',
-    'category/Category': 'blog/category/index',
-    'tag/Tag': 'blog/tag/index',
-
-    // 消息管理
-    'comment/Comment': 'blog/comment/index',
-    'message/Message': 'blog/message/index',
-    'notice/SystemNotice': 'blog/notice/index',
-
-    // 用户管理
-    'user/User': 'blog/user/index',
-    'user/Online': 'blog/user/online',
-
-    // 权限管理
-    'role/Role': 'blog/role/index',
-    'resource/Resource': 'blog/resource/index',
-    'menu/Menu': 'blog/menu/index',
-
-    // 系统管理
-    'website/Website': 'blog/website/index',
-    'page/Page': 'blog/page/index',
-    'friendLink/FriendLink': 'blog/friendlink/index',
-    'about/About': 'blog/about/index',
-    'love/Love': 'blog/love/index',
-
-    // 相册管理
-    'album/Album': 'blog/album/list',
-    'album/Photo': 'blog/album/photo',
-    'album/Delete': 'blog/album/delete',
-
-    // 说说管理
-    'talk/Talk': 'blog/talk/edit',
-    'talk/TalkList': 'blog/talk/list',
-
-    // 日志管理
-    'log/Operation': 'blog/log/operation',
-
-    // 个人中心
-    'setting/Setting': 'blog/setting/index',
-  }
-
-  // 如果有映射，使用映射后的路径
-  const mappedView = pathMap[view] || view
-
-  let res
   for (const path in modules) {
     const dir = path.split('views/')[1].split('.vue')[0]
-    if (dir === mappedView) {
-      res = () => modules[path]()
+    if (dir === view) {
+      return () => modules[path]()
     }
   }
-  return res
+  console.error(`[路由] 未找到组件 src/views/${view}.vue,请检查菜单表 component 字段与实际文件是否一致`)
+  return undefined
 }
 
 export default usePermissionStore

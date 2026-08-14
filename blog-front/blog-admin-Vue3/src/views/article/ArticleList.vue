@@ -520,12 +520,12 @@ const changeStatus = (status) => {
 
 // 新增文章
 const handleAdd = () => {
-  router.push('/blog/article/edit')
+  router.push('/articles')
 }
 
 // 编辑文章
 const handleEdit = (id) => {
-  router.push(`/blog/article/edit/${id}`)
+  router.push(`/articles/${id}`)
 }
 
 // 置顶切换

@@ -153,14 +153,14 @@ const changeStatus = (status) => {
 
 // 新增说说
 const handleAdd = () => {
-  router.push('/blog/talk/edit')
+  router.push('/talks')
 }
 
 // 操作命令
 const handleCommand = (command) => {
   const [action, id] = command.split(',')
   if (action === 'edit') {
-    router.push(`/blog/talk/edit/${id}`)
+    router.push(`/talks/${id}`)
   } else if (action === 'delete') {
     handleDelete(id)
   }

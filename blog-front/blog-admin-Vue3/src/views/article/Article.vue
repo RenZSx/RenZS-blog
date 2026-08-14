@@ -429,7 +429,7 @@ const handleSaveDraft = async () => {
       ElMessage.success('保存草稿成功')
       autoSave.value = false
       sessionStorage.removeItem('article')
-      router.push('/blog/article/list')
+      router.push('/article-list')
     } else {
       ElMessage.error(res.message || '保存草稿失败')
     }
@@ -461,7 +461,7 @@ const handleSubmit = async () => {
           autoSave.value = false
           sessionStorage.removeItem('article')
           publishDialogVisible.value = false
-          router.push('/blog/article/list')
+          router.push('/article-list')
         } else {
           ElMessage.error(res.message || '发布失败')
         }
@@ -501,7 +501,11 @@ const autoSaveArticle = async () => {
 }
 
 onMounted(() => {
-  const articleId = route.params.id
+  // 后端菜单将"修改文章"定义为 /articles/*,经 permission.js 转换为
+  // /articles/:pathMatch(.*)*,故文章 id 从 pathMatch 参数取。
+  // pathMatch 在通配路由下是数组,取第一段即 id。
+  const pathMatch = route.params.pathMatch
+  const articleId = Array.isArray(pathMatch) ? pathMatch[0] : pathMatch
   if (articleId) {
     getArticleDetail(articleId)
   } else {

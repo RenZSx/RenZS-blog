@@ -126,7 +126,8 @@ import BlogEditor from '@/components/BlogEditor/index.vue'
 
 const router = useRouter()
 const route = useRoute()
-const talkId = ref(route.params.id || null)
+// 后端菜单"修改说说"路径为 /talks/:talkId,参数名必须与之一致
+const talkId = ref(route.params.talkId || null)
 
 const editorRef = ref(null)
 const submitLoading = ref(false)
