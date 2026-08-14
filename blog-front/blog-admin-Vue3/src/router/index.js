@@ -1,6 +1,8 @@
 import { createWebHistory, createRouter } from 'vue-router'
 /* Layout */
 import Layout from '@/layout'
+// 导入博客路由
+import { blogRoutes } from './blog'
 
 /**
  * Note: 路由配置项
@@ -89,7 +91,8 @@ export const constantRoutes = [
         meta: { title: '个人中心', icon: 'user' }
       }
     ]
-  }
+  },
+  ...blogRoutes
 ]
 
 // 动态路由，基于用户权限动态去加载

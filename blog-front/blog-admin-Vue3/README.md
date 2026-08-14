@@ -1,85 +1,221 @@
 <p align="center">
 	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png">
 </p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">RuoYi v3.9.2</h1>
-<h4 align="center">基于SpringBoot+Vue3前后端分离的Java快速开发框架</h4>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">博客后台管理系统 Vue3 版本</h1>
+<h4 align="center">基于 RuoYi + SpringBoot + Vue3 + SaToken 的博客后台管理系统</h4>
 <p align="center">
 	<a href="https://gitee.com/y_project/RuoYi-Vue/stargazers"><img src="https://gitee.com/y_project/RuoYi-Vue/badge/star.svg?theme=dark"></a>
 	<a href="https://gitee.com/y_project/RuoYi-Vue"><img src="https://img.shields.io/badge/RuoYi-v3.9.2-brightgreen.svg"></a>
 	<a href="https://gitee.com/y_project/RuoYi-Vue/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
 </p>
 
-## 平台简介
+## 项目简介
 
-* 本仓库为前端技术栈 [Vue3](https://v3.cn.vuejs.org) + [Element Plus](https://element-plus.org/zh-CN) + [Vite](https://cn.vitejs.dev) 版本。
-* 配套后端代码仓库地址[RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue) 或 [RuoYi-Vue-fast](https://gitcode.com/yangzongzhuan/RuoYi-Vue-fast) 版本。
-* 阿里云折扣场：[点我进入](http://aly.ruoyi.vip)，腾讯云秒杀场：[点我进入](http://txy.ruoyi.vip)&nbsp;&nbsp;
+本项目是一个功能完善的博客后台管理系统前端，基于若依（RuoYi）框架的 Vue3 版本开发，采用现代化的前端技术栈。系统提供了博客内容管理、用户权限管理、系统监控等完整功能。
 
-# 版本对比
+### 核心特性
 
-RuoYi-Vue 前端项目的三个主要演进版本，方便你直观对比其技术栈差异（并行开发维护）。
+- 📝 **文章管理**：支持 Markdown 编辑、文章分类、标签、置顶、推荐等功能
+- 💬 **评论管理**：评论审核、回复、批量操作
+- 📷 **相册管理**：相册创建、照片上传、批量管理
+- 💭 **说说管理**：类似微博的动态发布功能
+- 👥 **用户管理**：用户信息、角色分配、权限控制
+- 🔐 **权限管理**：基于 RBAC 的细粒度权限控制
+- 📊 **数据统计**：访问统计、数据可视化
+- 🎨 **个性化配置**：网站信息、社交配置、主题设置
+- 📱 **响应式设计**：支持多种设备访问
 
-| 项目名称      | **RuoYi-Vue** | **RuoYi-Vue3** | **RuoYi-Vue3-TypeScript**   |
-| :---          | :---          | :---           | :---                        |
-| **前端框架**  | Vue 2        | Vue 3          | Vue 3                       |
-| **脚本语言**  | JavaScript   | JavaScript     | TypeScript                  |
-| **构建工具**  | Vue CLI      | Vite           | Vite                        |
-| **UI 组件库** | Element UI   | Element Plus   | Element Plus                |
-| **状态管理**  | Vuex         | Pinia          | Pinia                       |
-| **路由管理**  | Vue Router 3 | Vue Router 4   | Vue Router 4                |
-| **核心特点**  | 1. 技术栈经典稳定<br>2. 社区资料丰富<br>3. 当前维护重心已转移 | 1. 现代前端技术栈<br>2. 开发体验与性能更优<br>3. 官方主推的活跃版本 | 1. 类型加持，减少沟通成本<br>2. 开发时有提示，效率更高<br>3. 多人协作企业级开发项目 |
-| **仓库地址**  | [RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue) | [RuoYi-Vue3](https://gitcode.com/yangzongzhuan/RuoYi-Vue3) | [RuoYi-Vue3-TypeScript](https://gitcode.com/yangzongzhuan/RuoYi-Vue3/tree/typescript) |
+### 技术栈
+
+* **前端框架**：[Vue 3.5.26](https://cn.vuejs.org/)
+* **构建工具**：[Vite 6.4.1](https://cn.vitejs.dev/)
+* **UI 组件库**：[Element Plus 2.13.1](https://element-plus.org/zh-CN/)
+* **状态管理**：[Pinia 3.0.4](https://pinia.vuejs.org/zh/)
+* **路由管理**：[Vue Router 4.6.4](https://router.vuejs.org/zh/)
+* **HTTP 客户端**：[Axios 1.13.2](https://axios-http.com/)
+* **富文本编辑器**：[Vue Quill 1.2.0](https://github.com/vueup/vue-quill)
+* **图表库**：[ECharts 5.6.0](https://echarts.apache.org/zh/index.html)
+* **拖拽组件**：[Vue Draggable 4.1.0](https://github.com/SortableJS/vue.draggable.next)
+
+### 配套后端
+
+* 本项目使用 SaToken 作为权限认证框架
+* 配套后端代码请查看项目根目录
+* 原版若依后端：[RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue) 或 [RuoYi-Vue-fast](https://gitcode.com/yangzongzhuan/RuoYi-Vue-fast)
+
+## 快速开始
+
+详细的安装和开发指南请查看 [快速开始文档](./QUICKSTART.md)
+
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产环境
+npm run build:prod
+```
+
+访问地址：http://localhost:80
+
+默认账号：admin / admin123
+
+## 功能模块
+
+### 博客管理模块
+
+1. **文章管理**
+   - 文章列表：分页展示、搜索、筛选（分类、标签、状态）
+   - 文章编辑：Markdown 编辑器、封面上传、分类标签选择
+   - 文章操作：置顶、推荐、删除、恢复、导入导出
+   - 状态管理：公开、私密、草稿
+
+2. **分类管理**
+   - 分类 CRUD 操作
+   - 文章数量统计
+   - 批量操作
+
+3. **标签管理**
+   - 标签 CRUD 操作
+   - 标签使用频率统计
+   - 批量管理
+
+4. **评论管理**
+   - 评论审核
+   - 评论回复
+   - 批量操作（通过、删除）
+   - 垃圾评论过滤
+
+5. **留言管理**
+   - 留言审核
+   - 留言回复
+   - 批量处理
+
+6. **说说管理**
+   - 说说发布（支持多图）
+   - 说说编辑、删除
+   - 说说置顶
+   - 公开/私密设置
+
+### 内容展示模块
+
+7. **相册管理**
+   - 相册创建、编辑、删除
+   - 照片上传（单张/批量）
+   - 照片移动、删除
+   - 相册权限设置（公开/私密）
+
+8. **友链管理**
+   - 友链 CRUD 操作
+   - 友链审核
+   - 友链置顶
+
+9. **页面管理**
+   - 页面封面配置
+   - 页面内容编辑
+
+10. **关于页面**
+    - Markdown 编辑
+    - 实时预览
+
+### 系统管理模块
+
+11. **用户管理**
+    - 用户列表、搜索、筛选
+    - 用户信息编辑
+    - 角色分配
+    - 禁用/启用用户
+    - 密码重置
+
+12. **角色管理**
+    - 角色 CRUD 操作
+    - 菜单权限分配
+    - 资源权限分配
+    - 数据权限控制
+
+13. **菜单管理**
+    - 菜单树形结构
+    - 菜单 CRUD 操作
+    - 菜单图标配置
+    - 显示/隐藏控制
+    - 权限标识
+
+14. **资源管理**
+    - API 资源配置
+    - 请求方式管理
+    - 匿名访问控制
+
+15. **网站配置**
+    - 网站基本信息
+    - 社交账号配置
+    - 用户配置（登录、评论、留言）
+    - 打赏配置
+    - 默认图片设置
+
+16. **操作日志**
+    - 日志查询
+    - 日志导出
+    - 日志清理
+
+### 监控模块
+
+17. **在线用户**
+    - 在线用户列表
+    - 强制下线
+
+18. **定时任务**
+    - 任务调度管理
+    - 任务执行日志
+    - 任务启动/停止
+
+19. **服务监控**
+    - CPU、内存监控
+    - JVM 信息
+    - 磁盘状态
+
+20. **缓存监控**
+    - 缓存统计
+    - 命令统计
+    - 缓存清理
 
 ## 前端运行
 
 ```bash
 # 克隆项目
-git clone https://github.com/yangzongzhuan/RuoYi-Vue3.git
+git clone https://github.com/your-repo/blog-satoken.git
 
 # 进入项目目录
-cd RuoYi-Vue3
+cd blog-satoken/blog-front/blog-admin-Vue3
 
 # 安装依赖
-yarn --registry=https://registry.npmmirror.com
+npm install
+# 或使用 yarn
+yarn install
+# 或使用 pnpm（推荐）
+pnpm install
 
 # 启动服务
-yarn dev
+npm run dev
 
-# 构建测试环境 yarn build:stage
-# 构建生产环境 yarn build:prod
-# 前端访问地址 http://localhost:80
+# 构建测试环境
+npm run build:stage
+
+# 构建生产环境
+npm run build:prod
+
+# 前端访问地址
+http://localhost:80
 ```
 
-## 内置功能
+## 项目文档
 
-1.  用户管理：用户是系统操作者，该功能主要完成系统用户配置。
-2.  部门管理：配置系统组织机构（公司、部门、小组），树结构展现支持数据权限。
-3.  岗位管理：配置系统用户所属担任职务。
-4.  菜单管理：配置系统菜单，操作权限，按钮权限标识等。
-5.  角色管理：角色菜单权限分配、设置角色按机构进行数据范围权限划分。
-6.  字典管理：对系统中经常使用的一些较为固定的数据进行维护。
-7.  参数管理：对系统动态配置常用参数。
-8.  通知公告：系统通知公告信息发布维护。
-9.  操作日志：系统正常操作日志记录和查询；系统异常信息日志记录和查询。
-10. 登录日志：系统登录日志记录查询包含登录异常。
-11. 在线用户：当前系统中活跃用户状态监控。
-12. 定时任务：在线（添加、修改、删除)任务调度包含执行结果日志。
-13. 代码生成：前后端代码的生成（java、html、xml、sql）支持CRUD下载 。
-14. 系统接口：根据业务代码自动生成相关的api接口文档。
-15. 服务监控：监视当前系统CPU、内存、磁盘、堆栈等相关信息。
-16. 缓存监控：对系统的缓存信息查询，命令统计等。
-17. 在线构建器：拖动表单元素生成相应的HTML代码。
-18. 连接池监视：监视当前系统数据库连接池状态，可进行分析SQL找出系统性能瓶颈。
+- 📖 [快速开始指南](./QUICKSTART.md) - 详细的安装和开发指南
+- ✅ [功能测试清单](./TEST_CHECKLIST.md) - 完整的功能测试项
+- 🚀 [部署指南](./DEPLOYMENT.md) - 生产环境部署流程
 
-## 在线体验
-
-- admin/admin123  
-- 陆陆续续收到一些打赏，为了更好的体验已用于演示服务器升级。谢谢各位小伙伴。
-
-演示地址：http://vue.ruoyi.vip  
-文档地址：http://doc.ruoyi.vip
-
-## 演示图
+## 项目截图
 
 <table>
     <tr>
@@ -117,6 +253,89 @@ yarn dev
 </table>
 
 
-## 若依前后端分离交流群
+## 开发指南
 
-QQ群： [![加入QQ群](https://img.shields.io/badge/已满-937441-blue.svg)](https://jq.qq.com/?_wv=1027&k=5bVB1og) [![加入QQ群](https://img.shields.io/badge/已满-887144332-blue.svg)](https://jq.qq.com/?_wv=1027&k=5eiA4DH) [![加入QQ群](https://img.shields.io/badge/已满-180251782-blue.svg)](https://jq.qq.com/?_wv=1027&k=5AxMKlC) [![加入QQ群](https://img.shields.io/badge/已满-104180207-blue.svg)](https://jq.qq.com/?_wv=1027&k=51G72yr) [![加入QQ群](https://img.shields.io/badge/已满-186866453-blue.svg)](https://jq.qq.com/?_wv=1027&k=VvjN2nvu) [![加入QQ群](https://img.shields.io/badge/已满-201396349-blue.svg)](https://jq.qq.com/?_wv=1027&k=5vYAqA05) [![加入QQ群](https://img.shields.io/badge/已满-101456076-blue.svg)](https://jq.qq.com/?_wv=1027&k=kOIINEb5) [![加入QQ群](https://img.shields.io/badge/已满-101539465-blue.svg)](https://jq.qq.com/?_wv=1027&k=UKtX5jhs) [![加入QQ群](https://img.shields.io/badge/已满-264312783-blue.svg)](https://jq.qq.com/?_wv=1027&k=EI9an8lJ) [![加入QQ群](https://img.shields.io/badge/已满-167385320-blue.svg)](https://jq.qq.com/?_wv=1027&k=SWCtLnMz) [![加入QQ群](https://img.shields.io/badge/已满-104748341-blue.svg)](https://jq.qq.com/?_wv=1027&k=96Dkdq0k) [![加入QQ群](https://img.shields.io/badge/已满-160110482-blue.svg)](https://jq.qq.com/?_wv=1027&k=0fsNiYZt) [![加入QQ群](https://img.shields.io/badge/已满-170801498-blue.svg)](https://jq.qq.com/?_wv=1027&k=7xw4xUG1) [![加入QQ群](https://img.shields.io/badge/已满-108482800-blue.svg)](https://jq.qq.com/?_wv=1027&k=eCx8eyoJ) [![加入QQ群](https://img.shields.io/badge/已满-101046199-blue.svg)](https://jq.qq.com/?_wv=1027&k=SpyH2875) [![加入QQ群](https://img.shields.io/badge/已满-136919097-blue.svg)](https://jq.qq.com/?_wv=1027&k=tKEt51dz) [![加入QQ群](https://img.shields.io/badge/已满-143961921-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=0vBbSb0ztbBgVtn3kJS-Q4HUNYwip89G&authKey=8irq5PhutrZmWIvsUsklBxhj57l%2F1nOZqjzigkXZVoZE451GG4JHPOqW7AW6cf0T&noverify=0&group_code=143961921) [![加入QQ群](https://img.shields.io/badge/已满-174951577-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=ZFAPAbp09S2ltvwrJzp7wGlbopsc0rwi&authKey=HB2cxpxP2yspk%2Bo3WKTBfktRCccVkU26cgi5B16u0KcAYrVu7sBaE7XSEqmMdFQp&noverify=0&group_code=174951577) [![加入QQ群](https://img.shields.io/badge/已满-161281055-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=Fn2aF5IHpwsy8j6VlalNJK6qbwFLFHat&authKey=uyIT%2B97x2AXj3odyXpsSpVaPMC%2Bidw0LxG5MAtEqlrcBcWJUA%2FeS43rsF1Tg7IRJ&noverify=0&group_code=161281055) [![加入QQ群](https://img.shields.io/badge/已满-138988063-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=XIzkm_mV2xTsUtFxo63bmicYoDBA6Ifm&authKey=dDW%2F4qsmw3x9govoZY9w%2FoWAoC4wbHqGal%2BbqLzoS6VBarU8EBptIgPKN%2FviyC8j&noverify=0&group_code=138988063) [![加入QQ群](https://img.shields.io/badge/已满-151450850-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=DkugnCg68PevlycJSKSwjhFqfIgrWWwR&authKey=pR1Pa5lPIeGF%2FFtIk6d%2FGB5qFi0EdvyErtpQXULzo03zbhopBHLWcuqdpwY241R%2F&noverify=0&group_code=151450850) [![加入QQ群](https://img.shields.io/badge/已满-224622315-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=F58bgRa-Dp-rsQJThiJqIYv8t4-lWfXh&authKey=UmUs4CVG5OPA1whvsa4uSespOvyd8%2FAr9olEGaWAfdLmfKQk%2FVBp2YU3u2xXXt76&noverify=0&group_code=224622315) [![加入QQ群](https://img.shields.io/badge/已满-287842588-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=Nxb2EQ5qozWa218Wbs7zgBnjLSNk_tVT&authKey=obBKXj6SBKgrFTJZx0AqQnIYbNOvBB2kmgwWvGhzxR67RoRr84%2Bus5OadzMcdJl5&noverify=0&group_code=287842588) [![加入QQ群](https://img.shields.io/badge/已满-187944233-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=numtK1M_I4eVd2Gvg8qtbuL8JgX42qNh&authKey=giV9XWMaFZTY%2FqPlmWbkB9g3fi0Ev5CwEtT9Tgei0oUlFFCQLDp4ozWRiVIzubIm&noverify=0&group_code=187944233) [![加入QQ群](https://img.shields.io/badge/已满-228578329-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=G6r5KGCaa3pqdbUSXNIgYloyb8e0_L0D&authKey=4w8tF1eGW7%2FedWn%2FHAypQksdrML%2BDHolQSx7094Agm7Luakj9EbfPnSTxSi2T1LQ&noverify=0&group_code=228578329) [![加入QQ群](https://img.shields.io/badge/已满-191164766-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=GsOo-OLz53J8y_9TPoO6XXSGNRTgbFxA&authKey=R7Uy%2Feq%2BZsoKNqHvRKhiXpypW7DAogoWapOawUGHokJSBIBIre2%2FoiAZeZBSLuBc&noverify=0&group_code=191164766) [![加入QQ群](https://img.shields.io/badge/已满-174569686-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=PmYavuzsOthVqfdAPbo4uAeIbu7Ttjgc&authKey=p52l8%2FXa4PS1JcEmS3VccKSwOPJUZ1ZfQ69MEKzbrooNUljRtlKjvsXf04bxNp3G&noverify=0&group_code=174569686) [![加入QQ群](https://img.shields.io/badge/127358632-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=M9y5NjAl44lAL_Vh2crmEehZU_PMU6KS&authKey=ZSDz8hEREWSaPuxQV3gEwqGIaGjfRNnkB4rJjf0IvXhrSUGSGwQFmBA%2Boe8HFxyl&noverify=0&group_code=127358632) 点击按钮入群。
+### 代码规范
+
+- 使用 ES6+ 语法
+- 组件命名采用 PascalCase
+- 使用 Composition API（`<script setup>`）
+- 遵循 Vue 3 最佳实践
+
+### 目录结构
+
+```
+src/
+├── api/              # API 接口定义
+│   ├── blog/        # 博客相关接口
+│   ├── monitor/     # 监控相关接口
+│   ├── system/      # 系统相关接口
+│   └── tool/        # 工具相关接口
+├── assets/          # 静态资源
+├── components/      # 全局组件
+├── layout/          # 布局组件
+├── router/          # 路由配置
+├── store/           # Pinia 状态管理
+├── utils/           # 工具函数
+└── views/           # 页面组件
+```
+
+### 新增功能
+
+在 `src/api/` 对应模块下创建接口文件，在 `src/views/` 下创建页面，并配置路由。
+
+### 常见问题
+
+**Q: 端口被占用**
+
+修改 `vite.config.js` 中的 `server.port` 配置。
+
+**Q: 接口请求失败**
+
+检查 `vite.config.js` 中的 `baseUrl` 是否正确，确保后端服务已启动。
+
+更多问题请查看 [快速开始文档](./QUICKSTART.md)。
+
+## 贡献指南
+
+欢迎提交 Issue 和 Pull Request。
+
+### 提交规范
+
+- feat: 新功能
+- fix: 修复 Bug
+- docs: 文档更新
+- style: 代码格式调整
+- refactor: 代码重构
+
+### 开发流程
+
+1. Fork 本项目
+2. 创建特性分支
+3. 提交更改
+4. 推送到分支
+5. 提交 Pull Request
+
+## 技术支持
+
+- [Vue 3 官方文档](https://cn.vuejs.org/)
+- [Vite 官方文档](https://cn.vitejs.dev/)
+- [Element Plus 官方文档](https://element-plus.org/zh-CN/)
+- [若依官方文档](http://doc.ruoyi.vip)
+
+## 许可证
+
+[MIT License](https://opensource.org/licenses/MIT)
+
+## 致谢
+
+感谢以下开源项目：
+
+- [RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue) - 若依管理系统
+- [Vue.js](https://vuejs.org/) - 渐进式 JavaScript 框架
+- [Element Plus](https://element-plus.org/) - Vue 3 组件库
+- [Vite](https://vitejs.dev/) - 下一代前端构建工具
+
+---
+
+⭐ 如果这个项目对你有帮助，请给一个 Star 支持一下！

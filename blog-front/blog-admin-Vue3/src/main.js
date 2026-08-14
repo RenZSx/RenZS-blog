@@ -44,6 +44,14 @@ import ImagePreview from "@/components/ImagePreview"
 // 字典标签组件
 import DictTag from '@/components/DictTag'
 
+// 导入博客自定义组件
+import BlogEditor from '@/components/BlogEditor/index.vue'
+import TagCloud from '@/components/TagCloud/index.vue'
+
+// 导入博客工具函数
+import { formatDate, getUploadHeaders } from '@/utils/blog'
+import config from '@/config'
+
 const app = createApp(App)
 
 // 全局方法挂载
@@ -56,6 +64,9 @@ app.config.globalProperties.addDateRange = addDateRange
 app.config.globalProperties.getConfigKey = getConfigKey
 app.config.globalProperties.selectDictLabel = selectDictLabel
 app.config.globalProperties.selectDictLabels = selectDictLabels
+app.config.globalProperties.$config = config
+app.config.globalProperties.$formatDate = formatDate
+app.config.globalProperties.$getUploadHeaders = getUploadHeaders
 
 // 全局组件挂载
 app.component('DictTag', DictTag)
@@ -65,6 +76,8 @@ app.component('ImageUpload', ImageUpload)
 app.component('ImagePreview', ImagePreview)
 app.component('RightToolbar', RightToolbar)
 app.component('Editor', Editor)
+app.component('BlogEditor', BlogEditor)
+app.component('TagCloud', TagCloud)
 
 app.use(router)
 app.use(store)

@@ -4,6 +4,10 @@
 @use './sidebar.scss';
 @use './btn.scss';
 @use './ruoyi.scss';
+@use './blog.scss';
+
+// 引入iconfont图标字体
+@import './iconfont.css';
 
 body {
   height: 100%;

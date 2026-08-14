@@ -1,0 +1,255 @@
+// 博客管理模块通用样式
+
+// 通用卡片样式
+.blog-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+  }
+}
+
+// 主内容卡片
+.main-card {
+  min-height: calc(100vh - 126px);
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+}
+
+// 操作按钮容器
+.operation-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  margin-top: 36px;
+
+  .operation-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .operation-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+// 分页容器
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+// 对话框标题
+.dialog-title-container {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 18px;
+
+  i {
+    font-size: 24px;
+    margin-right: 8px;
+    color: #409eff;
+  }
+}
+
+// 标题样式
+.title {
+  position: relative;
+  font-size: 16px;
+  font-weight: bold;
+  color: #202a34;
+  padding-left: 30px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 18px;
+    background-color: #409eff;
+    border-radius: 2px;
+  }
+}
+
+// 表格样式优化
+.blog-table {
+  .el-table__header th {
+    background-color: #f5f7fa;
+    color: #606266;
+    font-weight: 600;
+  }
+
+  .el-table__body tr:hover > td {
+    background-color: #f5f7fa;
+  }
+
+  .table-image {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  .table-tag {
+    margin: 2px;
+  }
+}
+
+// 文章编辑器容器
+.editor-container {
+  margin-top: 20px;
+
+  .v-note-wrapper.fullscreen {
+    height: 100vh !important;
+    z-index: 9999;
+  }
+}
+
+// 图片上传组件样式
+.photo-container {
+  .el-checkbox__input {
+    position: absolute !important;
+    top: 5px;
+    left: 13px;
+    z-index: 10;
+  }
+
+  .photo-item {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+
+    &:hover .photo-mask {
+      opacity: 1;
+    }
+  }
+
+  .photo-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+}
+
+// 相册选择项
+.album-check-item {
+  position: relative;
+
+  .el-radio__input {
+    position: absolute !important;
+    top: 19px;
+    left: 3px;
+    z-index: 1000;
+  }
+}
+
+// 上传列表缩略图
+.el-upload-list__item-thumbnail {
+  object-fit: cover !important;
+}
+
+// 状态标签
+.status-tag {
+  &.published {
+    color: #67c23a;
+    background-color: #f0f9ff;
+  }
+
+  &.draft {
+    color: #909399;
+    background-color: #f4f4f5;
+  }
+
+  &.private {
+    color: #e6a23c;
+    background-color: #fdf6ec;
+  }
+}
+
+// 文章类型标签
+.type-tag {
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+// 操作按钮组
+.operation-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+// 统计卡片
+.stat-card {
+  padding: 20px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+
+  .stat-title {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .stat-icon {
+    font-size: 40px;
+    opacity: 0.3;
+  }
+}
+
+// 响应式布局
+@media screen and (max-width: 768px) {
+  .operation-container {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .operation-left,
+    .operation-right {
+      width: 100%;
+      margin-top: 10px;
+    }
+  }
+
+  .main-card {
+    padding: 10px;
+  }
+
+  .blog-table .table-image {
+    width: 60px;
+    height: 45px;
+  }
+}
