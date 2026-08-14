@@ -119,11 +119,17 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
       } else if (route.component === 'InnerLink') {
         route.component = InnerLink
       } else {
-        // 博客后端组件路径格式: /article/ArticleList
-        // 需要转换为: article/ArticleList (去掉开头的斜杠)
-        const componentPath = route.component.startsWith('/')
-          ? route.component.substring(1)
-          : route.component
+        // 博客后端组件路径格式: /article/ArticleList.vue 或 /home/Home.vue
+        // 需要转换为: article/ArticleList 或 home/Home (去掉开头的斜杠和 .vue 后缀)
+        let componentPath = route.component
+        // 去掉开头的斜杠
+        if (componentPath.startsWith('/')) {
+          componentPath = componentPath.substring(1)
+        }
+        // 去掉 .vue 后缀
+        if (componentPath.endsWith('.vue')) {
+          componentPath = componentPath.replace(/\.vue$/, '')
+        }
         route.component = loadView(componentPath)
       }
     }
@@ -168,10 +174,44 @@ export function filterDynamicRoutes(routes) {
 }
 
 export const loadView = (view) => {
+  // Vue2 到 Vue3 的路径映射
+  // Vue2: home/Home → Vue3: blog/home/index
+  // Vue2: article/ArticleList → Vue3: blog/article/list
+  const pathMap = {
+    'home/Home': 'blog/home/index',
+    'article/Article': 'blog/article/edit',
+    'article/ArticleList': 'blog/article/list',
+    'category/Category': 'blog/category/index',
+    'tag/Tag': 'blog/tag/index',
+    'comment/Comment': 'blog/comment/index',
+    'message/Message': 'blog/message/index',
+    'user/User': 'blog/user/index',
+    'user/Online': 'blog/user/online',
+    'role/Role': 'blog/role/index',
+    'resource/Resource': 'blog/resource/index',
+    'menu/Menu': 'blog/menu/index',
+    'friendLink/FriendLink': 'blog/friendlink/index',
+    'about/About': 'blog/about/index',
+    'log/Operation': 'blog/log/operation',
+    'album/Album': 'blog/album/list',
+    'album/Photo': 'blog/album/photo',
+    'album/Delete': 'blog/album/photo', // 暂时映射到 photo，后续需要创建 delete 组件
+    'page/Page': 'blog/page/index',
+    'website/Website': 'blog/website/index',
+    'talk/Talk': 'blog/talk/edit',
+    'talk/TalkList': 'blog/talk/list',
+    'notice/SystemNotice': 'system/notice/index', // 若依自带
+    'setting/Setting': 'system/user/profile/index', // 映射到个人中心
+    'love/Love': 'blog/home/index', // 暂时映射到首页，后续需要创建
+  }
+
+  // 如果有映射，使用映射后的路径
+  const mappedView = pathMap[view] || view
+
   let res
   for (const path in modules) {
     const dir = path.split('views/')[1].split('.vue')[0]
-    if (dir === view) {
+    if (dir === mappedView) {
       res = () => modules[path]()
     }
   }
