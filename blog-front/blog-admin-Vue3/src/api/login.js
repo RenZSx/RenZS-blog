@@ -2,15 +2,17 @@ import request from '@/utils/request'
 
 // 登录方法 - 博客后端不需要验证码
 export function login(username, password) {
-  const data = {
-    username,
-    password
-  }
+  // 使用 URLSearchParams 发送表单格式数据
+  const data = new URLSearchParams()
+  data.append('username', username)
+  data.append('password', password)
+
   return request({
     url: '/login',
     headers: {
       isToken: false,
-      repeatSubmit: false
+      repeatSubmit: false,
+      'Content-Type': 'application/x-www-form-urlencoded'
     },
     method: 'post',
     data: data
