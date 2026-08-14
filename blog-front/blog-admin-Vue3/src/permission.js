@@ -47,24 +47,20 @@ router.beforeEach(async (to, from) => {
         // 拉取user_info信息（博客后端登录时已返回，这里会直接从 store 返回）
         await useUserStore().getInfo()
         isRelogin.show = false
-        // 根据roles权限生成可访问的路由
-        console.log('开始生成动态路由...')
+        // 拉取后端菜单并生成可访问路由
         const accessRoutes = await permissionStore.generateRoutes()
-        console.log('动态路由生成完成，开始添加到路由器')
         accessRoutes.forEach(route => {
           if (!isHttp(route.path)) {
             router.addRoute(route)
-            console.log('已添加路由:', route.path)
           }
         })
-        console.log('路由添加完成，重新导航')
         // 重新导航到目标路由，确保动态路由已注册
         return { ...to, replace: true }
       } catch (err) {
-        console.error('路由生成失败:', err)
+        console.error('动态路由加载失败:', err)
         await useUserStore().logOut()
-        ElMessage.error(err)
-        return { path: '/' }
+        ElMessage.error(err?.message || '菜单加载失败，请重新登录')
+        return { path: '/login' }
       }
     }
     return true

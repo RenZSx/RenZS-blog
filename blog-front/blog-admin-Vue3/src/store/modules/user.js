@@ -16,6 +16,9 @@ const useUserStore = defineStore(
       name: '',
       nickName: '',
       avatar: '',
+      // 博客后端 userInfo 额外字段，个人中心页面需要
+      intro: '',
+      webSite: '',
       roles: [],
       permissions: []
     }),
@@ -38,6 +41,8 @@ const useUserStore = defineStore(
               this.name = res.userInfo.username
               this.nickName = res.userInfo.nickname
               this.avatar = res.userInfo.avatar || defAva
+              this.intro = res.userInfo.intro || ''
+              this.webSite = res.userInfo.webSite || ''
               // 博客后端默认赋予管理员角色
               this.roles = ['admin']
               this.permissions = ['*:*:*']

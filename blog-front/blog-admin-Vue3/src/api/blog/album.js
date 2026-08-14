@@ -79,3 +79,12 @@ export function movePhotos(data) {
     data: data
   })
 }
+
+// 更新照片逻辑删除状态(回收站恢复/移入回收站)
+export function updatePhotoDelete(data) {
+  return request({
+    url: '/admin/photos/delete',
+    method: 'put',
+    data: data
+  })
+}

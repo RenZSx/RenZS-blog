@@ -1,8 +1,6 @@
 import { createWebHistory, createRouter } from 'vue-router'
 /* Layout */
 import Layout from '@/layout'
-// 导入博客路由
-import { blogRoutes } from './blog'
 
 /**
  * Note: 路由配置项
@@ -59,16 +57,19 @@ export const constantRoutes = [
     component: () => import('@/views/error/401'),
     hidden: true
   },
+  // 模板自带的 /index 首页保留但隐藏:
+  // 博客首页由后端菜单以 path '/' 下发(见 permission.js),
+  // 若此处也在侧边栏展示会出现"两个首页"。
   {
-    path: '',
+    path: '/index',
     component: Layout,
-    redirect: '/index',
+    hidden: true,
     children: [
       {
-        path: '/index',
+        path: '',
         component: () => import('@/views/index'),
         name: 'Index',
-        meta: { title: '首页', icon: 'dashboard', affix: true }
+        meta: { title: '控制台', icon: 'dashboard' }
       }
     ]
   },
@@ -91,8 +92,9 @@ export const constantRoutes = [
         meta: { title: '个人中心', icon: 'user' }
       }
     ]
-  },
-  ...blogRoutes
+  }
+  // 注意: 博客业务菜单全部由后端 /admin/user/menus 动态下发,
+  // 经 store/modules/permission.js 转换后注册,不在此处静态声明。
 ]
 
 // 动态路由，基于用户权限动态去加载
