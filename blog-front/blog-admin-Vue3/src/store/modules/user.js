@@ -31,6 +31,18 @@ const useUserStore = defineStore(
             const token = res.token || res.tokenValue
             setToken(token)
             this.token = token
+
+            // 博客后端登录时直接返回用户信息,存储到 state
+            if (res.userInfo) {
+              this.id = res.userInfo.id
+              this.name = res.userInfo.username
+              this.nickName = res.userInfo.nickname
+              this.avatar = res.userInfo.avatar || defAva
+              // 博客后端默认赋予管理员角色
+              this.roles = ['admin']
+              this.permissions = ['*:*:*']
+            }
+
             useLockStore().unlockScreen()
             resolve()
           }).catch(error => {
@@ -38,9 +50,26 @@ const useUserStore = defineStore(
           })
         })
       },
-      // 获取用户信息
+      // 获取用户信息 - 适配博客后端
       getInfo() {
         return new Promise((resolve, reject) => {
+          // 博客后端在登录时已经返回用户信息,这里检查是否已经有了
+          if (this.roles && this.roles.length > 0) {
+            // 用户信息已经在登录时获取,直接返回
+            resolve({
+              user: {
+                userId: this.id,
+                userName: this.name,
+                nickName: this.nickName,
+                avatar: this.avatar
+              },
+              roles: this.roles,
+              permissions: this.permissions
+            })
+            return
+          }
+
+          // 如果没有用户信息,调用后端接口获取
           getInfo().then(res => {
             const user = res.user
             let avatar = user.avatar || ""
