@@ -31,10 +31,13 @@ export function register(data) {
   })
 }
 
-// 获取用户详细信息
+// 获取当前登录用户信息
+// 博客后端接口: GET /users/current
+// 该接口不创建新登录态,仅凭 Authorization Header 中的 sa-token 反查 Redis,
+// 专供前端刷新页面后重建用户状态使用,返回结构与登录接口的 userInfo 一致。
 export function getInfo() {
   return request({
-    url: '/getInfo',
+    url: '/users/current',
     method: 'get'
   })
 }

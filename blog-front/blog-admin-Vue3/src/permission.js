@@ -38,14 +38,20 @@ router.beforeEach(async (to, from) => {
       NProgress.done()
       return { path: '/' }
     }
-    // 检查路由是否已经加载（通过检查 addRoutes 是否为空）
-    // 博客后端在登录时已经返回用户信息并设置了 roles，所以不能用 roles.length === 0 来判断
+    // 以"动态路由是否已注册"作为菜单加载标志(等价于 Vue2 的 isMenuRouteLoaded)。
+    // 不能用 userStore.roles.length === 0 判断: 博客后端登录接口就返回了用户
+    // 信息,roles 在登录那一刻已非空,该分支会被永久跳过导致菜单请求发不出去。
     const permissionStore = usePermissionStore()
+    const userStore = useUserStore()
     if (permissionStore.addRoutes.length === 0) {
       isRelogin.show = true
       try {
-        // 拉取user_info信息（博客后端登录时已返回，这里会直接从 store 返回）
-        await useUserStore().getInfo()
+        // 刷新页面后 Pinia state 被重置(仅 token 存于 Cookie),
+        // 需凭 token 重新拉取用户信息;登录跳转时 store 已有数据则跳过,
+        // 避免紧随登录再多发一次 /users/current
+        if (!userStore.name) {
+          await userStore.getInfo()
+        }
         isRelogin.show = false
         // 拉取后端菜单并生成可访问路由
         const accessRoutes = await permissionStore.generateRoutes()
@@ -57,9 +63,10 @@ router.beforeEach(async (to, from) => {
         // 重新导航到目标路由，确保动态路由已注册
         return { ...to, replace: true }
       } catch (err) {
-        console.error('动态路由加载失败:', err)
-        await useUserStore().logOut()
-        ElMessage.error(err?.message || '菜单加载失败，请重新登录')
+        console.error('登录态重建失败:', err)
+        // token 失效或菜单加载失败,清理本地状态回到登录页
+        await userStore.logOut().catch(() => {})
+        ElMessage.error(err?.message || '登录已失效，请重新登录')
         return { path: '/login' }
       }
     }

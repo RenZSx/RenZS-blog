@@ -1,11 +1,10 @@
 import router from '@/router'
-import cache from '@/plugins/cache'
-import { ElMessageBox, } from 'element-plus'
 import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import { isHttp, isEmpty } from "@/utils/validate"
 import useLockStore from '@/store/modules/lock'
+import usePermissionStore from '@/store/modules/permission'
 import defAva from '@/assets/images/profile.jpg'
+
 
 const useUserStore = defineStore(
   'user',
@@ -35,18 +34,9 @@ const useUserStore = defineStore(
             setToken(token)
             this.token = token
 
-            // 博客后端登录时直接返回用户信息,存储到 state
-            if (res.userInfo) {
-              this.id = res.userInfo.id
-              this.name = res.userInfo.username
-              this.nickName = res.userInfo.nickname
-              this.avatar = res.userInfo.avatar || defAva
-              this.intro = res.userInfo.intro || ''
-              this.webSite = res.userInfo.webSite || ''
-              // 博客后端默认赋予管理员角色
-              this.roles = ['admin']
-              this.permissions = ['*:*:*']
-            }
+            // 博客后端登录时一并返回用户信息,直接写入 store,
+            // 免去登录后再多发一次 /users/current
+            this.setUserInfo(res.userInfo)
 
             useLockStore().unlockScreen()
             resolve()
@@ -55,71 +45,80 @@ const useUserStore = defineStore(
           })
         })
       },
-      // 获取用户信息 - 适配博客后端
+      /**
+       * 将博客后端的 UserInfoDTO 写入 store。
+       *
+       * 登录接口与 /users/current 返回的用户结构完全一致(平铺,非若依的
+       * { user, roles, permissions } 嵌套结构),故两处共用此方法。
+       *
+       * 说明: 博客后端的角色信息不随用户信息下发,访问控制完全由后端菜单
+       * (/admin/user/menus)决定 —— 能拿到哪些菜单就能访问哪些页面。
+       * 这里给定固定角色只为满足若依模板中 v-hasRole / v-hasPermi 指令的
+       * 存在性校验,不作为真正的权限依据。
+       *
+       * @param {Object} userInfo 后端返回的 UserInfoDTO
+       */
+      setUserInfo(userInfo) {
+        if (!userInfo) return
+        this.id = userInfo.userInfoId || userInfo.id
+        this.name = userInfo.username
+        this.nickName = userInfo.nickname
+        this.avatar = userInfo.avatar || defAva
+        this.intro = userInfo.intro || ''
+        this.webSite = userInfo.webSite || ''
+        this.roles = ['admin']
+        this.permissions = ['*:*:*']
+      },
+      /**
+       * 获取当前登录用户信息。
+       *
+       * 刷新页面时 Pinia state 会重置,但 token 仍在 Cookie 中,
+       * 此时需要凭 token 向后端重新拉取用户信息以重建登录态。
+       */
       getInfo() {
         return new Promise((resolve, reject) => {
-          // 博客后端在登录时已经返回用户信息,这里检查是否已经有了
-          if (this.roles && this.roles.length > 0) {
-            // 用户信息已经在登录时获取,直接返回
-            resolve({
-              user: {
-                userId: this.id,
-                userName: this.name,
-                nickName: this.nickName,
-                avatar: this.avatar
-              },
-              roles: this.roles,
-              permissions: this.permissions
-            })
-            return
-          }
-
-          // 如果没有用户信息,调用后端接口获取
           getInfo().then(res => {
-            const user = res.user
-            let avatar = user.avatar || ""
-            if (!isHttp(avatar)) {
-              avatar = (isEmpty(avatar)) ? defAva : import.meta.env.VITE_APP_BASE_API + avatar
+            if (!res) {
+              reject(new Error('获取用户信息失败'))
+              return
             }
-            if (res.roles && res.roles.length > 0) { // 验证返回的roles是否是一个非空数组
-              this.roles = res.roles
-              this.permissions = res.permissions
-            } else {
-              this.roles = ['ROLE_DEFAULT']
-            }
-            this.id = user.userId
-            this.name = user.userName
-            this.nickName = user.nickName
-            this.avatar = avatar
-            cache.session.set('pwrChrtype', res.pwdChrtype)
-            /* 初始密码提示 */
-            if(res.isDefaultModifyPwd) {
-              ElMessageBox.confirm('您的密码还是初始密码，请修改密码！',  '安全提示', {  confirmButtonText: '确定',  cancelButtonText: '取消',  type: 'warning' }).then(() => {
-                router.push({ name: 'Profile', params: { activeTab: 'resetPwd' } })
-              }).catch(() => {})
-            }
-            /* 过期密码提示 */
-            if(!res.isDefaultModifyPwd && res.isPasswordExpired) {
-              ElMessageBox.confirm('您的密码已过期，请尽快修改密码！',  '安全提示', {  confirmButtonText: '确定',  cancelButtonText: '取消',  type: 'warning' }).then(() => {
-                router.push({ name: 'Profile', params: { activeTab: 'resetPwd' } })
-              }).catch(() => {})
-            }
+            this.setUserInfo(res)
             resolve(res)
           }).catch(error => {
             reject(error)
           })
         })
       },
+      /**
+       * 清空本地登录态。
+       *
+       * 必须清空全部用户字段: 路由守卫用 name 是否为空判断要不要重新拉取
+       * 用户信息,残留会导致下次登录后跳过拉取。
+       */
+      resetState() {
+        this.token = ''
+        this.id = ''
+        this.name = ''
+        this.nickName = ''
+        this.avatar = ''
+        this.intro = ''
+        this.webSite = ''
+        this.roles = []
+        this.permissions = []
+        removeToken()
+        // 清空路由状态,下次登录时重新拉取菜单
+        usePermissionStore().resetRoutes()
+      },
       // 退出系统
       logOut() {
         return new Promise((resolve, reject) => {
           logout(this.token).then(() => {
-            this.token = ''
-            this.roles = []
-            this.permissions = []
-            removeToken()
+            this.resetState()
             resolve()
           }).catch(error => {
+            // 后端登出失败(如 token 已失效)也要清理本地状态,
+            // 否则会卡在"有 token 但无法使用"的死状态
+            this.resetState()
             reject(error)
           })
         })

@@ -32,6 +32,19 @@ const usePermissionStore = defineStore(
       setSidebarRouters(routes) {
         this.sidebarRouters = routes
       },
+      /**
+       * 清空已生成的路由状态。
+       *
+       * addRoutes 是路由守卫判断"菜单是否已加载"的依据,登出时必须重置,
+       * 否则下次登录会误判为已加载而不再拉取菜单。
+       */
+      resetRoutes() {
+        this.routes = []
+        this.addRoutes = []
+        this.defaultRoutes = []
+        this.topbarRouters = []
+        this.sidebarRouters = []
+      },
       generateRoutes(roles) {
         return new Promise((resolve, reject) => {
           // 向后端请求路由数据
