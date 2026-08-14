@@ -212,6 +212,7 @@ http://localhost:80
 ## 项目文档
 
 - 📖 [快速开始指南](./QUICKSTART.md) - 详细的安装和开发指南
+- 🔌 [后端接口集成](./BACKEND_INTEGRATION.md) - 后端接口对接说明 ⭐
 - ✅ [功能测试清单](./TEST_CHECKLIST.md) - 完整的功能测试项
 - 🚀 [部署指南](./DEPLOYMENT.md) - 生产环境部署流程
 
