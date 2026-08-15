@@ -75,13 +75,15 @@
 
 <script setup name="BlogSetting">
 import { ref, reactive, computed } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { updateUserInfo, updateUserPassword } from '@/api/blog/setting'
 import { getUploadHeaders } from '@/utils/blog'
 import useUserStore from '@/store/modules/user'
 
 const userStore = useUserStore()
+const router = useRouter()
 
 const activeName = ref('info')
 const infoSaving = ref(false)
@@ -157,10 +159,18 @@ const handleUpdatePassword = async () => {
   pwdSaving.value = true
   try {
     await updateUserPassword(passwordForm)
-    passwordForm.oldPassword = ''
-    passwordForm.newPassword = ''
-    passwordForm.confirmPassword = ''
-    ElMessage.success('修改成功')
+    // 后端改密成功后已使旧 token 全部失效,这里清理本地登录态并跳转登录页重新登录
+    ElMessageBox.alert('密码修改成功，请使用新密码重新登录', '提示', {
+      confirmButtonText: '重新登录',
+      type: 'success',
+      callback: () => {}
+    }).then(() => {
+      userStore.resetState()
+      router.push('/login')
+    }).catch(() => {
+      userStore.resetState()
+      router.push('/login')
+    })
   } catch (error) {
     console.error('修改密码失败:', error)
   } finally {
