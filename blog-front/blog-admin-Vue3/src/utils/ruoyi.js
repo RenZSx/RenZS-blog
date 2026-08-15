@@ -244,6 +244,12 @@ export function resolveRoutePath(basePath, routePath) {
   if (!basePath) {
     return getNormalPath(routePath)
   }
+  // 根路径特判: basePath='/' 与空子路径拼接得到 '//',getNormalPath 会
+  // 先替换成 '/' 再因尾部斜杠被 slice 成空字符串,导致首页菜单点击无反应。
+  // 根路径(首页)应直接返回 '/'。
+  if (basePath === '/') {
+    return '/'
+  }
   return getNormalPath(basePath + '/' + routePath)
 }
 
