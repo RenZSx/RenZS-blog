@@ -33,6 +33,7 @@ import com.chen.blog.module.user.dao.UserAuthDao;
 import com.chen.blog.module.user.dao.UserInfoDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -169,6 +170,8 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthDao, UserAuth> impl
                     .password(BCrypt.hashpw(passwordVO.getNewPassword(), BCrypt.gensalt()))
                     .build();
             userAuthDao.updateById(userAuth);
+            // 密码修改成功后强制退出登录,使旧 token 全部失效,需用新密码重新登录
+            StpUtil.logout();
         } else {
             throw new BizException("旧密码不正确");
         }
