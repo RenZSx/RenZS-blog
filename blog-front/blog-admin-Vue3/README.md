@@ -44,8 +44,6 @@
 
 ## 快速开始
 
-详细的安装和开发指南请查看 [快速开始文档](./QUICKSTART.md)
-
 ```bash
 # 安装依赖
 npm install
@@ -208,13 +206,6 @@ npm run build:prod
 http://localhost:80
 ```
 
-## 项目文档
-
-- 📖 [快速开始指南](./QUICKSTART.md) - 详细的安装和开发指南
-- 🔌 [后端接口集成](./BACKEND_INTEGRATION.md) - 后端接口对接说明 ⭐
-- ✅ [功能测试清单](./TEST_CHECKLIST.md) - 完整的功能测试项
-- 🚀 [部署指南](./DEPLOYMENT.md) - 生产环境部署流程
-
 ## 项目截图
 
 <table>
@@ -293,8 +284,6 @@ src/
 **Q: 接口请求失败**
 
 检查 `vite.config.js` 中的 `baseUrl` 是否正确，确保后端服务已启动。
-
-更多问题请查看 [快速开始文档](./QUICKSTART.md)。
 
 ## 贡献指南
 
