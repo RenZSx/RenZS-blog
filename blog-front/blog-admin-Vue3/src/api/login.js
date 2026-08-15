@@ -19,18 +19,6 @@ export function login(username, password) {
   })
 }
 
-// 注册方法
-export function register(data) {
-  return request({
-    url: '/register',
-    headers: {
-      isToken: false
-    },
-    method: 'post',
-    data: data
-  })
-}
-
 // 获取当前登录用户信息
 // 博客后端接口: GET /users/current
 // 该接口不创建新登录态,仅凭 Authorization Header 中的 sa-token 反查 Redis,

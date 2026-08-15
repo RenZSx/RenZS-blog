@@ -52,9 +52,6 @@
           <span v-if="!loading">登 录</span>
           <span v-else>登 录 中...</span>
         </el-button>
-        <div style="float: right;" v-if="register">
-          <router-link class="link-type" :to="'/register'">立即注册</router-link>
-        </div>
       </el-form-item>
     </el-form>
     <!--  底部  -->
@@ -91,8 +88,6 @@ const loginRules = {
 const loading = ref(false)
 // 验证码开关 - 博客后端不需要验证码
 const captchaEnabled = ref(false)
-// 注册开关
-const register = ref(false)
 const redirect = ref(undefined)
 
 watch(route, (newRoute) => {
