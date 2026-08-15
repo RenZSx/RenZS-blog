@@ -61,37 +61,43 @@
       <!-- 照片列表 -->
       <el-row class="photo-container" :gutter="16" v-loading="loading">
         <el-empty v-if="photoList.length === 0" description="暂无照片" />
-        <el-checkbox-group
-          v-model="selectPhotoIds"
-          @change="handleCheckedPhotoChange"
+        <el-col
+          v-for="item in photoList"
+          :key="item.id"
+          :md="4"
+          :sm="6"
+          :xs="12"
         >
-          <el-col :md="4" :sm="6" :xs="12" v-for="item in photoList" :key="item.id">
-            <el-checkbox :value="item.id" class="photo-checkbox">
-              <div class="photo-item">
-                <div class="photo-operation">
-                  <el-dropdown @command="handleCommand">
-                    <el-icon style="color: #fff; font-size: 20px"><MoreFilled /></el-icon>
-                    <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item :command="{ type: 'edit', data: item }">
-                          <el-icon><Edit /></el-icon> 编辑
-                        </el-dropdown-item>
-                      </el-dropdown-menu>
-                    </template>
-                  </el-dropdown>
-                </div>
-                <el-image
-                  fit="cover"
-                  class="photo-img"
-                  :src="item.photoSrc"
-                  :preview-src-list="photoList.map(p => p.photoSrc)"
-                  :preview-teleported="true"
-                />
-                <div class="photo-name">{{ item.photoDesc || '未命名' }}</div>
+          <el-checkbox
+            :value="item.id"
+            :model-value="selectPhotoIds.includes(item.id)"
+            class="photo-checkbox"
+            @change="(checked) => handlePhotoCheck(item.id, checked)"
+          >
+            <div class="photo-item">
+              <div class="photo-operation">
+                <el-dropdown @command="handleCommand">
+                  <el-icon style="color: #fff; font-size: 20px"><MoreFilled /></el-icon>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item :command="{ type: 'edit', data: item }">
+                        <el-icon><Edit /></el-icon> 编辑
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
               </div>
-            </el-checkbox>
-          </el-col>
-        </el-checkbox-group>
+              <el-image
+                fit="cover"
+                class="photo-img"
+                :src="item.photoSrc"
+                :preview-src-list="photoList.map(p => p.photoSrc)"
+                :preview-teleported="true"
+              />
+              <div class="photo-name">{{ item.photoDesc || '未命名' }}</div>
+            </div>
+          </el-checkbox>
+        </el-col>
       </el-row>
 
       <!-- 分页 -->
@@ -297,6 +303,21 @@ const handleBack = () => {
 
 const handleCheckAllChange = (val) => {
   selectPhotoIds.value = val ? photoList.value.map(item => item.id) : []
+}
+
+// 单个照片勾选: 手动增删选中数组
+const handlePhotoCheck = (id, checked) => {
+  if (checked) {
+    if (!selectPhotoIds.value.includes(id)) {
+      selectPhotoIds.value.push(id)
+    }
+  } else {
+    const idx = selectPhotoIds.value.indexOf(id)
+    if (idx > -1) {
+      selectPhotoIds.value.splice(idx, 1)
+    }
+  }
+  checkAll.value = selectPhotoIds.value.length === photoList.value.length
 }
 
 const handleCheckedPhotoChange = (value) => {
@@ -511,6 +532,7 @@ onMounted(() => {
 /* 照片卡片: 等宽图片 + 圆角 + hover 提升 */
 .photo-item {
   position: relative;
+  width: 100%;
   margin-bottom: 1rem;
   border-radius: 6px;
   overflow: hidden;
@@ -585,11 +607,8 @@ onMounted(() => {
 /* checkbox 透明化: 勾选圈悬浮在图片左上角, 不显示文字标签 */
 :deep(.el-checkbox) {
   width: 100%;
-  height: 100%;
   margin-right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
 }
 
 :deep(.el-checkbox__input) {
@@ -601,8 +620,10 @@ onMounted(() => {
 
 :deep(.el-checkbox__label) {
   padding-left: 0;
+  display: block;
   width: 100%;
   line-height: normal;
+  white-space: normal;
 }
 
 :deep(.el-checkbox__label span) {
