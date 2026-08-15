@@ -41,6 +41,7 @@
     <!-- 添加/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
+      class="page-edit-dialog"
       :title="dialogTitle"
       width="600px"
       @close="handleClose"
@@ -53,21 +54,58 @@
           <el-input v-model="form.pageLabel" placeholder="请输入页面标签" maxlength="20" />
         </el-form-item>
         <el-form-item label="页面封面" prop="pageCover">
-          <el-upload
-            class="upload-cover"
-            drag
-            :show-file-list="false"
-            :action="uploadUrl"
-            :headers="headers"
-            :on-success="handleUploadSuccess"
-            :before-upload="handleBeforeUpload"
-          >
-            <el-icon v-if="!form.pageCover" class="el-icon--upload"><UploadFilled /></el-icon>
-            <div v-if="!form.pageCover" class="el-upload__text">
-              将文件拖到此处，或<em>点击上传</em>
+          <div class="cover-editor">
+            <el-segmented
+              v-model="coverMode"
+              class="cover-mode"
+              :options="coverModeOptions"
+              :validate-event="false"
+              size="small"
+              @change="handleCoverModeChange"
+            />
+
+            <el-upload
+              v-if="coverMode === 'upload'"
+              class="upload-cover"
+              drag
+              :show-file-list="false"
+              :action="uploadUrl"
+              :headers="headers"
+              :on-success="handleUploadSuccess"
+              :before-upload="handleBeforeUpload"
+            >
+              <el-icon v-if="!form.pageCover" class="el-icon--upload"><UploadFilled /></el-icon>
+              <div v-if="!form.pageCover" class="el-upload__text">
+                将文件拖到此处，或<em>点击上传</em>
+              </div>
+              <img v-else :src="form.pageCover" class="cover-image" />
+            </el-upload>
+
+            <div v-else class="cover-link-editor">
+              <el-input
+                v-model.trim="form.pageCover"
+                clearable
+                placeholder="请输入 HTTP 或 HTTPS 图片链接"
+              >
+                <template #prefix>
+                  <el-icon><Link /></el-icon>
+                </template>
+              </el-input>
+              <el-image
+                v-if="form.pageCover"
+                class="cover-link-preview"
+                :src="form.pageCover"
+                fit="cover"
+              >
+                <template #error>
+                  <div class="cover-preview-error">
+                    <el-icon><Picture /></el-icon>
+                    <span>图片无法加载</span>
+                  </div>
+                </template>
+              </el-image>
             </div>
-            <img v-else :src="form.pageCover" style="width: 100%; height: 180px; object-fit: cover" />
-          </el-upload>
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -83,7 +121,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Delete, Edit, MoreFilled, UploadFilled } from '@element-plus/icons-vue'
+import { Plus, Delete, Edit, MoreFilled, UploadFilled, Link, Picture } from '@element-plus/icons-vue'
 import { listPages, saveOrUpdatePage, deletePage } from '@/api/blog/page'
 import { getToken } from '@/utils/auth'
 
@@ -93,6 +131,11 @@ const pageList = ref([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formRef = ref(null)
+const coverMode = ref('upload')
+const coverModeOptions = [
+  { label: '上传图片', value: 'upload' },
+  { label: '图片链接', value: 'link' }
+]
 
 const uploadUrl = ref(import.meta.env.VITE_APP_BASE_API + '/admin/config/images')
 const headers = ref({ Authorization: 'Bearer ' + getToken() })
@@ -104,6 +147,27 @@ const form = reactive({
   pageCover: ''
 })
 
+const validatePageCover = (_rule, value, callback) => {
+  if (!value) {
+    callback(new Error('页面封面不能为空'))
+    return
+  }
+
+  if (coverMode.value === 'link') {
+    try {
+      const url = new URL(value)
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        throw new Error('unsupported protocol')
+      }
+    } catch {
+      callback(new Error('请输入有效的 HTTP 或 HTTPS 图片链接'))
+      return
+    }
+  }
+
+  callback()
+}
+
 const rules = {
   pageName: [
     { required: true, message: '页面名称不能为空', trigger: 'blur' },
@@ -114,7 +178,7 @@ const rules = {
     { min: 1, max: 20, message: '页面标签长度在 1 到 20 个字符', trigger: 'blur' }
   ],
   pageCover: [
-    { required: true, message: '页面封面不能为空', trigger: 'change' }
+    { required: true, validator: validatePageCover, trigger: ['blur', 'change'] }
   ]
 }
 
@@ -141,6 +205,7 @@ const handleAdd = () => {
 const handleUpdate = (row) => {
   dialogTitle.value = '编辑页面'
   Object.assign(form, row)
+  coverMode.value = 'upload'
   dialogVisible.value = true
 }
 
@@ -196,11 +261,16 @@ const handleClose = () => {
 }
 
 const resetForm = () => {
+  coverMode.value = 'upload'
   form.id = null
   form.pageName = ''
   form.pageLabel = ''
   form.pageCover = ''
   formRef.value?.resetFields()
+}
+
+const handleCoverModeChange = () => {
+  formRef.value?.clearValidate('pageCover')
 }
 
 const handleBeforeUpload = (file) => {
@@ -291,5 +361,53 @@ onMounted(() => {
   :deep(.el-upload-dragger) {
     width: 100%;
   }
+}
+
+.cover-editor {
+  width: 100%;
+}
+
+.cover-mode {
+  margin-bottom: 12px;
+}
+
+.cover-image {
+  display: block;
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.cover-link-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cover-link-preview {
+  width: 100%;
+  height: 180px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 6px;
+  background: var(--el-fill-color-lighter);
+}
+
+.cover-preview-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  color: var(--el-text-color-secondary);
+}
+
+.cover-preview-error .el-icon {
+  font-size: 28px;
+}
+
+:global(.page-edit-dialog) {
+  max-width: calc(100vw - 32px);
 }
 </style>
