@@ -59,14 +59,14 @@
       </div>
 
       <!-- 照片列表 -->
-      <el-row class="photo-container" :gutter="10" v-loading="loading">
+      <el-row class="photo-container" :gutter="16" v-loading="loading">
         <el-empty v-if="photoList.length === 0" description="暂无照片" />
         <el-checkbox-group
           v-model="selectPhotoIds"
           @change="handleCheckedPhotoChange"
         >
-          <el-col :md="4" v-for="item in photoList" :key="item.id">
-            <el-checkbox :label="item.id">
+          <el-col :md="4" :sm="6" :xs="12" v-for="item in photoList" :key="item.id">
+            <el-checkbox :value="item.id" class="photo-checkbox">
               <div class="photo-item">
                 <div class="photo-operation">
                   <el-dropdown @command="handleCommand">
@@ -85,8 +85,9 @@
                   class="photo-img"
                   :src="item.photoSrc"
                   :preview-src-list="photoList.map(p => p.photoSrc)"
+                  :preview-teleported="true"
                 />
-                <div class="photo-name">{{ item.photoName }}</div>
+                <div class="photo-name">{{ item.photoDesc || '未命名' }}</div>
               </div>
             </el-checkbox>
           </el-col>
@@ -507,32 +508,64 @@ onMounted(() => {
   margin-top: 20px;
 }
 
+/* 照片卡片: 等宽图片 + 圆角 + hover 提升 */
 .photo-item {
   position: relative;
   margin-bottom: 1rem;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.photo-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .photo-img {
+  display: block;
   width: 100%;
   height: 150px;
-  border-radius: 4px;
 }
 
+/* 照片名称: 底部渐变遮罩内展示 */
 .photo-name {
-  text-align: center;
-  margin-top: 0.5rem;
-  font-size: 14px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 18px 10px 6px;
+  font-size: 13px;
+  color: #fff;
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
 }
 
+/* 更多操作按钮 */
 .photo-operation {
   position: absolute;
-  z-index: 100;
-  top: 0.5rem;
-  right: 0.8rem;
+  z-index: 10;
+  top: 0.4rem;
+  right: 0.4rem;
   cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-item:hover .photo-operation {
+  opacity: 1;
 }
 
 .upload-container {
@@ -549,11 +582,30 @@ onMounted(() => {
   color: var(--el-text-color-secondary);
 }
 
+/* checkbox 透明化: 勾选圈悬浮在图片左上角, 不显示文字标签 */
 :deep(.el-checkbox) {
   width: 100%;
+  height: 100%;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.el-checkbox__input) {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
 }
 
 :deep(.el-checkbox__label) {
+  padding-left: 0;
   width: 100%;
+  line-height: normal;
+}
+
+:deep(.el-checkbox__label span) {
+  display: none;
 }
 </style>
