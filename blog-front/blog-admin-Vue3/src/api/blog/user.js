@@ -21,7 +21,7 @@ export function listOnlineUsers(query) {
 // 修改用户状态
 export function updateUserStatus(data) {
   return request({
-    url: '/admin/users/status',
+    url: '/admin/users/disable',
     method: 'put',
     data: data
   })
@@ -39,7 +39,7 @@ export function updateUserRole(data) {
 // 下线用户
 export function removeOnlineUser(userId) {
   return request({
-    url: '/admin/users/online/' + userId,
+    url: '/admin/users/' + userId + '/online',
     method: 'delete'
   })
 }

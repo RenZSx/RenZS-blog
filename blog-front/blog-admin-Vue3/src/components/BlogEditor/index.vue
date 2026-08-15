@@ -2,7 +2,7 @@
   <div
     ref="editor"
     class="edit-container"
-    v-html="innerText"
+    v-html="sanitizeHtml(innerText)"
     :placeholder="placeholder"
     :contenteditable="disable"
     @focus="onFocus"
@@ -13,6 +13,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { sanitizeHtml } from '@/utils/sanitize'
 
 const props = defineProps({
   modelValue: {
@@ -44,15 +45,15 @@ watch(() => props.modelValue, (newVal) => {
 
 const clear = () => {
   editor.value.innerHTML = ''
-  emit('update:modelValue', editor.value.innerHTML)
+  emit('update:modelValue', sanitizeHtml(editor.value.innerHTML))
 }
 
 const onInput = () => {
-  emit('update:modelValue', editor.value.innerHTML)
+  emit('update:modelValue', sanitizeHtml(editor.value.innerHTML))
 }
 
 const onFocus = () => {
-  emit('focus', editor.value.innerHTML)
+  emit('focus', sanitizeHtml(editor.value.innerHTML))
   isLocked.value = true
 }
 
@@ -62,7 +63,7 @@ const onBlur = () => {
     const selection = window.getSelection()
     range.value = selection.getRangeAt(0)
   }
-  emit('blur', editor.value.innerHTML)
+  emit('blur', sanitizeHtml(editor.value.innerHTML))
   isLocked.value = false
 }
 
@@ -79,10 +80,10 @@ const addText = (value) => {
     // 删除选中内容
     range.value.deleteContents()
     // 添加内容
-    range.value.insertNode(range.value.createContextualFragment(value))
+    range.value.insertNode(range.value.createContextualFragment(sanitizeHtml(value)))
     range.value.collapse(false)
     selection.addRange(range.value)
-    emit('update:modelValue', editor.value.innerHTML)
+    emit('update:modelValue', sanitizeHtml(editor.value.innerHTML))
   }
 }
 
@@ -98,7 +99,7 @@ defineExpose({
   width: 100%;
   height: 100%;
   border-radius: 8px;
-  background: #f0f1f4;
+  background: var(--el-fill-color-light);
   font-size: 14px;
   line-height: 1.5;
   padding: 6px 12px;
@@ -109,11 +110,12 @@ defineExpose({
   user-select: text;
   white-space: pre-wrap;
   text-align: left;
+  color: var(--el-text-color-primary);
   -webkit-user-modify: read-write-plaintext-only;
 }
 .edit-container:empty::before {
   cursor: text;
   content: attr(placeholder);
-  color: #999;
+  color: var(--el-text-color-placeholder);
 }
 </style>

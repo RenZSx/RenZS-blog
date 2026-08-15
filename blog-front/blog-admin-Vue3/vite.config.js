@@ -2,7 +2,9 @@ import { defineConfig, loadEnv } from 'vite'
 import path from 'path'
 import createVitePlugins from './vite/plugins'
 
-const baseUrl = 'http://localhost:8088' // 博客后端接口端口
+// const baseUrl = 'http://localhost:8088' // 博客后端接口端口
+const baseUrl = 'http://8.137.86.224:8088' // 博客后端接口端口
+
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {

@@ -105,7 +105,7 @@
         </el-table-column>
         <el-table-column label="评论内容" align="center">
           <template #default="scope">
-            <div v-html="scope.row.commentContent" class="comment-content"></div>
+            <div v-html="sanitizeHtml(scope.row.commentContent)" class="comment-content"></div>
           </template>
         </el-table-column>
         <el-table-column label="评论时间" align="center" width="180">
@@ -172,6 +172,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Search, Select, Clock } from '@element-plus/icons-vue'
 import { listComments, deleteComments, updateCommentsReview } from '@/api/blog/comment'
 import { formatDate } from '@/utils/blog'
+import { sanitizeHtml } from '@/utils/sanitize'
 
 const loading = ref(false)
 const total = ref(0)

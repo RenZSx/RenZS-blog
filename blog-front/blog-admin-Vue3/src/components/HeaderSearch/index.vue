@@ -80,6 +80,7 @@
 import Fuse from 'fuse.js'
 import { resolveRoutePath } from '@/utils/ruoyi'
 import { isHttp } from '@/utils/validate'
+import { sanitizeHtml } from '@/utils/sanitize'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
 
@@ -226,10 +227,17 @@ function selectActiveResult() {
 
 function highlightText(text) {
   if (!text) return ''
-  if (!search.value) return text
+  const escapedText = String(text).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]))
+  if (!search.value) return escapedText
   const keyword = escapeRegExp(search.value)
   const reg = new RegExp(`(${keyword})`, 'gi')
-  return text.replace(reg, '<span class="highlight">$1</span>')
+  return sanitizeHtml(escapedText.replace(reg, '<span class="highlight">$1</span>'))
 }
 
 function escapeRegExp(str) {

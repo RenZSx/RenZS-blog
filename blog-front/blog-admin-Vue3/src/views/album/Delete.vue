@@ -192,7 +192,7 @@ onMounted(() => {
 .title {
   font-size: 18px;
   font-weight: bold;
-  color: #303133;
+  color: var(--el-text-color-primary);
 }
 
 .operation {
@@ -212,7 +212,7 @@ onMounted(() => {
 .check-count {
   margin-left: 1rem;
   font-size: 12px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
 }
 
 .photo-container {

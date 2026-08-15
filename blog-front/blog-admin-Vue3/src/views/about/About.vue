@@ -8,9 +8,9 @@
       </template>
 
       <div class="editor-container">
-        <Editor
+        <MdEditor
           v-model="aboutContent"
-          :min-height="500"
+          :height="500"
         />
       </div>
 
@@ -28,7 +28,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Check } from '@element-plus/icons-vue'
 import { getAbout, updateAbout } from '@/api/blog/website'
-import Editor from '@/components/Editor/index.vue'
+import MdEditor from '@/components/MdEditor/index.vue'
 
 const loading = ref(false)
 const aboutContent = ref('')
@@ -45,7 +45,7 @@ const getAboutInfo = async () => {
 }
 
 const handleUpdate = async () => {
-  if (!aboutContent.value || aboutContent.value.trim() === '' || aboutContent.value === '<p></p>') {
+  if (!aboutContent.value || aboutContent.value.trim() === '') {
     ElMessage.warning('内容不能为空')
     return
   }
@@ -71,6 +71,10 @@ onMounted(() => {
 <style scoped lang="scss">
 .about-management {
   padding: 20px;
+}
+
+.about-management :deep(.md-editor) {
+  --md-color: var(--el-text-color-primary);
 }
 
 .card-header {

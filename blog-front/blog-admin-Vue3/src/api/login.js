@@ -42,31 +42,10 @@ export function getInfo() {
   })
 }
 
-// 解锁屏幕
-export function unlockScreen(password) {
-  return request({
-    url: '/unlockscreen',
-    method: 'post',
-    data: { password }
-  })
-}
-
 // 退出方法
 export function logout() {
   return request({
     url: '/logout',
     method: 'post'
-  })
-}
-
-// 获取验证码 - 博客后端不需要,保留接口定义以兼容
-export function getCodeImg() {
-  return request({
-    url: '/captchaImage',
-    headers: {
-      isToken: false
-    },
-    method: 'get',
-    timeout: 20000
   })
 }

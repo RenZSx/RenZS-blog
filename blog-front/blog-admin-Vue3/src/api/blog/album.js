@@ -12,7 +12,7 @@ export function listAlbums(query) {
 // 查询相册详情
 export function getAlbum(albumId) {
   return request({
-    url: '/admin/photos/albums/' + albumId,
+    url: '/admin/photos/albums/' + albumId + '/info',
     method: 'get'
   })
 }
@@ -27,11 +27,10 @@ export function saveOrUpdateAlbum(data) {
 }
 
 // 删除相册
-export function deleteAlbums(albumIds) {
+export function deleteAlbum(albumId) {
   return request({
-    url: '/admin/photos/albums',
-    method: 'delete',
-    data: albumIds
+    url: '/admin/photos/albums/' + albumId,
+    method: 'delete'
   })
 }
 

@@ -173,8 +173,8 @@ const rules = {
 const fetchLoveConfig = async () => {
   try {
     const res = await getLoveConfig()
-    if (res) {
-      Object.assign(loveConfigForm, res)
+    if (res.flag && res.data) {
+      Object.assign(loveConfigForm, res.data)
     }
   } catch (error) {
     console.error('加载纪念页配置失败:', error)
@@ -185,7 +185,7 @@ const fetchLoveConfig = async () => {
 const fetchLoveLetter = async () => {
   try {
     const res = await getLoveLetter()
-    Object.assign(letterForm, normalizeLetterForm(res))
+    Object.assign(letterForm, normalizeLetterForm(res.flag ? res.data : null))
   } catch (error) {
     console.error('加载飞书传信失败:', error)
   }
@@ -240,7 +240,7 @@ onMounted(() => {
 .title {
   font-size: 18px;
   font-weight: bold;
-  color: #303133;
+  color: var(--el-text-color-primary);
 }
 
 .love-card {
@@ -249,7 +249,7 @@ onMounted(() => {
 
 .love-tip {
   margin: 20px 0 2px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   font-size: 13px;
 }
 
@@ -260,12 +260,12 @@ onMounted(() => {
 .love-background-uploader :deep(.el-upload) {
   width: 320px;
   height: 180px;
-  border: 1px dashed #d9d9d9;
+  border: 1px dashed var(--el-border-color);
   border-radius: 8px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  background: #fafafa;
+  background: var(--el-fill-color-blank);
 }
 
 .love-background-uploader :deep(.el-upload:hover) {
@@ -279,7 +279,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   font-size: 30px;
-  color: #8c939d;
+  color: var(--el-text-color-placeholder);
 }
 
 .love-background-preview {

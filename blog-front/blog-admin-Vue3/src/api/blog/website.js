@@ -17,10 +17,10 @@ export function updateWebsiteConfig(data) {
   })
 }
 
-// 查询关于我信息
+// 查询关于我信息(公开接口, 无需 /admin 前缀)
 export function getAbout() {
   return request({
-    url: '/admin/about',
+    url: '/about',
     method: 'get'
   })
 }

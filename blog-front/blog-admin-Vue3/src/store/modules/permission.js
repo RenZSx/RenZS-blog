@@ -125,8 +125,13 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
     // Vue Router 4 要求 name 全局唯一。后端菜单的 name 是中文显示名,
     // 且存在 null(首页父级)与重复(发布文章/修改文章同名场景)的情况,
     // 直接透传会导致 addRoute 相互覆盖。这里统一改为按 path 生成唯一 name。
-    if (route.path) {
-      route.name = generateRouteName(route.path)
+    // 注意: 一级菜单(如首页 path='/')经后端包装后子路由 path 为空串,
+    // 空路径路由若沿用父级生成的 name(如 'Root')会导致 Vue Router 4
+    // 抛 "A route named X has been added as a child of a route with the same name"
+    // 错误,整个菜单加载失败。因此空路径子路由用父路径派生唯一 name。
+    const routeName = generateRouteName(route.path, lastRouter)
+    if (routeName) {
+      route.name = routeName
     } else {
       delete route.name
     }
@@ -177,12 +182,23 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
  *   '/albums/:albumId' → 'AlbumsAlbumId'
  *   '/articles/*'      → 'ArticlesAll'
  *
+ * 空路径('')返回 undefined: 一级菜单的子路由 path 为空串,若也命名为
+ * 'Root' 会与父路由('/')重名导致 addRoute 抛异常,故空路径不设置 name。
+ *
  * @param {string} path 路由路径
- * @returns {string} 唯一的路由 name
+ * @param {Object} [parent] 父路由对象;空路径子路由用父路径派生唯一 name
+ * @returns {string|undefined} 唯一的路由 name;空路径且无父级时返回 undefined
  */
-function generateRouteName(path) {
-  if (!path || path === '/') {
+function generateRouteName(path, parent) {
+  if (path === '/') {
     return 'Root'
+  }
+  if (!path) {
+    // 一级菜单的空路径子路由: 用父路径 + 'Index' 派生唯一 name,避免与父路由重名
+    if (parent && parent.path) {
+      return generateRouteName(parent.path) + 'Index'
+    }
+    return undefined
   }
   const name = path
     .replace(/\*/g, 'All')       // 通配符 * → All

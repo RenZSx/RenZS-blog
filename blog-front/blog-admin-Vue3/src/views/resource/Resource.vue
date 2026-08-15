@@ -5,9 +5,6 @@
         <div class="card-header">
           <span>资源管理</span>
           <div>
-            <el-button type="success" size="small" @click="handleImportSwagger">
-              <el-icon><Upload /></el-icon> 导入Swagger
-            </el-button>
             <el-button type="primary" size="small" @click="handleAdd">
               <el-icon><Plus /></el-icon> 新增模块
             </el-button>
@@ -143,8 +140,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, Edit, Delete, Upload } from '@element-plus/icons-vue'
-import { listResources, saveOrUpdateResource, deleteResource, importSwagger } from '@/api/blog/resource'
+import { Plus, Search, Edit, Delete } from '@element-plus/icons-vue'
+import { listResources, saveOrUpdateResource, deleteResource } from '@/api/blog/resource'
 import { formatDate } from '@/utils/blog'
 
 const loading = ref(false)
@@ -255,28 +252,6 @@ const handleDelete = (row) => {
       }
     } catch (error) {
       console.error('删除资源失败:', error)
-    }
-  }).catch(() => {})
-}
-
-// 导入Swagger
-const handleImportSwagger = () => {
-  ElMessageBox.confirm('是否导入Swagger资源?', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'info'
-  }).then(async () => {
-    loading.value = true
-    try {
-      const res = await importSwagger()
-      if (res.flag) {
-        ElMessage.success('导入成功')
-        getList()
-      }
-    } catch (error) {
-      console.error('导入Swagger失败:', error)
-    } finally {
-      loading.value = false
     }
   }).catch(() => {})
 }

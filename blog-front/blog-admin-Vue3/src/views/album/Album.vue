@@ -128,7 +128,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { Plus, Search, Refresh, Delete, Edit, MoreFilled, Lock, UploadFilled } from '@element-plus/icons-vue'
-import { listAlbums, getAlbum, saveOrUpdateAlbum, deleteAlbums } from '@/api/blog/album'
+import { listAlbums, getAlbum, saveOrUpdateAlbum, deleteAlbum } from '@/api/blog/album'
 import { getToken } from '@/utils/auth'
 
 const router = useRouter()
@@ -223,7 +223,7 @@ const handleDelete = (row) => {
     type: 'warning'
   }).then(async () => {
     try {
-      const res = await deleteAlbums([row.id])
+      const res = await deleteAlbum(row.id)
       if (res.flag) {
         ElMessage.success('删除成功')
         getList()
@@ -381,6 +381,7 @@ onMounted(() => {
   text-align: center;
   margin-top: 0.5rem;
   font-size: 14px;
+  color: var(--el-text-color-primary);
 }
 
 .album-operation {

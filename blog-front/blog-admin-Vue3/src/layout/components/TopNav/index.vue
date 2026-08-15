@@ -64,7 +64,8 @@ const topMenus = computed(() => {
     if (menu.hidden !== true) {
       // 兼容顶部栏一级菜单内部跳转
       if (menu.path === '/' && menu.children) {
-          topMenus.push(menu.children[0])
+          // 根菜单的子路由 path 为空串，顶部菜单需要使用实际首页路径。
+          topMenus.push({ ...menu.children[0], path: menu.children[0].path || '/' })
       } else {
           topMenus.push(menu)
       }
@@ -118,25 +119,32 @@ function setVisibleNumber() {
 }
 
 function handleSelect(key, keyPath) {
-  currentIndex.value = key
-  const route = routers.value.find(item => item.path === key)
-  if (isHttp(key)) {
+  const targetPath = key || '/'
+  currentIndex.value = targetPath
+  if (isHttp(targetPath)) {
     // http(s):// 路径新窗口打开
-    window.open(key, "_blank")
-  } else if (!route || !route.children) {
-    // 没有子路由路径内部打开
-    const routeMenu = childrenMenus.value.find(item => item.path === key)
-    if (routeMenu && routeMenu.query) {
-      let query = JSON.parse(routeMenu.query)
-      router.push({ path: key, query: query })
-    } else {
-      router.push({ path: key })
-    }
+    window.open(targetPath, "_blank")
+  } else if (targetPath === '/') {
+    // 根路径对应首页父菜单，不能按“有 children”分支只展开侧栏。
+    router.push({ path: targetPath })
     appStore.toggleSideBarHide(true)
   } else {
-    // 显示左侧联动菜单
-    activeRoutes(key)
-    appStore.toggleSideBarHide(false)
+    const route = routers.value.find(item => item.path === targetPath)
+    if (route && route.children) {
+      // 有子菜单时只联动左侧菜单。
+      activeRoutes(targetPath)
+      appStore.toggleSideBarHide(false)
+      return
+    }
+    // 没有子路由路径内部打开
+    const routeMenu = childrenMenus.value.find(item => item.path === targetPath)
+    if (routeMenu && routeMenu.query) {
+      let query = JSON.parse(routeMenu.query)
+      router.push({ path: targetPath, query: query })
+    } else {
+      router.push({ path: targetPath })
+    }
+    appStore.toggleSideBarHide(true)
   }
 }
 

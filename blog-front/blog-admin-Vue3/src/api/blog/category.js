@@ -17,14 +17,6 @@ export function searchCategories() {
   })
 }
 
-// 查询分类详情
-export function getCategory(categoryId) {
-  return request({
-    url: '/admin/categories/' + categoryId,
-    method: 'get'
-  })
-}
-
 // 新增或修改分类
 export function saveOrUpdateCategory(data) {
   return request({

@@ -82,7 +82,7 @@
               <el-dropdown-menu>
                 <el-dropdown-item>
                   <el-upload
-                    action="/api/admin/articles/import"
+                    :action="baseApi + '/admin/articles/import'"
                     :headers="uploadHeaders"
                     multiple
                     :limit="9"
@@ -94,7 +94,7 @@
                 </el-dropdown-item>
                 <el-dropdown-item>
                   <el-upload
-                    action="/api/admin/articles/import?type=hexo"
+                    :action="baseApi + '/admin/articles/import?type=hexo'"
                     :headers="uploadHeaders"
                     multiple
                     :limit="9"
@@ -399,6 +399,7 @@ import { formatDate } from '@/utils/blog'
 import { getToken } from '@/utils/auth'
 
 const router = useRouter()
+const baseApi = import.meta.env.VITE_APP_BASE_API
 const loading = ref(false)
 const total = ref(0)
 const articleList = ref([])
@@ -797,7 +798,7 @@ onMounted(() => {
 .article-status-menu {
   font-size: 14px;
   margin-top: 20px;
-  color: #999;
+  color: var(--el-text-color-secondary);
 
   .status-label {
     margin-right: 24px;
@@ -809,11 +810,11 @@ onMounted(() => {
     transition: all 0.3s;
 
     &:hover {
-      color: #333;
+      color: var(--el-text-color-primary);
     }
 
     &.active {
-      color: #333;
+      color: var(--el-text-color-primary);
       font-weight: bold;
     }
   }
@@ -876,8 +877,8 @@ onMounted(() => {
   align-items: center;
   width: 100%;
   height: 100%;
-  background: #f5f7fa;
-  color: #909399;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-placeholder);
   font-size: 30px;
 }
 </style>

@@ -41,7 +41,7 @@
 
             <!-- 图片上传 -->
             <el-upload
-              action="/api/admin/talks/images"
+              :action="baseApi + '/admin/talks/images'"
               :headers="uploadHeaders"
               multiple
               :before-upload="beforeUpload"
@@ -92,7 +92,7 @@
         <!-- 图片列表 -->
         <div v-if="uploadList.length > 0" class="talk-image-upload">
           <el-upload
-            action="/api/admin/talks/images"
+            :action="baseApi + '/admin/talks/images'"
             :headers="uploadHeaders"
             list-type="picture-card"
             :file-list="uploadList"
@@ -123,9 +123,11 @@ import {
 import { getTalk, saveOrUpdateTalk } from '@/api/blog/talk'
 import { getUploadHeaders, compressImage } from '@/utils/blog'
 import BlogEditor from '@/components/BlogEditor/index.vue'
+import EmojiList from '@/assets/js/emoji'
 
 const router = useRouter()
 const route = useRoute()
+const baseApi = import.meta.env.VITE_APP_BASE_API
 // 后端菜单"修改说说"路径为 /talks/:talkId,参数名必须与之一致
 const talkId = ref(route.params.talkId || null)
 
@@ -146,19 +148,8 @@ const statusList = [
   { status: 2, desc: '私密' }
 ]
 
-// 表情列表 (简化版，实际应该从配置文件导入)
-const emojiList = {
-  '[微笑]': 'https://cdn.jsdelivr.net/gh/moezx/cdn@3.1.9/img/Sakura/images/smilies/icon_mrgreen.png',
-  '[大笑]': 'https://cdn.jsdelivr.net/gh/moezx/cdn@3.1.9/img/Sakura/images/smilies/icon_lol.png',
-  '[色]': 'https://cdn.jsdelivr.net/gh/moezx/cdn@3.1.9/img/Sakura/images/smilies/icon_razz.png',
-  '[酷]': 'https://cdn.jsdelivr.net/gh/moezx/cdn@3.1.9/img/Sakura/images/smilies/icon_cool.png',
-  '[害羞]': 'https://cdn.jsdelivr.net/gh/moezx/cdn@3.1.9/img/Sakura/images/smilies/icon_redface.png',
-  '[可爱]': 'https://cdn.jsdelivr.net/gh/moezx/cdn@3.1.9/img/Sakura/images/smilies/icon_biggrin.png',
-  '[委屈]': 'https://cdn.jsdelivr.net/gh/moezx/cdn@3.1.9/img/Sakura/images/smilies/icon_cry.png',
-  '[调皮]': 'https://cdn.jsdelivr.net/gh/moezx/cdn@3.1.9/img/Sakura/images/smilies/icon_evil.png',
-  '[惊讶]': 'https://cdn.jsdelivr.net/gh/moezx/cdn@3.1.9/img/Sakura/images/smilies/icon_surprised.png',
-  '[傲娇]': 'https://cdn.jsdelivr.net/gh/moezx/cdn@3.1.9/img/Sakura/images/smilies/icon_eek.png'
-}
+// 表情列表（从完整表情库配置文件导入）
+const emojiList = EmojiList
 
 // 上传请求头
 const uploadHeaders = computed(() => getUploadHeaders())
@@ -333,25 +324,25 @@ onMounted(() => {
 
 .operation-btn {
   cursor: pointer;
-  color: #838383;
+  color: var(--el-text-color-secondary);
   font-size: 20px;
   transition: color 0.3s;
 
   &:hover {
-    color: #409eff;
+    color: var(--el-color-primary);
   }
 }
 
 .talk-status {
   cursor: pointer;
   font-size: 13px;
-  color: #999;
+  color: var(--el-text-color-secondary);
   display: flex;
   align-items: center;
   gap: 4px;
 
   &:hover {
-    color: #409eff;
+    color: var(--el-color-primary);
   }
 }
 
@@ -368,7 +359,7 @@ onMounted(() => {
   transition: background 0.2s;
 
   &:hover {
-    background: #f0f0f0;
+    background: var(--el-fill-color-light);
   }
 }
 

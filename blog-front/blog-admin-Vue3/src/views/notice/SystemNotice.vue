@@ -81,7 +81,7 @@ const publishNotice = () => {
       })
       ElNotification.success({
         title: '成功',
-        message: `系统通知发布成功，已新增 ${res || 0} 条通知`
+        message: `系统通知发布成功，已新增 ${res.data || 0} 条通知`
       })
       resetForm()
     } catch (error) {
@@ -106,7 +106,7 @@ const resetForm = () => {
 .title {
   font-size: 18px;
   font-weight: bold;
-  color: #303133;
+  color: var(--el-text-color-primary);
 }
 
 .notice-container {

@@ -171,7 +171,7 @@ const handleUpdatePassword = async () => {
 
 <style scoped>
 .avatar-uploader :deep(.el-upload) {
-  border: 1px dashed #d9d9d9;
+  border: 1px dashed var(--el-border-color);
   border-radius: 6px;
   cursor: pointer;
   position: relative;
@@ -184,7 +184,7 @@ const handleUpdatePassword = async () => {
 
 .avatar-uploader-icon {
   font-size: 28px;
-  color: #8c939d;
+  color: var(--el-text-color-placeholder);
   width: 120px;
   height: 120px;
   display: flex;

@@ -37,7 +37,6 @@
 import { useRouter } from 'vue-router'
 import useUserStore from '@/store/modules/user'
 import useLockStore from '@/store/modules/lock'
-import { unlockScreen } from '@/api/login'
 import defAva from '@/assets/images/profile.jpg'
 
 const router = useRouter()
@@ -73,23 +72,26 @@ const startClock = () => {
   timer = setInterval(update, 1000)
 }
 
+// 复用登录接口校验当前用户密码，避免任意非空密码绕过锁屏。
 const handleUnlock = async () => {
   if (!password.value) {
     showError('请输入密码')
     return
   }
+  if (!userStore.name) {
+    showError('当前登录用户信息已失效，请重新登录')
+    return
+  }
   loading.value = true
   errorMsg.value = ''
   try {
-    await unlockScreen(password.value)
     const lockPath = lockStore.lockPath
+    await userStore.login({ username: userStore.name, password: password.value })
+    password.value = ''
     lockStore.unlockScreen()
     router.replace(lockPath)
-  } catch (err) {
-    const msg = err.message || err.toString()
-    showError(msg)
-    password.value = ''
-    nextTick(() => passwordInput.value?.focus())
+  } catch (error) {
+    showError(error?.message || '密码错误，请重试')
   } finally {
     loading.value = false
   }

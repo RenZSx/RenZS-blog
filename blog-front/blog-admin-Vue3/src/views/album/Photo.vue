@@ -453,7 +453,7 @@ onMounted(() => {
   align-items: flex-start;
   margin-bottom: 20px;
   padding: 20px;
-  background: #f5f7fa;
+  background: var(--el-fill-color-light);
   border-radius: 4px;
 }
 
@@ -476,12 +476,12 @@ onMounted(() => {
 
 .photo-count {
   font-size: 14px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
 }
 
 .album-desc {
   font-size: 14px;
-  color: #606266;
+  color: var(--el-text-color-regular);
   margin-right: 15px;
 }
 
@@ -500,7 +500,7 @@ onMounted(() => {
 
 .check-count {
   font-size: 14px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
 }
 
 .photo-container {
@@ -546,7 +546,7 @@ onMounted(() => {
 
 .upload-count {
   font-size: 14px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
 }
 
 :deep(.el-checkbox) {

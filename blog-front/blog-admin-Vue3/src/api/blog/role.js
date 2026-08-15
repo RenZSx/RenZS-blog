@@ -9,18 +9,10 @@ export function listRoles(query) {
   })
 }
 
-// 查询角色详情
-export function getRole(roleId) {
-  return request({
-    url: '/admin/roles/' + roleId,
-    method: 'get'
-  })
-}
-
 // 新增或修改角色
 export function saveOrUpdateRole(data) {
   return request({
-    url: '/admin/roles',
+    url: '/admin/role',
     method: 'post',
     data: data
   })

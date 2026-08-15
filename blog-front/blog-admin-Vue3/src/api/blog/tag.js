@@ -17,14 +17,6 @@ export function searchTags() {
   })
 }
 
-// 查询标签详情
-export function getTag(tagId) {
-  return request({
-    url: '/admin/tags/' + tagId,
-    method: 'get'
-  })
-}
-
 // 新增或修改标签
 export function saveOrUpdateTag(data) {
   return request({

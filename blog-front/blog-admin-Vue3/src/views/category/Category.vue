@@ -107,7 +107,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, Refresh, Delete, Edit } from '@element-plus/icons-vue'
-import { listCategories, getCategory, saveOrUpdateCategory, deleteCategories } from '@/api/blog/category'
+import { listCategories, saveOrUpdateCategory, deleteCategories } from '@/api/blog/category'
 import { formatDate } from '@/utils/blog'
 
 const loading = ref(false)
@@ -175,17 +175,10 @@ const handleAdd = () => {
 }
 
 // 编辑
-const handleUpdate = async (row) => {
+const handleUpdate = (row) => {
   dialogTitle.value = '编辑分类'
-  try {
-    const res = await getCategory(row.id)
-    if (res.flag) {
-      Object.assign(form, res.data)
-      dialogVisible.value = true
-    }
-  } catch (error) {
-    console.error('获取分类详情失败:', error)
-  }
+  Object.assign(form, row)
+  dialogVisible.value = true
 }
 
 // 删除

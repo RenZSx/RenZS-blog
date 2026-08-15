@@ -167,7 +167,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, Refresh, Delete, Edit, Check, Close } from '@element-plus/icons-vue'
-import { listFriendLinks, getFriendLink, saveOrUpdateFriendLink, deleteFriendLinks } from '@/api/blog/friendLink'
+import { listFriendLinks, saveOrUpdateFriendLink, deleteFriendLinks, reviewFriendLink } from '@/api/blog/friendLink'
 import { formatDate } from '@/utils/blog'
 
 const loading = ref(false)
@@ -265,17 +265,10 @@ const handleAdd = () => {
   form.linkStatus = 1
 }
 
-const handleUpdate = async (row) => {
+const handleUpdate = (row) => {
   dialogTitle.value = '编辑友链'
-  try {
-    const res = await getFriendLink(row.id)
-    if (res.flag) {
-      Object.assign(form, res.data)
-      dialogVisible.value = true
-    }
-  } catch (error) {
-    console.error('获取友链详情失败:', error)
-  }
+  Object.assign(form, row)
+  dialogVisible.value = true
 }
 
 const handleReview = async (id, status) => {
@@ -286,7 +279,7 @@ const handleReview = async (id, status) => {
     type: 'warning'
   }).then(async () => {
     try {
-      const res = await saveOrUpdateFriendLink({ id, linkStatus: status })
+      const res = await reviewFriendLink({ id, linkStatus: status })
       if (res.flag) {
         ElMessage.success('操作成功')
         getList()

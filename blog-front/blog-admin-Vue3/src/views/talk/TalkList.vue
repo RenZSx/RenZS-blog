@@ -71,7 +71,7 @@
               </div>
 
               <!-- 说说内容 -->
-              <div class="talk-content" v-html="item.content"></div>
+              <div class="talk-content" v-html="sanitizeHtml(item.content)"></div>
 
               <!-- 图片列表 -->
               <el-row v-if="item.imgList && item.imgList.length > 0" :gutter="8" class="talk-images">
@@ -116,6 +116,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Edit, Delete, MoreFilled, Top, Lock } from '@element-plus/icons-vue'
 import { listTalks, deleteTalks } from '@/api/blog/talk'
 import { formatDate } from '@/utils/blog'
+import { sanitizeHtml } from '@/utils/sanitize'
 
 const router = useRouter()
 const loading = ref(false)
@@ -210,7 +211,7 @@ onMounted(() => {
 .status-menu {
   font-size: 14px;
   margin-top: 20px;
-  color: #999;
+  color: var(--el-text-color-secondary);
 
   span {
     margin-right: 24px;
@@ -221,13 +222,13 @@ onMounted(() => {
     transition: all 0.3s;
 
     &:hover {
-      color: #333;
+      color: var(--el-text-color-primary);
     }
   }
 
   .active-status {
     cursor: pointer;
-    color: #333;
+    color: var(--el-text-color-primary);
     font-weight: bold;
   }
 }
@@ -240,7 +241,7 @@ onMounted(() => {
   padding: 16px 20px;
   margin-bottom: 20px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--el-bg-color-overlay);
   box-shadow: 0 3px 8px 6px rgba(7, 17, 27, 0.06);
   transition: all 0.3s ease;
 
@@ -278,7 +279,7 @@ onMounted(() => {
 }
 
 .time {
-  color: #999;
+  color: var(--el-text-color-secondary);
   margin-top: 4px;
   font-size: 13px;
   display: flex;
@@ -295,7 +296,7 @@ onMounted(() => {
 }
 
 .secret {
-  color: #999;
+  color: var(--el-text-color-secondary);
   margin-left: 10px;
   display: flex;
   align-items: center;

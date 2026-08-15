@@ -25,11 +25,3 @@ export function deleteResource(resourceId) {
     method: 'delete'
   })
 }
-
-// 导入Swagger资源
-export function importSwagger() {
-  return request({
-    url: '/admin/resources/import/swagger',
-    method: 'get'
-  })
-}

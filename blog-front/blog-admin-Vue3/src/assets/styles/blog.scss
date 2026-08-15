@@ -15,7 +15,9 @@
 .main-card {
   min-height: calc(100vh - 126px);
   padding: 20px;
-  background-color: #fff;
+  background-color: var(--el-bg-color-overlay, #fff);
+  color: var(--el-text-color-primary, #303133);
+  border-color: var(--el-border-color-light, #ebeef5);
   border-radius: 8px;
 }
 
@@ -67,7 +69,7 @@
   position: relative;
   font-size: 16px;
   font-weight: bold;
-  color: #202a34;
+  color: var(--el-text-color-primary, #202a34);
   padding-left: 30px;
 
   &::before {
@@ -86,13 +88,13 @@
 // 表格样式优化
 .blog-table {
   .el-table__header th {
-    background-color: #f5f7fa;
-    color: #606266;
+    background-color: var(--el-fill-color-light, #f5f7fa);
+    color: var(--el-text-color-regular, #606266);
     font-weight: 600;
   }
 
   .el-table__body tr:hover > td {
-    background-color: #f5f7fa;
+    background-color: var(--el-fill-color-light, #f5f7fa);
   }
 
   .table-image {

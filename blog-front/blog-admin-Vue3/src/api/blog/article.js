@@ -79,3 +79,29 @@ export function uploadArticleImage(data) {
     data: data
   })
 }
+
+// 生成AI总结
+export function generateAiSummary(articleId) {
+  return request({
+    url: '/admin/articles/' + articleId + '/ai-summary',
+    method: 'post'
+  })
+}
+
+// AI推荐标签
+export function generateAiTags(data) {
+  return request({
+    url: '/admin/articles/ai-tags',
+    method: 'post',
+    data: data
+  })
+}
+
+// 生成SEO
+export function generateAiSeo(data) {
+  return request({
+    url: '/admin/articles/ai-seo',
+    method: 'post',
+    data: data
+  })
+}

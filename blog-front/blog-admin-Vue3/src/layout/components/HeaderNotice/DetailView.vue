@@ -42,7 +42,7 @@
         </div>
 
         <div class="notice-body">
-          <div v-if="hasContent" class="notice-content" v-html="detail.noticeContent" />
+          <div v-if="hasContent" class="notice-content" v-html="sanitizeHtml(detail.noticeContent)" />
           <div v-else class="notice-empty notice-empty--inner">
             <el-icon><Document /></el-icon> 暂无内容
           </div>
@@ -53,7 +53,8 @@
 </template>
 
 <script setup>
-import { getNotice } from '@/api/system/notice'
+import { getNotice } from '@/api/blog/notice'
+import { sanitizeHtml } from '@/utils/sanitize'
 
 const visible = ref(false)
 const loading = ref(false)

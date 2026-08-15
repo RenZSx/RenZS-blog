@@ -107,7 +107,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, Refresh, Delete, Edit } from '@element-plus/icons-vue'
-import { listTags, getTag, saveOrUpdateTag, deleteTags } from '@/api/blog/tag'
+import { listTags, saveOrUpdateTag, deleteTags } from '@/api/blog/tag'
 import { formatDate } from '@/utils/blog'
 
 const loading = ref(false)
@@ -175,17 +175,10 @@ const handleAdd = () => {
 }
 
 // 编辑
-const handleUpdate = async (row) => {
+const handleUpdate = (row) => {
   dialogTitle.value = '编辑标签'
-  try {
-    const res = await getTag(row.id)
-    if (res.flag) {
-      Object.assign(form, res.data)
-      dialogVisible.value = true
-    }
-  } catch (error) {
-    console.error('获取标签详情失败:', error)
-  }
+  Object.assign(form, row)
+  dialogVisible.value = true
 }
 
 // 删除

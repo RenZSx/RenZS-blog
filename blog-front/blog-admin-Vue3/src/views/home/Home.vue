@@ -67,11 +67,17 @@
     <!-- 文章贡献统计 -->
     <el-card shadow="hover" style="margin-top: 20px">
       <template #header>
-        <div class="card-header">文章贡献统计</div>
+        <div class="card-header heatmap-header">
+          <span>文章贡献统计</span>
+          <div class="heatmap-stats" v-if="heatmapTotal > 0">
+            <el-tag type="success" effect="plain" size="small">{{ heatmapTotal }} 篇文章</el-tag>
+            <el-tag type="info" effect="plain" size="small">{{ heatmapActiveDays }} 个活跃日</el-tag>
+          </div>
+        </div>
       </template>
       <div v-loading="loading" style="min-height: 200px">
-        <!-- TODO: 需要集成日历热力图组件 -->
-        <div class="text-center">文章贡献统计图表</div>
+        <!-- 文章贡献统计日历热力图 -->
+        <div ref="heatmapRef" style="height: 240px"></div>
       </div>
     </el-card>
 
@@ -133,6 +139,8 @@
 import { ref, onMounted, watch, nextTick } from 'vue'
 import { View, User, Document, ChatDotRound } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
+// 注册中国地图（数据提取自 UMD 格式的 china.js，独立成 ESM 模块后 import 才不会触发 require 报错）
+import '@/assets/js/chinaMap'
 import { getHomeData, getUserArea } from '@/api/blog/home'
 import TagCloud from '@/components/TagCloud/index.vue'
 
@@ -145,11 +153,15 @@ const viewChartRef = ref(null)
 const rankChartRef = ref(null)
 const categoryChartRef = ref(null)
 const mapChartRef = ref(null)
+const heatmapRef = ref(null)
+const heatmapTotal = ref(0)
+const heatmapActiveDays = ref(0)
 
 let viewChart = null
 let rankChart = null
 let categoryChart = null
 let mapChart = null
+let heatmap = null
 
 // 获取首页数据
 const fetchHomeData = async () => {
@@ -274,6 +286,68 @@ const initCharts = (data) => {
     })
   }
 
+  // 文章贡献统计日历热力图
+  if (heatmapRef.value && data.articleStatisticsList && data.articleStatisticsList.length > 0) {
+    heatmap = echarts.init(heatmapRef.value)
+    const heatmapData = data.articleStatisticsList.map(item => [item.date, item.count])
+    const dates = heatmapData.map(item => item[0]).sort()
+    const minDate = dates[0]
+    const maxDate = dates[dates.length - 1]
+    // 同年数据用年份作为范围，跨年数据用起止日期
+    const range = minDate.slice(0, 4) === maxDate.slice(0, 4) ? minDate.slice(0, 4) : [minDate, maxDate]
+    const maxCount = Math.max(...heatmapData.map(item => item[1]))
+    // 统计信息
+    heatmapTotal.value = heatmapData.reduce((sum, item) => sum + item[1], 0)
+    heatmapActiveDays.value = heatmapData.length
+    heatmap.setOption({
+      tooltip: {
+        formatter: function(params) {
+          const count = params.value ? params.value[1] : 0
+          return '<div style="font-weight:bold;margin-bottom:4px">' + params.value[0] + '</div>' +
+            (count > 0 ? '发布了 <b style="color:#239a3b">' + count + '</b> 篇文章' : '无文章发布')
+        }
+      },
+      visualMap: {
+        min: 0,
+        max: maxCount > 0 ? maxCount : 1,
+        calculable: false,
+        orient: 'horizontal',
+        left: 'center',
+        bottom: 0,
+        text: ['多', '少'],
+        itemHeight: 10,
+        itemWidth: 12,
+        textStyle: { fontSize: 11, color: '#909399' },
+        inRange: { color: ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127'] }
+      },
+      calendar: {
+        range: range,
+        cellSize: ['auto', 16],
+        top: 20,
+        left: 30,
+        right: 30,
+        bottom: 30,
+        splitLine: {
+          show: true,
+          lineStyle: { color: '#f0f0f0', width: 1 }
+        },
+        itemStyle: {
+          borderWidth: 3,
+          borderColor: '#fff',
+          borderRadius: 2
+        },
+        yearLabel: { show: false },
+        dayLabel: { show: true, firstDay: 1, nameMap: 'cn', fontSize: 10, color: '#909399' },
+        monthLabel: { show: true, nameMap: 'cn', fontSize: 11, color: '#606266' }
+      },
+      series: [{
+        type: 'heatmap',
+        coordinateSystem: 'calendar',
+        data: heatmapData
+      }]
+    })
+  }
+
   // 用户地域分布
   fetchUserArea()
 }
@@ -372,6 +446,21 @@ onMounted(() => {
   font-size: 14px;
   font-weight: bold;
   color: #202a34;
+}
+
+.heatmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.heatmap-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.heatmap-stats .el-tag {
+  font-weight: normal;
 }
 
 .text-center {

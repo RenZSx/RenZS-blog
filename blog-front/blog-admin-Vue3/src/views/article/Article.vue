@@ -33,11 +33,39 @@
         >
           <el-icon><Position /></el-icon> 发布文章
         </el-button>
+        <el-button
+          type="primary"
+          size="large"
+          :loading="aiSummaryGenerating"
+          :disabled="articleForm.id == null"
+          @click="handleGenerateAiSummary"
+          style="margin-left: 10px"
+        >
+          <el-icon><MagicStick /></el-icon> 生成AI总结
+        </el-button>
+        <el-button
+          type="success"
+          size="large"
+          :loading="aiTagGenerating"
+          @click="handleGenerateAiTags"
+          style="margin-left: 10px"
+        >
+          <el-icon><PriceTag /></el-icon> AI推荐标签
+        </el-button>
+        <el-button
+          type="warning"
+          size="large"
+          :loading="aiSeoGenerating"
+          @click="handleGenerateAiSeo"
+          style="margin-left: 10px"
+        >
+          <el-icon><TrendCharts /></el-icon> 生成SEO
+        </el-button>
       </div>
 
-      <!-- 文章编辑器 -->
+      <!-- 文章编辑器(Markdown) -->
       <div class="editor-container">
-        <Editor v-model="articleForm.articleContent" :height="600" />
+        <MdEditor v-model="articleForm.articleContent" :height="600" />
       </div>
     </el-card>
 
@@ -147,6 +175,69 @@
           </el-popover>
         </el-form-item>
 
+        <!-- AI总结 -->
+        <el-form-item label="AI总结">
+          <el-input
+            v-model="articleForm.aiSummary"
+            type="textarea"
+            :rows="4"
+            placeholder="可点击编辑页顶部的生成AI总结，也可以手动填写"
+          />
+        </el-form-item>
+
+        <!-- AI总结状态 -->
+        <el-form-item label="AI总结状态">
+          <el-radio-group v-model="articleForm.aiSummaryStatus">
+            <el-radio :label="0">未生成</el-radio>
+            <el-radio :label="1">已生成</el-radio>
+            <el-radio :label="2">已审核</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <!-- SEO标题 -->
+        <el-form-item label="SEO标题">
+          <el-input
+            v-model="articleForm.seoTitle"
+            maxlength="100"
+            show-word-limit
+            placeholder="可点击编辑页顶部的生成SEO自动填写"
+          />
+        </el-form-item>
+
+        <!-- SEO描述 -->
+        <el-form-item label="SEO描述">
+          <el-input
+            v-model="articleForm.seoDescription"
+            type="textarea"
+            :rows="3"
+            maxlength="255"
+            show-word-limit
+            placeholder="用于搜索引擎description"
+          />
+        </el-form-item>
+
+        <!-- SEO关键词 -->
+        <el-form-item label="SEO关键词">
+          <el-input
+            v-model="articleForm.seoKeywords"
+            maxlength="255"
+            show-word-limit
+            placeholder="多个关键词用英文逗号分隔"
+          />
+        </el-form-item>
+
+        <!-- 分享描述 -->
+        <el-form-item label="分享描述">
+          <el-input
+            v-model="articleForm.seoOgDescription"
+            type="textarea"
+            :rows="3"
+            maxlength="255"
+            show-word-limit
+            placeholder="用于Open Graph社交分享"
+          />
+        </el-form-item>
+
         <!-- 文章类型 -->
         <el-form-item label="文章类型" prop="type">
           <el-select v-model="articleForm.type" placeholder="请选择类型">
@@ -209,10 +300,10 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Document, Position } from '@element-plus/icons-vue'
-import Editor from '@/components/Editor/index.vue'
+import { Document, Position, MagicStick, PriceTag, TrendCharts } from '@element-plus/icons-vue'
 import ImageUpload from '@/components/ImageUpload/index.vue'
-import { getArticle, addArticle, updateArticle } from '@/api/blog/article'
+import MdEditor from '@/components/MdEditor/index.vue'
+import { getArticle, addArticle, updateArticle, generateAiSummary, generateAiTags, generateAiSeo } from '@/api/blog/article'
 import { searchCategories } from '@/api/blog/category'
 import { searchTags } from '@/api/blog/tag'
 
@@ -222,6 +313,9 @@ const formRef = ref(null)
 const publishDialogVisible = ref(false)
 const submitLoading = ref(false)
 const autoSave = ref(true)
+const aiSummaryGenerating = ref(false)
+const aiTagGenerating = ref(false)
+const aiSeoGenerating = ref(false)
 const categoryName = ref('')
 const tagName = ref('')
 const categoryList = ref([])
@@ -237,6 +331,12 @@ const articleForm = reactive({
   id: null,
   articleTitle: '',
   articleContent: '',
+  aiSummary: '',
+  aiSummaryStatus: 0,
+  seoTitle: '',
+  seoDescription: '',
+  seoKeywords: '',
+  seoOgDescription: '',
   articleCover: '',
   categoryName: null,
   tagNameList: [],
@@ -393,6 +493,88 @@ const removeTag = (item) => {
 // 获取标签样式
 const getTagClass = (item) => {
   return articleForm.tagNameList.indexOf(item.tagName) !== -1 ? 'tag-selected' : ''
+}
+
+// 校验AI功能所需的基础内容
+const validateAiBaseContent = () => {
+  if (!articleForm.articleTitle.trim()) {
+    ElMessage.error('文章标题不能为空')
+    return false
+  }
+  if (!articleForm.articleContent.trim()) {
+    ElMessage.error('文章内容不能为空')
+    return false
+  }
+  return true
+}
+
+// 生成AI总结
+const handleGenerateAiSummary = async () => {
+  if (articleForm.id == null) {
+    ElMessage.warning('请先保存文章后再生成AI总结')
+    return
+  }
+  aiSummaryGenerating.value = true
+  try {
+    const res = await generateAiSummary(articleForm.id)
+    if (res.flag) {
+      articleForm.aiSummary = res.data
+      articleForm.aiSummaryStatus = 1
+      ElMessage.success('AI总结生成成功')
+    } else {
+      ElMessage.error(res.message || 'AI总结生成失败')
+    }
+  } catch (error) {
+    console.error('生成AI总结失败:', error)
+  } finally {
+    aiSummaryGenerating.value = false
+  }
+}
+
+// AI推荐标签
+const handleGenerateAiTags = async () => {
+  if (!validateAiBaseContent()) return
+  aiTagGenerating.value = true
+  try {
+    const res = await generateAiTags(articleForm)
+    if (res.flag) {
+      const aiTags = res.data || []
+      aiTags.forEach(tagName => {
+        if (articleForm.tagNameList.indexOf(tagName) === -1 && articleForm.tagNameList.length < 3) {
+          articleForm.tagNameList.push(tagName)
+        }
+      })
+      ElMessage.success('AI标签推荐成功')
+    } else {
+      ElMessage.error(res.message || 'AI标签推荐失败')
+    }
+  } catch (error) {
+    console.error('AI标签推荐失败:', error)
+  } finally {
+    aiTagGenerating.value = false
+  }
+}
+
+// 生成SEO
+const handleGenerateAiSeo = async () => {
+  if (!validateAiBaseContent()) return
+  aiSeoGenerating.value = true
+  try {
+    const res = await generateAiSeo(articleForm)
+    if (res.flag) {
+      articleForm.seoTitle = res.data.seoTitle || ''
+      articleForm.seoDescription = res.data.seoDescription || ''
+      articleForm.seoKeywords = res.data.seoKeywords || ''
+      articleForm.seoOgDescription = res.data.seoOgDescription || ''
+      ElMessage.success('AI SEO生成成功')
+    } else {
+      ElMessage.error(res.message || 'AI SEO生成失败')
+    }
+  } catch (error) {
+    console.error('生成SEO失败:', error)
+  } finally {
+    aiSeoGenerating.value = false
+  }
 }
 
 // 打开发布对话框
@@ -560,8 +742,8 @@ onUnmounted(() => {
   transition: all 0.3s;
 
   &:hover {
-    background-color: #f0f9eb;
-    color: #67c23a;
+    background-color: var(--el-color-success-light-9);
+    color: var(--el-color-success);
   }
 }
 

@@ -9,14 +9,6 @@ export function listFriendLinks(query) {
   })
 }
 
-// 查询友链详情
-export function getFriendLink(linkId) {
-  return request({
-    url: '/admin/links/' + linkId,
-    method: 'get'
-  })
-}
-
 // 新增或修改友链
 export function saveOrUpdateFriendLink(data) {
   return request({
@@ -32,5 +24,14 @@ export function deleteFriendLinks(linkIds) {
     url: '/admin/links',
     method: 'delete',
     data: linkIds
+  })
+}
+
+// 审核友链
+export function reviewFriendLink(data) {
+  return request({
+    url: '/admin/links/review',
+    method: 'put',
+    data: data
   })
 }
