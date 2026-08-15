@@ -101,17 +101,18 @@
       </el-row>
 
       <!-- 分页 -->
-      <el-pagination
-        v-show="total > 0"
-        :current-page="queryParams.current"
-        :page-size="queryParams.size"
-        :total="total"
-        :page-sizes="[12, 24, 36, 48]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        style="margin-top: 20px; text-align: right"
-      />
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-show="total > 0"
+          :current-page="queryParams.current"
+          :page-size="queryParams.size"
+          :total="total"
+          :page-sizes="[12, 24, 36, 48]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
     </el-card>
 
     <!-- 上传照片对话框 -->
@@ -529,16 +530,26 @@ onMounted(() => {
   margin-top: 20px;
 }
 
+/* 分页区域: 与照片网格隔离, 避免重叠 */
+.pagination-wrapper {
+  margin-top: 24px;
+  text-align: right;
+  clear: both;
+  position: relative;
+  z-index: 1;
+}
+
 /* 照片卡片: 等宽图片 + 圆角 + hover 提升 */
 .photo-item {
   position: relative;
   width: 100%;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
   border-radius: 6px;
   overflow: hidden;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
+  background: #f5f7fa;
 }
 
 .photo-item:hover {
@@ -552,20 +563,17 @@ onMounted(() => {
   height: 150px;
 }
 
-/* 照片名称: 底部渐变遮罩内展示 */
+/* 照片名称: 图片下方正常流式展示 */
 .photo-name {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 18px 10px 6px;
+  padding: 6px 10px;
   font-size: 13px;
-  color: #fff;
+  color: #606266;
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
 }
 
 /* 更多操作按钮 */
@@ -606,9 +614,11 @@ onMounted(() => {
 
 /* checkbox 透明化: 勾选圈悬浮在图片左上角, 不显示文字标签 */
 :deep(.el-checkbox) {
+  position: relative;
   width: 100%;
   margin-right: 0;
   display: block;
+  height: auto;
 }
 
 :deep(.el-checkbox__input) {
@@ -622,11 +632,15 @@ onMounted(() => {
   padding-left: 0;
   display: block;
   width: 100%;
+  height: auto;
   line-height: normal;
   white-space: normal;
+  vertical-align: top;
+  overflow: visible;
 }
 
-:deep(.el-checkbox__label span) {
+/* 只隐藏 checkbox 自带的文字标签节点, 不误伤图片/下拉等内部 span */
+:deep(.el-checkbox__label > span) {
   display: none;
 }
 </style>
