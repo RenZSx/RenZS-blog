@@ -4,14 +4,20 @@
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">博客后台管理系统 Vue3 版本</h1>
 <h4 align="center">RenZS Blog 博客后台管理系统 (Vue3)</h4>
 <p align="center">
-	<a href="https://gitee.com/chen_fuyun/blog-satoken/stargazers"><img src="https://gitee.com/chen_fuyun/blog-satoken/badge/star.svg?theme=dark"></a>
-	<a href="https://gitee.com/chen_fuyun/blog-satoken"><img src="https://img.shields.io/badge/blog--admin--vue3-v3.9.2-brightgreen.svg"></a>
-	<a href="https://gitee.com/chen_fuyun/blog-satoken/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
+	<a href="https://github.com/RenZSx/RenZS-blog/stargazers"><img src="https://img.shields.io/github/stars/RenZSx/RenZS-blog.svg?style=social"></a>
+	<a href="https://github.com/RenZSx/RenZS-blog"><img src="https://img.shields.io/badge/blog--admin--vue3-v3.9.2-brightgreen.svg"></a>
+	<a href="https://github.com/RenZSx/RenZS-blog/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
+	<a href="https://gitee.com/chen_fuyun/blog-satoken"><img src="https://gitee.com/chen_fuyun/blog-satoken/badge/star.svg?theme=dark"></a>
 </p>
 
 ## 项目简介
 
 本项目是一个功能完善的博客后台管理系统前端，基于 Vue 3 + Vite + Element Plus 开发，采用现代化的前端技术栈。系统提供了博客内容管理、用户权限管理、系统监控等完整功能。
+
+### 在线地址
+
+- 🌐 **博客前台**：[https://www.renzs.top/](https://www.renzs.top/)
+- 🔐 **后台管理**：[https://chen.renzs.top/login](https://chen.renzs.top/login)
 
 ### 核心特性
 
@@ -40,7 +46,12 @@
 ### 配套后端
 
 * 本项目使用 SaToken 作为权限认证框架
-* 配套后端代码：[renzs-blog-satoken](https://gitee.com/chen_fuyun/blog-satoken)（项目根目录下的 Spring Boot 后端项目）
+* 配套后端代码：[renzs-blog-satoken](https://github.com/RenZSx/RenZS-blog)（项目根目录下的 Spring Boot 后端项目）
+
+### 代码仓库
+
+* 📦 [GitHub](https://github.com/RenZSx/RenZS-blog) - 主仓库
+* 📦 [Gitee 镜像](https://gitee.com/chen_fuyun/blog-satoken) - 国内镜像
 
 ## 快速开始
 
@@ -180,11 +191,13 @@ npm run build:prod
 ## 前端运行
 
 ```bash
-# 克隆项目
-git clone https://github.com/your-repo/blog-satoken.git
+# 克隆项目 (GitHub)
+git clone https://github.com/RenZSx/RenZS-blog.git
+# 或 (Gitee 镜像)
+git clone https://gitee.com/chen_fuyun/blog-satoken.git
 
 # 进入项目目录
-cd blog-satoken/blog-front/blog-admin-Vue3
+cd RenZS-blog/blog-front/blog-admin-Vue3
 
 # 安装依赖
 npm install

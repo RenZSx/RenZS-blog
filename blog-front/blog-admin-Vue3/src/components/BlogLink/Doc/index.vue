@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-const url = ref('https://gitee.com/chen_fuyun/blog-satoken')
+const url = ref('https://www.renzs.top/')
 
 function goto() {
   window.open(url.value)

@@ -13,8 +13,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitee.com/chen_fuyun/blog-satoken.git"
+    "url": "https://github.com/RenZSx/RenZS-blog.git"
   },
+  "homepage": "https://www.renzs.top/",
   "dependencies": {
     "@element-plus/icons-vue": "2.3.2",
     "@vueup/vue-quill": "1.2.0",
