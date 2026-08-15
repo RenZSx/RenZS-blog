@@ -1,11 +1,11 @@
 <template>
   <div class="blog-home">
     <!-- 统计卡片 -->
-    <el-row :gutter="20">
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card">
+    <el-row class="stats-row" :gutter="16">
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card shadow="never" class="stat-card stat-card--views">
           <div class="stat-content">
-            <div class="stat-icon" style="background: #40C9C6">
+            <div class="stat-icon">
               <el-icon><View /></el-icon>
             </div>
             <div class="stat-info">
@@ -15,10 +15,10 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card">
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card shadow="never" class="stat-card stat-card--users">
           <div class="stat-content">
-            <div class="stat-icon" style="background: #34BFA3">
+            <div class="stat-icon">
               <el-icon><User /></el-icon>
             </div>
             <div class="stat-info">
@@ -28,10 +28,10 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card">
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card shadow="never" class="stat-card stat-card--articles">
           <div class="stat-content">
-            <div class="stat-icon" style="background: #F4516C">
+            <div class="stat-icon">
               <el-icon><Document /></el-icon>
             </div>
             <div class="stat-info">
@@ -41,10 +41,10 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card">
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card shadow="never" class="stat-card stat-card--messages">
           <div class="stat-content">
-            <div class="stat-icon" style="background: #36A3F7">
+            <div class="stat-icon">
               <el-icon><ChatDotRound /></el-icon>
             </div>
             <div class="stat-info">
@@ -57,15 +57,15 @@
     </el-row>
 
     <!-- 一周访问量 -->
-    <el-card shadow="hover" style="margin-top: 20px">
+    <el-card shadow="never" class="dashboard-card chart-card">
       <template #header>
         <div class="card-header">一周访问量</div>
       </template>
-      <div ref="viewChartRef" style="height: 350px" v-loading="loading"></div>
+      <div ref="viewChartRef" class="chart-area chart-area--line" v-loading="loading"></div>
     </el-card>
 
     <!-- 文章贡献统计 -->
-    <el-card shadow="hover" style="margin-top: 20px">
+    <el-card shadow="never" class="dashboard-card heatmap-card">
       <template #header>
         <div class="card-header heatmap-header">
           <span>文章贡献统计</span>
@@ -75,9 +75,9 @@
           </div>
         </div>
       </template>
-      <div v-loading="loading" style="min-height: 200px">
+      <div v-loading="loading" class="heatmap-body">
         <!-- 文章贡献统计日历热力图 -->
-        <div ref="heatmapRef" style="height: 240px"></div>
+        <div ref="heatmapRef" class="chart-area chart-area--heatmap"></div>
       </div>
     </el-card>
 
@@ -136,18 +136,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { View, User, Document, ChatDotRound } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 // 注册中国地图（数据提取自 UMD 格式的 china.js，独立成 ESM 模块后 import 才不会触发 require 报错）
 import '@/assets/js/chinaMap'
 import { getHomeData, getUserArea } from '@/api/blog/home'
 import TagCloud from '@/components/TagCloud/index.vue'
+import useSettingsStore from '@/store/modules/settings'
 
 const loading = ref(true)
 const homeData = ref({})
 const userType = ref(1)
 const tagList = ref([])
+const settingsStore = useSettingsStore()
 
 const viewChartRef = ref(null)
 const rankChartRef = ref(null)
@@ -191,6 +193,11 @@ const fetchHomeData = async () => {
 
 // 初始化图表
 const initCharts = (data) => {
+  const isDark = settingsStore.isDark
+  const chartText = isDark ? '#d7dee8' : '#526173'
+  const chartMuted = isDark ? '#8f9aaa' : '#8b98a8'
+  const chartGrid = isDark ? '#2a3440' : '#e8edf3'
+
   // 一周访问量图表
   if (viewChartRef.value && data.uniqueViewDTOList) {
     viewChart = echarts.init(viewChartRef.value)
@@ -203,22 +210,41 @@ const initCharts = (data) => {
     viewChart.setOption({
       tooltip: {
         trigger: 'axis',
-        axisPointer: { type: 'cross' }
+        axisPointer: { type: 'cross' },
+        backgroundColor: isDark ? '#252c35' : '#ffffff',
+        borderColor: chartGrid,
+        textStyle: { color: chartText }
       },
-      color: ['#3888fa'],
-      legend: { data: ['访问量'] },
+      color: ['#4f7cff'],
+      legend: { data: ['访问量'], textStyle: { color: chartText } },
       grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
+        left: '2%',
+        right: '2%',
+        top: '12%',
+        bottom: '5%',
         containLabel: true
       },
-      xAxis: { type: 'category', data: xData },
-      yAxis: { type: 'value' },
+      xAxis: {
+        type: 'category',
+        data: xData,
+        boundaryGap: false,
+        axisLine: { lineStyle: { color: chartGrid } },
+        axisLabel: { color: chartMuted }
+      },
+      yAxis: {
+        type: 'value',
+        splitLine: { lineStyle: { color: chartGrid, type: 'dashed' } },
+        axisLabel: { color: chartMuted }
+      },
       series: [{
         name: '访问量',
         type: 'line',
         smooth: true,
+        symbol: 'circle',
+        symbolSize: 7,
+        lineStyle: { width: 3 },
+        itemStyle: { borderWidth: 2, borderColor: isDark ? '#1d1e1f' : '#fff' },
+        areaStyle: { color: 'rgba(79, 124, 255, 0.10)' },
         data: yData
       }]
     })
@@ -301,6 +327,9 @@ const initCharts = (data) => {
     heatmapActiveDays.value = heatmapData.length
     heatmap.setOption({
       tooltip: {
+        backgroundColor: isDark ? '#252c35' : '#ffffff',
+        borderColor: chartGrid,
+        textStyle: { color: chartText },
         formatter: function(params) {
           const count = params.value ? params.value[1] : 0
           return '<div style="font-weight:bold;margin-bottom:4px">' + params.value[0] + '</div>' +
@@ -317,28 +346,31 @@ const initCharts = (data) => {
         text: ['多', '少'],
         itemHeight: 10,
         itemWidth: 12,
-        textStyle: { fontSize: 11, color: '#909399' },
-        inRange: { color: ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127'] }
+        textStyle: { fontSize: 11, color: chartMuted },
+        inRange: {
+          color: isDark
+            ? ['#26323a', '#315448', '#3c8060', '#47ad76', '#9be6b3']
+            : ['#eef3f1', '#c5e8d2', '#84c99b', '#3fa96b', '#167143']
+        }
       },
       calendar: {
         range: range,
-        cellSize: ['auto', 16],
-        top: 20,
-        left: 30,
-        right: 30,
-        bottom: 30,
+        cellSize: ['auto', 18],
+        top: 28,
+        left: 34,
+        right: 34,
+        bottom: 34,
         splitLine: {
-          show: true,
-          lineStyle: { color: '#f0f0f0', width: 1 }
+          show: false
         },
         itemStyle: {
-          borderWidth: 3,
-          borderColor: '#fff',
-          borderRadius: 2
+          borderWidth: 2,
+          borderColor: isDark ? '#1d1e1f' : '#fff',
+          borderRadius: 4
         },
         yearLabel: { show: false },
-        dayLabel: { show: true, firstDay: 1, nameMap: 'cn', fontSize: 10, color: '#909399' },
-        monthLabel: { show: true, nameMap: 'cn', fontSize: 11, color: '#606266' }
+        dayLabel: { show: true, firstDay: 1, nameMap: 'cn', fontSize: 10, color: chartMuted },
+        monthLabel: { show: true, nameMap: 'cn', fontSize: 11, color: chartText }
       },
       series: [{
         type: 'heatmap',
@@ -397,70 +429,232 @@ watch(userType, () => {
   fetchUserArea()
 })
 
+const disposeCharts = () => {
+  const charts = [viewChart, rankChart, categoryChart, mapChart, heatmap]
+  charts.forEach(chart => chart?.dispose())
+  viewChart = null
+  rankChart = null
+  categoryChart = null
+  mapChart = null
+  heatmap = null
+}
+
+// ECharts does not inherit Element Plus theme variables, so redraw on theme changes.
+watch(() => settingsStore.isDark, async () => {
+  if (!Object.keys(homeData.value).length) return
+  disposeCharts()
+  await nextTick()
+  initCharts(homeData.value)
+})
+
 onMounted(() => {
   fetchHomeData()
+})
+
+onBeforeUnmount(() => {
+  disposeCharts()
 })
 </script>
 
 <style scoped lang="scss">
 .blog-home {
+  min-height: calc(100vh - 84px);
   padding: 20px;
+  background: var(--el-bg-color-page, #f4f7fb);
+}
+
+.stats-row {
+  margin-bottom: 16px;
 }
 
 .stat-card {
+  --stat-accent: #3268ef;
+  --stat-icon-shadow: rgba(50, 104, 239, 0.24);
+  position: relative;
+  min-height: 124px;
+  overflow: hidden;
+  border: 1px solid var(--el-border-color-lighter, #e7edf4);
+  border-radius: 10px;
+  background: var(--el-bg-color-overlay, #ffffff);
+  box-shadow: 0 5px 18px rgba(30, 55, 90, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    background: var(--stat-accent);
+    content: '';
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 9px 24px rgba(30, 55, 90, 0.1);
+  }
+
+  :deep(.el-card__body) {
+    height: 100%;
+    padding: 20px 22px 20px 24px !important;
+  }
+
+  &--users {
+    --stat-accent: #0b9365;
+    --stat-icon-shadow: rgba(11, 147, 101, 0.24);
+  }
+
+  &--articles {
+    --stat-accent: #d97706;
+    --stat-icon-shadow: rgba(217, 119, 6, 0.25);
+  }
+
+  &--messages {
+    --stat-accent: #8250df;
+    --stat-icon-shadow: rgba(130, 80, 223, 0.25);
+  }
+
   .stat-content {
     display: flex;
     align-items: center;
+    min-height: 82px;
   }
 
   .stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 8px;
     display: flex;
+    flex: 0 0 52px;
     align-items: center;
     justify-content: center;
-    font-size: 30px;
-    color: white;
-    margin-right: 20px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--stat-accent);
+    box-shadow: 0 8px 18px var(--stat-icon-shadow);
+    color: #ffffff;
+    font-size: 27px;
   }
 
   .stat-info {
-    flex: 1;
+    min-width: 0;
+    margin-left: 16px;
   }
 
   .stat-label {
-    font-size: 14px;
-    color: #999;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+    color: var(--el-text-color-secondary, #8491a5);
+    font-size: 13px;
+    font-weight: 500;
   }
 
   .stat-value {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
+    color: var(--el-text-color-primary, #1d2939);
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
   }
 }
 
+.dashboard-card {
+  margin-top: 16px;
+  overflow: hidden;
+  border: 1px solid var(--el-border-color-lighter, #e7edf4);
+  border-radius: 10px;
+  background: var(--el-bg-color-overlay, #ffffff);
+  box-shadow: 0 5px 18px rgba(30, 55, 90, 0.05);
+
+  :deep(.el-card__header) {
+    min-height: 52px;
+    padding: 16px 20px !important;
+    border-bottom-color: var(--el-border-color-lighter, #e7edf4);
+  }
+
+  :deep(.el-card__body) {
+    padding: 18px 20px 22px !important;
+  }
+}
+
+.chart-area--line {
+  height: 300px;
+}
+
+.heatmap-body {
+  min-height: 250px;
+}
+
+.chart-area--heatmap {
+  height: 250px;
+}
+
 .card-header {
-  font-size: 14px;
-  font-weight: bold;
-  color: #202a34;
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+  color: var(--el-text-color-primary, #202a34);
+  font-size: 15px;
+  font-weight: 650;
+
+  &::before {
+    width: 4px;
+    height: 17px;
+    margin-right: 10px;
+    border-radius: 4px;
+    background: var(--el-color-primary, #4f7cff);
+    content: '';
+  }
+
+  :deep(.el-radio-group) {
+    margin-left: auto !important;
+  }
 }
 
 .heatmap-header {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
+}
+
+.heatmap-header::before {
+  flex: 0 0 auto;
 }
 
 .heatmap-stats {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  margin-left: 16px;
 }
 
 .heatmap-stats .el-tag {
-  font-weight: normal;
+  height: 26px;
+  border-radius: 13px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+@media screen and (max-width: 768px) {
+  .blog-home {
+    padding: 12px;
+  }
+
+  .stat-card {
+    margin-bottom: 12px;
+  }
+
+  .chart-area--line {
+    height: 250px;
+  }
+
+  .chart-area--heatmap {
+    height: 220px;
+  }
+
+  .heatmap-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .heatmap-stats {
+    margin-left: 14px;
+  }
 }
 
 .text-center {
