@@ -46,7 +46,7 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <router-link to="/user/profile">
+            <router-link to="/setting">
               <el-dropdown-item>个人中心</el-dropdown-item>
             </router-link>
             <el-dropdown-item command="setLayout" v-if="settingsStore.showSettings">
