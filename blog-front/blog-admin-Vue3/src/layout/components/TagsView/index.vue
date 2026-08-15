@@ -70,7 +70,7 @@
 
 <script setup>
 import ScrollPane from './ScrollPane'
-import { resolveRoutePath } from '@/utils/ruoyi'
+import { resolveRoutePath } from '@/utils/blogUtils'
 import useTagsViewStore from '@/store/modules/tagsView'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'

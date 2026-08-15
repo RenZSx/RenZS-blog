@@ -1,6 +1,6 @@
 /**
 * v-copyText 复制文本内容
-* Copyright (c) 2022 ruoyi
+* Copyright (c) 2021-2026 RenZS Blog Admin
 */
 export default {
   beforeMount(el, { value, arg }) {

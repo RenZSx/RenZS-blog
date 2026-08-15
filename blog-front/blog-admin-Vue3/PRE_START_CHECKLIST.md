@@ -187,7 +187,7 @@ alias: {
 ### 4. 环境变量问题
 确认 `.env.development` 文件内容正确:
 ```
-VITE_APP_TITLE = 若依管理系统
+VITE_APP_TITLE = 博客后台管理系统
 VITE_APP_ENV = 'development'
 VITE_APP_BASE_API = '/dev-api'
 ```

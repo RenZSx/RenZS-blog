@@ -25,7 +25,7 @@ import elementIcons from '@/components/SvgIcon/svgicon'
 
 import './permission' // permission control
 
-import { parseTime, resetForm, addDateRange, handleTree } from '@/utils/ruoyi'
+import { parseTime, resetForm, addDateRange, handleTree } from '@/utils/blogUtils'
 
 // 分页组件
 import Pagination from '@/components/Pagination'

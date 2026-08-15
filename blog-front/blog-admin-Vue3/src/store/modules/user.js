@@ -52,12 +52,12 @@ const useUserStore = defineStore(
       /**
        * 将博客后端的 UserInfoDTO 写入 store。
        *
-       * 登录接口与 /users/current 返回的用户结构完全一致(平铺,非若依的
+       * 登录接口与 /users/current 返回的用户结构完全一致(平铺,非模板的
        * { user, roles, permissions } 嵌套结构),故两处共用此方法。
        *
        * 说明: 博客后端的角色信息不随用户信息下发,访问控制完全由后端菜单
        * (/admin/user/menus)决定 —— 能拿到哪些菜单就能访问哪些页面。
-       * 这里给定固定角色只为满足若依模板中 v-hasRole / v-hasPermi 指令的
+       * 这里给定固定角色只为满足模板中 v-hasRole / v-hasPermi 指令的
        * 存在性校验,不作为真正的权限依据。
        *
        * @param {Object} userInfo 后端返回的 UserInfoDTO

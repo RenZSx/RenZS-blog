@@ -39,7 +39,7 @@ pnpm install
 开发环境默认配置：
 ```env
 # 页面标题
-VITE_APP_TITLE = 若依管理系统
+VITE_APP_TITLE = 博客后台管理系统
 
 # 开发环境配置
 VITE_APP_ENV = 'development'

@@ -48,7 +48,7 @@ yarn install
 #### 开发环境 (`.env.development`)
 ```env
 # 页面标题
-VITE_APP_TITLE = 若依管理系统
+VITE_APP_TITLE = 博客后台管理系统
 
 # 开发环境配置
 VITE_APP_ENV = 'development'
@@ -59,7 +59,7 @@ VITE_APP_BASE_API = '/dev-api'
 
 #### 生产环境 (`.env.production`)
 ```env
-VITE_APP_TITLE = 若依管理系统
+VITE_APP_TITLE = 博客后台管理系统
 VITE_APP_ENV = 'production'
 VITE_APP_BASE_API = '/prod-api'
 ```
@@ -168,7 +168,7 @@ blog-admin-Vue3/
 │   ├── utils/                 # 工具函数
 │   │   ├── request.js         # axios 封装（重要）
 │   │   ├── auth.js            # 认证相关
-│   │   ├── ruoyi.js           # 通用工具函数
+│   │   ├── blogUtils.js       # 通用工具函数
 │   │   ├── validate.js        # 表单验证
 │   │   ├── dict.js            # 字典工具
 │   │   └── errorCode.js       # 错误码定义
@@ -1354,7 +1354,7 @@ console.log(variables.menuBg)        // #1a1f2e
 
 ### 2. 公共样式类
 
-项目提供了丰富的公共样式类（`src/assets/styles/ruoyi.scss`）：
+项目提供了丰富的公共样式类（`src/assets/styles/blogCommon.scss`）：
 
 ```html
 <!-- 间距 -->
@@ -1974,7 +1974,6 @@ server: {
 - [Element Plus 官方文档](https://element-plus.org/zh-CN/)
 - [Vite 官方文档](https://cn.vitejs.dev/)
 - [Pinia 官方文档](https://pinia.vuejs.org/zh/)
-- [若依官方文档](http://doc.ruoyi.vip/)
 
 ## 获取帮助
 

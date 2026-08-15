@@ -30,7 +30,7 @@
 <script setup>
 import { isExternal } from '@/utils/validate'
 import AppLink from './Link'
-import { resolveRoutePath } from '@/utils/ruoyi'
+import { resolveRoutePath } from '@/utils/blogUtils'
 
 const props = defineProps({
   // route object

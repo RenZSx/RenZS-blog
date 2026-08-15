@@ -35,7 +35,7 @@
 <script setup>
 import { constantRoutes } from "@/router"
 import { isHttp } from '@/utils/validate'
-import { resolveRoutePath } from '@/utils/ruoyi'
+import { resolveRoutePath } from '@/utils/blogUtils'
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'

@@ -2,16 +2,16 @@
 	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png">
 </p>
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">博客后台管理系统 Vue3 版本</h1>
-<h4 align="center">基于 RuoYi + SpringBoot + Vue3 + SaToken 的博客后台管理系统</h4>
+<h4 align="center">RenZS Blog 博客后台管理系统 (Vue3)</h4>
 <p align="center">
-	<a href="https://gitee.com/y_project/RuoYi-Vue/stargazers"><img src="https://gitee.com/y_project/RuoYi-Vue/badge/star.svg?theme=dark"></a>
-	<a href="https://gitee.com/y_project/RuoYi-Vue"><img src="https://img.shields.io/badge/RuoYi-v3.9.2-brightgreen.svg"></a>
-	<a href="https://gitee.com/y_project/RuoYi-Vue/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
+	<a href="https://gitee.com/chen_fuyun/blog-satoken/stargazers"><img src="https://gitee.com/chen_fuyun/blog-satoken/badge/star.svg?theme=dark"></a>
+	<a href="https://gitee.com/chen_fuyun/blog-satoken"><img src="https://img.shields.io/badge/blog--admin--vue3-v3.9.2-brightgreen.svg"></a>
+	<a href="https://gitee.com/chen_fuyun/blog-satoken/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
 </p>
 
 ## 项目简介
 
-本项目是一个功能完善的博客后台管理系统前端，基于若依（RuoYi）框架的 Vue3 版本开发，采用现代化的前端技术栈。系统提供了博客内容管理、用户权限管理、系统监控等完整功能。
+本项目是一个功能完善的博客后台管理系统前端，基于 Vue 3 + Vite + Element Plus 开发，采用现代化的前端技术栈。系统提供了博客内容管理、用户权限管理、系统监控等完整功能。
 
 ### 核心特性
 
@@ -40,8 +40,7 @@
 ### 配套后端
 
 * 本项目使用 SaToken 作为权限认证框架
-* 配套后端代码请查看项目根目录
-* 原版若依后端：[RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue) 或 [RuoYi-Vue-fast](https://gitcode.com/yangzongzhuan/RuoYi-Vue-fast)
+* 配套后端代码：[renzs-blog-satoken](https://gitee.com/chen_fuyun/blog-satoken)（项目根目录下的 Spring Boot 后端项目）
 
 ## 快速开始
 
@@ -322,7 +321,6 @@ src/
 - [Vue 3 官方文档](https://cn.vuejs.org/)
 - [Vite 官方文档](https://cn.vitejs.dev/)
 - [Element Plus 官方文档](https://element-plus.org/zh-CN/)
-- [若依官方文档](http://doc.ruoyi.vip)
 
 ## 许可证
 

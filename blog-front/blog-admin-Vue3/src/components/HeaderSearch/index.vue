@@ -78,7 +78,7 @@
 
 <script setup>
 import Fuse from 'fuse.js'
-import { resolveRoutePath } from '@/utils/ruoyi'
+import { resolveRoutePath } from '@/utils/blogUtils'
 import { isHttp } from '@/utils/validate'
 import { sanitizeHtml } from '@/utils/sanitize'
 import useSettingsStore from '@/store/modules/settings'

@@ -1,6 +1,6 @@
 /**
  * 通用js方法封装处理
- * Copyright (c) 2019 ruoyi
+ * Copyright (c) 2021-2026 RenZS Blog Admin
  */
 
 // 日期格式化

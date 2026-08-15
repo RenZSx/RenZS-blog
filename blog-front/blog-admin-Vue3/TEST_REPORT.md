@@ -179,7 +179,7 @@ component: () => import('@/views/blog/home/index.vue')
 
 **开发环境配置**:
 ```env
-VITE_APP_TITLE = 若依管理系统
+VITE_APP_TITLE = 博客后台管理系统
 VITE_APP_ENV = 'development'
 VITE_APP_BASE_API = '/dev-api'
 ```

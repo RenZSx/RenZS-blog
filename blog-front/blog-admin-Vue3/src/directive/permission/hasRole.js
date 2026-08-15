@@ -1,6 +1,6 @@
  /**
  * v-hasRole 角色权限处理
- * Copyright (c) 2019 ruoyi
+ * Copyright (c) 2021-2026 RenZS Blog Admin
  */
 import useUserStore from '@/store/modules/user'
 
