@@ -103,6 +103,19 @@ public class UserAuthController {
     }
 
     /**
+     * 管理端添加用户
+     *
+     * @param adminUserVO 用户信息
+     * @return {@link Result<>}
+     */
+    @ApiOperation(value = "管理端添加用户")
+    @PostMapping("/admin/users")
+    public Result<?> addAdminUser(@Valid @RequestBody AdminUserVO adminUserVO) {
+        userAuthService.addAdminUser(adminUserVO);
+        return Result.ok();
+    }
+
+    /**
      * 修改密码
      *
      * @param user 用户信息

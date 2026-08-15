@@ -190,6 +190,52 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthDao, UserAuth> impl
     }
 
     /**
+     * 管理端添加用户
+     * @param adminUserVO 用户信息
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void addAdminUser(AdminUserVO adminUserVO) {
+        // 校验用户名是否已注册
+        UserAuth exist = userAuthDao.selectOne(new LambdaQueryWrapper<UserAuth>()
+                .select(UserAuth::getUsername)
+                .eq(UserAuth::getUsername, adminUserVO.getUsername()));
+        if (Objects.nonNull(exist)) {
+            throw new BizException("用户名已被注册！");
+        }
+        // 新增用户信息(昵称缺省时用默认昵称)
+        String nickname = StringUtils.isNotBlank(adminUserVO.getNickname())
+                ? adminUserVO.getNickname()
+                : CommonConst.DEFAULT_NICKNAME + IdWorker.getId();
+        UserInfo userInfo = UserInfo.builder()
+                .email(adminUserVO.getUsername())
+                .nickname(nickname)
+                .avatar(blogInfoService.getWebsiteConfig().getUserAvatar())
+                .build();
+        userInfoDao.insert(userInfo);
+        // 新增用户账号
+        UserAuth userAuth = UserAuth.builder()
+                .userInfoId(userInfo.getId())
+                .username(adminUserVO.getUsername())
+                .password(BCrypt.hashpw(adminUserVO.getPassword(), BCrypt.gensalt()))
+                .loginType(LoginTypeEnum.EMAIL.getType())
+                .build();
+        userAuthDao.insert(userAuth);
+        // 绑定角色: 指定了角色则用指定角色,否则默认普通用户
+        List<Integer> roleIdList = adminUserVO.getRoleIdList();
+        if (roleIdList == null || roleIdList.isEmpty()) {
+            roleIdList = Collections.singletonList(RoleEnum.USER.getRoleId());
+        }
+        for (Integer roleId : roleIdList) {
+            UserRole userRole = UserRole.builder()
+                    .userId(userInfo.getId())
+                    .roleId(roleId)
+                    .build();
+            userRoleDao.insert(userRole);
+        }
+    }
+
+    /**
      * qq登录
      * @param qqLoginVO qq登录信息
      * @return

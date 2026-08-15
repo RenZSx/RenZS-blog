@@ -88,4 +88,11 @@ public interface UserAuthService extends IService<UserAuth> {
      */
     PageResult<UserBackDTO> listUserBackDTO(ConditionVO condition);
 
+    /**
+     * 管理端添加用户
+     *
+     * @param adminUserVO 用户信息
+     */
+    void addAdminUser(AdminUserVO adminUserVO);
+
 }

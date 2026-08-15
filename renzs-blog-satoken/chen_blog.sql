@@ -950,7 +950,8 @@ INSERT INTO `tb_resource` (`id`, `resource_name`, `url`, `request_method`, `pare
                                                                                                                                           (293, '后台保存/修改纪念页配置', '/admin/love/config', 'PUT', 290, 0, '2026-05-17 23:40:11', NULL),
                                                                                                                                           (294, '前台获取信件正文', '/love/letter', 'GET', 290, 1, '2026-05-17 23:40:25', '2026-05-17 23:40:27'),
                                                                                                                                           (295, '后台查询信件正文', '/admin/love/letter', 'GET', 290, 0, '2026-05-17 23:40:41', NULL),
-                                                                                                                                          (296, '后台保存/修改信件正文', '/admin/love/letter', 'PUT', 290, 0, '2026-05-17 23:40:53', NULL);
+                                                                                                                                          (296, '后台保存/修改信件正文', '/admin/love/letter', 'PUT', 290, 0, '2026-05-17 23:40:53', NULL),
+                                                                                                                                           (297, '管理端添加用户', '/admin/users', 'POST', 173, 0, '2026-01-01 00:00:00', NULL);
 
 DROP TABLE IF EXISTS `tb_role`;
 
@@ -1201,7 +1202,8 @@ INSERT INTO `tb_role_resource` (`id`, `role_id`, `resource_id`) VALUES
                                                                     (5329, 1, 292),
                                                                     (5330, 1, 293),
                                                                     (5331, 1, 295),
-                                                                    (5332, 1, 296);
+                                                                    (5332, 1, 296),
+                                                                                    (5333, 1, 297);
 
 DROP TABLE IF EXISTS `tb_sensitive_word`;
 
