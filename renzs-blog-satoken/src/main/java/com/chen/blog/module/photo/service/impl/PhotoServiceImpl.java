@@ -46,10 +46,13 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoDao, Photo> implements Ph
     @Override
     public PageResult<PhotoBackDTO> listPhotos(ConditionVO condition) {
         // 查询照片列表
+        // 注意: isDelete 必须用三参数 eq + Objects.nonNull 判断。
+        // 两参数 eq(列, null) 在 MyBatis-Plus 3.4.0 会生成 "is_delete = NULL",
+        // 导致永远查不到数据(照片列表页因此显示为空)。
         Page<Photo> page = new Page<>(PageUtils.getCurrent(), PageUtils.getSize());
         Page<Photo> photoPage = photoDao.selectPage(page, new LambdaQueryWrapper<Photo>()
                 .eq(Objects.nonNull(condition.getAlbumId()), Photo::getAlbumId, condition.getAlbumId())
-                .eq(Photo::getIsDelete, condition.getIsDelete())
+                .eq(Objects.nonNull(condition.getIsDelete()), Photo::getIsDelete, condition.getIsDelete())
                 .orderByDesc(Photo::getId)
                 .orderByDesc(Photo::getUpdateTime));
         List<PhotoBackDTO> photoList = BeanCopyUtils.copyList(photoPage.getRecords(), PhotoBackDTO.class);
