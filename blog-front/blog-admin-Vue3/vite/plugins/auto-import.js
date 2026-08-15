@@ -7,7 +7,6 @@ export default function createAutoImport() {
       'vue-router',
       'pinia',
       {
-        '@/utils/dict': ['useDict'],
         '@/utils/blogUtils': ['selectDictLabel']
       }
     ],
