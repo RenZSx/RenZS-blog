@@ -12,13 +12,13 @@
 
       <!-- 相册信息 -->
       <div class="album-info">
-        <el-image fit="cover" class="album-cover" :src="albumInfo.albumCover" />
-        <div class="album-detail">
-          <div style="margin-bottom: 0.6rem">
-            <span class="album-name">{{ albumInfo.albumName }}</span>
-            <span class="photo-count">{{ albumInfo.photoCount }}张</span>
-          </div>
-          <div>
+        <div class="album-summary">
+          <el-image fit="cover" class="album-cover" :src="albumInfo.albumCover" />
+          <div class="album-detail">
+            <div class="album-title">
+              <span class="album-name">{{ albumInfo.albumName }}</span>
+              <span class="photo-count">{{ albumInfo.photoCount }}张</span>
+            </div>
             <span v-if="albumInfo.albumDesc" class="album-desc">
               {{ albumInfo.albumDesc }}
             </span>
@@ -27,18 +27,21 @@
             </el-button>
           </div>
         </div>
-        <!-- 相册操作 -->
-        <div class="operation">
-          <div class="all-check">
-            <el-checkbox
-              :indeterminate="isIndeterminate"
-              v-model="checkAll"
-              @change="handleCheckAllChange"
-            >
-              全选
-            </el-checkbox>
-            <div class="check-count">已选择{{ selectPhotoIds.length }}张</div>
-          </div>
+      </div>
+
+      <!-- 照片批量操作 -->
+      <div class="photo-toolbar">
+        <div class="all-check">
+          <el-checkbox
+            v-model="checkAll"
+            :indeterminate="isIndeterminate"
+            @change="handleCheckAllChange"
+          >
+            全选
+          </el-checkbox>
+          <span class="check-count">已选择 {{ selectPhotoIds.length }} 张</span>
+        </div>
+        <div class="batch-actions">
           <el-button
             type="success"
             @click="moveDialogVisible = true"
@@ -62,7 +65,7 @@
       <el-row class="photo-container" :gutter="16" v-loading="loading">
         <el-empty v-if="photoList.length === 0" description="暂无照片" />
         <el-col
-          v-for="item in photoList"
+          v-for="(item, index) in photoList"
           :key="item.id"
           :md="4"
           :sm="6"
@@ -91,7 +94,8 @@
                 fit="cover"
                 class="photo-img"
                 :src="item.photoSrc"
-                :preview-src-list="photoList.map(p => p.photoSrc)"
+                :preview-src-list="previewSrcList"
+                :initial-index="index"
                 :preview-teleported="true"
               />
               <div class="photo-name">{{ item.photoDesc || '未命名' }}</div>
@@ -118,11 +122,12 @@
     <!-- 上传照片对话框 -->
     <el-dialog
       v-model="uploadDialogVisible"
+      class="photo-upload-dialog"
       title="上传照片"
-      width="70%"
+      width="760px"
       @close="handleUploadClose"
     >
-      <div class="upload-container">
+      <div class="photo-upload-content">
         <ImageUpload
           v-model="uploadPhotos"
           :limit="20"
@@ -132,8 +137,10 @@
       </div>
       <template #footer>
         <div class="upload-footer">
-          <div class="upload-count">共上传{{ uploadPhotos ? uploadPhotos.split(',').filter(p => p).length : 0 }}张照片</div>
-          <div style="margin-left: auto">
+          <div class="upload-count">
+            已添加 <strong>{{ uploadPhotoCount }}</strong> / 20 张
+          </div>
+          <div class="upload-actions">
             <el-button @click="uploadDialogVisible = false">取 消</el-button>
             <el-button
               type="primary"
@@ -260,6 +267,9 @@ const editRules = {
 const isIndeterminate = computed(() => {
   return selectPhotoIds.value.length > 0 && selectPhotoIds.value.length < photoList.value.length
 })
+
+const previewSrcList = computed(() => photoList.value.map(item => item.photoSrc))
+const uploadPhotoCount = computed(() => uploadPhotos.value.split(',').filter(Boolean).length)
 
 const getAlbumInfo = async () => {
   try {
@@ -472,29 +482,43 @@ onMounted(() => {
 }
 
 .album-info {
-  display: flex;
-  align-items: flex-start;
+  display: block;
   margin-bottom: 20px;
   padding: 20px;
   background: var(--el-fill-color-light);
-  border-radius: 4px;
+  border-radius: 6px;
+}
+
+.album-summary {
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
 .album-cover {
-  width: 150px;
-  height: 150px;
-  border-radius: 4px;
+  flex: 0 0 128px;
+  width: 128px;
+  height: 128px;
+  border-radius: 6px;
 }
 
 .album-detail {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   margin-left: 20px;
+}
+
+.album-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .album-name {
   font-size: 20px;
   font-weight: bold;
-  margin-right: 10px;
 }
 
 .photo-count {
@@ -503,16 +527,23 @@ onMounted(() => {
 }
 
 .album-desc {
+  display: block;
   font-size: 14px;
   color: var(--el-text-color-regular);
-  margin-right: 15px;
+  margin-bottom: 16px;
+  overflow-wrap: anywhere;
 }
 
-.operation {
+.photo-toolbar {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 6px;
+  background: var(--el-bg-color);
 }
 
 .all-check {
@@ -521,9 +552,21 @@ onMounted(() => {
   gap: 10px;
 }
 
+.batch-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.batch-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
 .check-count {
   font-size: 14px;
   color: var(--el-text-color-secondary);
+  white-space: nowrap;
 }
 
 .photo-container {
@@ -598,13 +641,51 @@ onMounted(() => {
   opacity: 1;
 }
 
-.upload-container {
-  min-height: 200px;
+.photo-upload-content {
+  min-height: 188px;
+}
+
+.photo-upload-content :deep(.el-upload-list--picture-card) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+.photo-upload-content :deep(.el-upload-list--picture-card .el-upload-list__item),
+.photo-upload-content :deep(.el-upload--picture-card) {
+  width: 136px;
+  height: 136px;
+  margin: 0;
+  border-radius: 6px;
+}
+
+.photo-upload-content :deep(.el-upload--picture-card) {
+  background: var(--el-fill-color-lighter);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.photo-upload-content :deep(.el-upload--picture-card:hover) {
+  background: var(--el-color-primary-light-9);
+}
+
+.photo-upload-content :deep(.avatar-uploader-icon) {
+  font-size: 26px;
+  color: var(--el-text-color-secondary);
+}
+
+.photo-upload-content :deep(.el-upload__tip) {
+  width: 100%;
+  margin-top: 2px;
+  line-height: 20px;
+  color: var(--el-text-color-secondary);
 }
 
 .upload-footer {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .upload-count {
@@ -612,8 +693,45 @@ onMounted(() => {
   color: var(--el-text-color-secondary);
 }
 
+.upload-count strong {
+  color: var(--el-color-primary);
+  font-weight: 600;
+}
+
+.upload-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.upload-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
+:global(.photo-upload-dialog) {
+  max-width: calc(100vw - 32px);
+  border-radius: 8px;
+}
+
+:global(.photo-upload-dialog .el-dialog__header) {
+  margin-right: 0;
+  padding: 18px 24px 16px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+:global(.photo-upload-dialog .el-dialog__body) {
+  max-height: 60vh;
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+
+:global(.photo-upload-dialog .el-dialog__footer) {
+  padding: 14px 24px;
+  border-top: 1px solid var(--el-border-color-lighter);
+}
+
 /* checkbox 透明化: 勾选圈悬浮在图片左上角, 不显示文字标签 */
-:deep(.el-checkbox) {
+.photo-checkbox {
   position: relative;
   width: 100%;
   margin-right: 0;
@@ -621,14 +739,14 @@ onMounted(() => {
   height: auto;
 }
 
-:deep(.el-checkbox__input) {
+.photo-checkbox :deep(.el-checkbox__input) {
   position: absolute;
   top: 8px;
   left: 8px;
   z-index: 20;
 }
 
-:deep(.el-checkbox__label) {
+.photo-checkbox :deep(.el-checkbox__label) {
   padding-left: 0;
   display: block;
   width: 100%;
@@ -640,7 +758,60 @@ onMounted(() => {
 }
 
 /* 只隐藏 checkbox 自带的文字标签节点, 不误伤图片/下拉等内部 span */
-:deep(.el-checkbox__label > span) {
+.photo-checkbox :deep(.el-checkbox__label > span) {
   display: none;
+}
+
+@media (max-width: 640px) {
+  .photo-management {
+    padding: 12px;
+  }
+
+  .album-info {
+    padding: 16px;
+  }
+
+  .album-summary {
+    align-items: flex-start;
+  }
+
+  .album-cover {
+    flex-basis: 96px;
+    width: 96px;
+    height: 96px;
+  }
+
+  .album-detail {
+    margin-left: 14px;
+  }
+
+  .photo-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .photo-upload-content :deep(.el-upload-list--picture-card .el-upload-list__item),
+  .photo-upload-content :deep(.el-upload--picture-card) {
+    width: 112px;
+    height: 112px;
+  }
+
+  .upload-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .upload-actions {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .batch-actions {
+    width: 100%;
+  }
+
+  .pagination-wrapper {
+    overflow-x: auto;
+  }
 }
 </style>
