@@ -22,7 +22,7 @@ export function buildNoticeSocketUrl(userId) {
   const token = getToken()
   if (!token) return null
 
-  // BASE_URL 形如 http://8.137.86.224:8088
+  // BASE_URL 形如 http://localhost:8088
   let url = BASE_URL.replace(/^http(s?):\/\//i, 'ws$1://')
   // 兜底:用户配错了 BASE_URL
   if (!/^wss?:\/\//i.test(url)) {

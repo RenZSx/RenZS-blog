@@ -4,8 +4,7 @@
  */
 
 // 后端基地址(不带 /api 前缀;blog-vue3 的 /api 仅是 Vite 代理用,uniapp 直连后端要剥)
-export const BASE_URL = 'http://8.137.86.224:8088'
-
+export const BASE_URL = 'http://localhost:8088'
 
 // 本地 storage 中 token 的 key,与 blog-vue3 保持一致便于概念统一
 export const TOKEN_KEY = 'token'

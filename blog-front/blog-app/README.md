@@ -13,7 +13,7 @@
 
 | 项 | 值 |
 |---|---|
-| 基地址 | `http://8.137.86.224:8088` |
+| 基地址 | `http://localhost:8088` |
 | 鉴权方式 | `Authorization: Bearer {token}` Header |
 | token 存储 | `uni.storage` key=`token` |
 | 业务码 40001 | 未登录,自动清 token 并跳登录页 |
