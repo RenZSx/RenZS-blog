@@ -9,6 +9,15 @@ export function listUsers(query) {
   })
 }
 
+// 新增用户
+export function addUser(data) {
+  return request({
+    url: '/admin/users',
+    method: 'post',
+    data: data
+  })
+}
+
 // 查询在线用户列表
 export function listOnlineUsers(query) {
   return request({

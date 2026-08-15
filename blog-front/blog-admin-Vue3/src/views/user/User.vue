@@ -4,6 +4,9 @@
       <template #header>
         <div class="card-header">
           <span>用户管理</span>
+          <el-button type="primary" size="small" @click="handleAdd">
+            <el-icon><Plus /></el-icon> 新增用户
+          </el-button>
         </div>
       </template>
 
@@ -145,25 +148,71 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 新增用户对话框 -->
+    <el-dialog
+      v-model="addDialogVisible"
+      title="新增用户"
+      width="500px"
+      @close="handleAddClose"
+    >
+      <el-form ref="addFormRef" :model="addForm" :rules="addRules" label-width="80px">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="addForm.username" placeholder="请输入登录用户名" />
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input
+            v-model="addForm.password"
+            type="password"
+            show-password
+            placeholder="请输入密码(至少6位)"
+          />
+        </el-form-item>
+        <el-form-item label="昵称" prop="nickname">
+          <el-input v-model="addForm.nickname" placeholder="请输入昵称(可选)" />
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-checkbox-group v-model="addRoleIdList">
+            <el-checkbox
+              v-for="item in roleList"
+              :key="item.id"
+              :label="item.id"
+            >
+              {{ item.roleName }}
+            </el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleAddSubmit" :loading="addLoading">
+          确 定
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Search, Edit } from '@element-plus/icons-vue'
-import { listUsers, updateUserStatus, updateUserRole } from '@/api/blog/user'
+import { Search, Edit, Plus } from '@element-plus/icons-vue'
+import { listUsers, addUser, updateUserStatus, updateUserRole } from '@/api/blog/user'
 import { listRoles } from '@/api/blog/role'
 import { formatDate } from '@/utils/blog'
 
 const loading = ref(false)
 const submitLoading = ref(false)
+const addLoading = ref(false)
 const total = ref(0)
 const userList = ref([])
 const roleList = ref([])
 const dialogVisible = ref(false)
+const addDialogVisible = ref(false)
 const roleIdList = ref([])
+const addRoleIdList = ref([])
 const formRef = ref(null)
+const addFormRef = ref(null)
 
 const queryParams = reactive({
   current: 1,
@@ -177,6 +226,22 @@ const form = reactive({
   nickname: '',
   roleList: []
 })
+
+const addForm = reactive({
+  username: '',
+  password: '',
+  nickname: ''
+})
+
+const addRules = {
+  username: [
+    { required: true, message: '用户名不能为空', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '密码不能为空', trigger: 'blur' },
+    { min: 6, message: '密码不能少于6位', trigger: 'blur' }
+  ]
+}
 
 const loginTypeList = [
   { type: 1, desc: '邮箱' },
@@ -233,6 +298,47 @@ const handleDisableChange = async (row) => {
     console.error('修改状态失败:', error)
     row.isDisable = row.isDisable === 1 ? 0 : 1
   }
+}
+
+// 新增用户
+const handleAdd = () => {
+  addForm.username = ''
+  addForm.password = ''
+  addForm.nickname = ''
+  addRoleIdList.value = []
+  addDialogVisible.value = true
+}
+
+// 新增用户提交
+const handleAddSubmit = async () => {
+  if (!addFormRef.value) return
+  await addFormRef.value.validate(async (valid) => {
+    if (!valid) return
+    addLoading.value = true
+    try {
+      const res = await addUser({
+        username: addForm.username.trim(),
+        password: addForm.password,
+        nickname: addForm.nickname.trim() || null,
+        roleIdList: addRoleIdList.value.length ? addRoleIdList.value : null
+      })
+      if (res.flag) {
+        ElMessage.success('新增成功')
+        addDialogVisible.value = false
+        getList()
+      }
+    } catch (error) {
+      console.error('新增用户失败:', error)
+    } finally {
+      addLoading.value = false
+    }
+  })
+}
+
+// 关闭新增对话框
+const handleAddClose = () => {
+  addRoleIdList.value = []
+  addFormRef.value?.resetFields()
 }
 
 // 编辑
