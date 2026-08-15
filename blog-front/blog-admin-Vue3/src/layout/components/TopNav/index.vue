@@ -35,6 +35,7 @@
 <script setup>
 import { constantRoutes } from "@/router"
 import { isHttp } from '@/utils/validate'
+import { resolveRoutePath } from '@/utils/ruoyi'
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
@@ -76,21 +77,26 @@ const topMenus = computed(() => {
 
 // 设置子路由
 const childrenMenus = computed(() => {
-  let childrenMenus = []
-  routers.value.map((router) => {
-    for (let item in router.children) {
-      if (router.children[item].parentPath === undefined) {
-        if(router.path === "/") {
-          router.children[item].path = "/" + router.children[item].path
-        } else {
-          if(!isHttp(router.children[item].path)) {
-            router.children[item].path = router.path + "/" + router.children[item].path
-          }
-        }
-        router.children[item].parentPath = router.path
-      }
-      childrenMenus.push(router.children[item])
-    }
+  const childrenMenus = []
+  routers.value.forEach((parent) => {
+    const children = parent.children || []
+    children.forEach((child) => {
+      const childPath = child.path || ''
+      // Root's empty child path represents the homepage itself.
+      const path = childPath === '' && parent.path === '/'
+        ? '/'
+        : (isHttp(childPath) || childPath.charAt(0) === '/'
+          ? childPath
+          : resolveRoutePath(parent.path, childPath))
+
+      // Keep permissionStore.topbarRouters untouched. Vue Router registered
+      // absolute child paths (for example /users) must remain absolute.
+      childrenMenus.push({
+        ...child,
+        path,
+        parentPath: parent.path
+      })
+    })
   })
   return constantRoutes.concat(childrenMenus)
 })
