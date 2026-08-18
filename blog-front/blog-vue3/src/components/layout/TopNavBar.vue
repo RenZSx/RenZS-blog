@@ -107,6 +107,11 @@
                 <v-icon size="16">mdi-comment-text</v-icon> 说说
               </router-link>
             </li>
+            <li>
+              <router-link to="/music">
+                <v-icon size="16">mdi-music-note</v-icon> 音乐
+              </router-link>
+            </li>
             <li v-if="isChatRoomEnabled">
               <router-link to="/chat">
                 <v-icon size="16">mdi-chat</v-icon> 聊天室

@@ -25,6 +25,10 @@ public enum FilePathEnum {
      */
     VOICE("voice/", "音频路径"),
     /**
+     * 音乐路径
+     */
+    MUSIC("music/", "音乐文件路径"),
+    /**
      * 照片路径
      */
     PHOTO("photos/", "相册路径"),

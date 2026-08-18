@@ -106,6 +106,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '说说' }
   },
   {
+    path: '/music',
+    name: 'Music',
+    component: () => import('@/views/music/Music.vue'),
+    meta: { title: '音乐' }
+  },
+  {
     path: '/talks/:talkId',
     name: 'TalkInfo',
     component: () => import('@/views/talk/TalkInfo.vue'),

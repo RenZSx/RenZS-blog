@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,6 +40,11 @@ public class UserInfoDTO {
      * 登录方式
      */
     private Integer loginType;
+
+    /**
+     * 当前用户角色标签，用于前端展示受角色保护的入口。
+     */
+    private List<String> roleList;
 
     /**
      * 用户名

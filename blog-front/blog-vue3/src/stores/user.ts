@@ -11,6 +11,7 @@ export interface UserInfo {
   emailBound: boolean
   qqBound: boolean
   loginType: string
+  roleList?: string[]
   articleLikeSet: number[]
   commentLikeSet: number[]
   talkLikeSet: number[]
@@ -46,12 +47,14 @@ export const useUserStore = defineStore('user', () => {
   const emailBound = ref(false)
   const qqBound = ref(false)
   const loginType = ref<string | null>(null)
+  const roleList = ref<string[]>([])
   const articleLikeSet = ref<number[]>([])
   const commentLikeSet = ref<number[]>([])
   const talkLikeSet = ref<number[]>([])
 
   // Getters
   const isLoggedIn = computed(() => userId.value !== null)
+  const isAdmin = computed(() => roleList.value.includes('admin'))
 
   // Actions
   function login(payload: LoginPayload) {
@@ -67,6 +70,7 @@ export const useUserStore = defineStore('user', () => {
     emailBound.value = Boolean(user.emailBound)
     qqBound.value = Boolean(user.qqBound)
     loginType.value = user.loginType
+    roleList.value = user.roleList || []
     articleLikeSet.value = user.articleLikeSet || []
     commentLikeSet.value = user.commentLikeSet || []
     talkLikeSet.value = user.talkLikeSet || []
@@ -88,6 +92,7 @@ export const useUserStore = defineStore('user', () => {
     emailBound.value = false
     qqBound.value = false
     loginType.value = null
+    roleList.value = []
     articleLikeSet.value = []
     commentLikeSet.value = []
     talkLikeSet.value = []
@@ -156,11 +161,13 @@ export const useUserStore = defineStore('user', () => {
     emailBound,
     qqBound,
     loginType,
+    roleList,
     articleLikeSet,
     commentLikeSet,
     talkLikeSet,
     // Getters
     isLoggedIn,
+    isAdmin,
     // Actions
     login,
     logout,
@@ -187,6 +194,7 @@ export const useUserStore = defineStore('user', () => {
       'emailBound',
       'qqBound',
       'loginType',
+      'roleList',
       'articleLikeSet',
       'commentLikeSet',
       'talkLikeSet'

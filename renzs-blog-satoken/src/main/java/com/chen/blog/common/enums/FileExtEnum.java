@@ -29,6 +29,14 @@ public enum FileExtEnum {
      */
     WAV(".wav", "wav文件"),
     /**
+     * mp3文件
+     */
+    MP3(".mp3", "mp3文件"),
+    /**
+     * m4a文件
+     */
+    M4A(".m4a", "m4a文件"),
+    /**
      * md文件
      */
     MD(".md","markdown文件"),

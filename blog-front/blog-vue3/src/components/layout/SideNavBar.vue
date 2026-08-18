@@ -77,6 +77,11 @@
           <v-icon size="18">mdi-comment-text</v-icon> 说说
         </router-link>
       </div>
+      <div class="menus-item">
+        <router-link to="/music">
+          <v-icon size="18">mdi-music-note</v-icon> 音乐
+        </router-link>
+      </div>
       <div v-if="isChatRoomEnabled" class="menus-item">
         <router-link to="/chat">
           <v-icon size="18">mdi-chat</v-icon> 聊天室
