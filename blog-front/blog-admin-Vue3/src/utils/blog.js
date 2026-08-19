@@ -1,3 +1,5 @@
+import { getToken } from '@/utils/auth'
+
 // 日期格式化
 export function formatDate(date, format = 'YYYY-MM-DD') {
   if (!date) return ''
@@ -20,7 +22,8 @@ export function formatDate(date, format = 'YYYY-MM-DD') {
 
 // 获取上传文件的请求头
 export function getUploadHeaders() {
-  const token = localStorage.getItem('token')
+  // 登录态统一存储在 Admin-Token Cookie；保留旧 localStorage 作为兼容兜底。
+  const token = getToken() || localStorage.getItem('token')
   return token ? { Authorization: 'Bearer ' + token } : {}
 }
 
