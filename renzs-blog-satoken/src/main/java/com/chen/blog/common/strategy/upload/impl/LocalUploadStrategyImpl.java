@@ -2,11 +2,16 @@ package com.chen.blog.common.strategy.upload.impl;
 
 import com.chen.blog.common.enums.FileExtEnum;
 import com.chen.blog.common.exception.BizException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.net.URI;
 import java.util.Objects;
 
 /**
@@ -17,6 +22,7 @@ import java.util.Objects;
  */
 @Service("localUploadStrategyImpl")
 public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalUploadStrategyImpl.class);
 
     /**
      * 本地路径
@@ -79,6 +85,43 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
     @Override
     public String getFileAccessUrl(String filePath) {
         return localUrl + filePath;
+    }
+
+    @Override
+    public boolean deleteFile(String fileUrl) {
+        String baseUrl = trimTrailingSlash(localUrl);
+        if (fileUrl == null || !fileUrl.startsWith(baseUrl + "/")) {
+            LOGGER.debug("本地策略不匹配文件地址，baseUrl={}, url={}", baseUrl, fileUrl);
+            return false;
+        }
+
+        String relativePath;
+        try {
+            relativePath = new URI(fileUrl).getPath().substring(new URI(baseUrl).getPath().length());
+        } catch (Exception e) {
+            throw new BizException("本地文件地址无效");
+        }
+        relativePath = relativePath.replaceFirst("^/+", "");
+
+        Path root = Paths.get(localPath).toAbsolutePath().normalize();
+        Path target = root.resolve(relativePath).normalize();
+        if (!target.startsWith(root)) {
+            LOGGER.error("本地文件路径越界，root={}, target={}, url={}", root, target, fileUrl);
+            throw new BizException("文件路径无效");
+        }
+        LOGGER.info("本地文件开始删除，path={}, url={}", target, fileUrl);
+        try {
+            boolean deleted = Files.deleteIfExists(target);
+            LOGGER.info("本地文件删除完成，deleted={}, path={}", deleted, target);
+            return true;
+        } catch (IOException e) {
+            LOGGER.error("本地文件删除失败，path={}, url={}", target, fileUrl, e);
+            throw new BizException("本地文件删除失败");
+        }
+    }
+
+    private String trimTrailingSlash(String value) {
+        return value == null ? "" : value.replaceFirst("/+$", "");
     }
 
 }

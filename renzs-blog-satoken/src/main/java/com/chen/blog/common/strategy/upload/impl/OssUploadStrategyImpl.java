@@ -3,6 +3,8 @@ package com.chen.blog.common.strategy.upload.impl;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.chen.blog.common.config.OssConfigProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,7 @@ import java.io.InputStream;
  */
 @Service("ossUploadStrategyImpl")
 public class OssUploadStrategyImpl extends AbstractUploadStrategyImpl {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OssUploadStrategyImpl.class);
     @Autowired
     private OssConfigProperties ossConfigProperties;
 
@@ -43,6 +46,36 @@ public class OssUploadStrategyImpl extends AbstractUploadStrategyImpl {
     @Override
     public String getFileAccessUrl(String filePath) {
         return ossConfigProperties.getUrl() + filePath;
+    }
+
+    @Override
+    public boolean deleteFile(String fileUrl) {
+        String baseUrl = trimTrailingSlash(ossConfigProperties.getUrl());
+        if (fileUrl == null || !fileUrl.startsWith(baseUrl + "/")) {
+            LOGGER.debug("OSS 策略不匹配文件地址，baseUrl={}, url={}", baseUrl, fileUrl);
+            return false;
+        }
+
+        String objectKey = fileUrl.substring(baseUrl.length() + 1);
+        LOGGER.info("OSS 开始删除对象，bucket={}, objectKey={}, url={}",
+                ossConfigProperties.getBucketName(), objectKey, fileUrl);
+        OSS ossClient = getOssClient();
+        try {
+            ossClient.deleteObject(ossConfigProperties.getBucketName(), objectKey);
+            LOGGER.info("OSS 对象删除成功，bucket={}, objectKey={}",
+                    ossConfigProperties.getBucketName(), objectKey);
+            return true;
+        } catch (RuntimeException exception) {
+            LOGGER.error("OSS 对象删除失败，bucket={}, objectKey={}, url={}",
+                    ossConfigProperties.getBucketName(), objectKey, fileUrl, exception);
+            throw exception;
+        } finally {
+            ossClient.shutdown();
+        }
+    }
+
+    private String trimTrailingSlash(String value) {
+        return value == null ? "" : value.replaceFirst("/+$", "");
     }
 
     /**

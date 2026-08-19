@@ -35,6 +35,7 @@ import com.chen.blog.module.blogInfo.service.BlogInfoService;
 import com.chen.blog.module.blogInfo.vo.WebsiteConfigVO;
 import com.chen.blog.module.notice.service.NoticeService;
 import com.chen.blog.common.service.RedisService;
+import com.chen.blog.common.service.FileReferenceService;
 import com.chen.blog.module.tag.service.TagService;
 import com.chen.blog.common.strategy.upload.context.UploadStrategyContext;
 import com.chen.blog.module.article.strategy.context.SearchStrategyContext;
@@ -138,6 +139,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
     private BlogInfoService blogInfoService;
     @Autowired
     private UploadStrategyContext uploadStrategyContext;
+    @Autowired
+    private FileReferenceService fileReferenceService;
     @Autowired
     private NoticeService noticeService;
     @Autowired
@@ -433,6 +436,34 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteArticles(List<Integer> articleIdList) {
+        if (articleIdList == null || articleIdList.isEmpty()) {
+            return;
+        }
+        List<Article> articleList = articleDao.selectList(new LambdaQueryWrapper<Article>()
+                .select(Article::getId, Article::getArticleCover, Article::getArticleContent)
+                .in(Article::getId, articleIdList));
+        Set<String> removableUrls = articleList.stream()
+                .flatMap(article -> {
+                    Set<String> urls = new HashSet<>(fileReferenceService.extractImageUrls(article.getArticleContent()));
+                    if (article.getArticleCover() != null && !article.getArticleCover().trim().isEmpty()) {
+                        urls.add(article.getArticleCover().trim());
+                    }
+                    return urls.stream();
+                })
+                .collect(Collectors.toSet());
+        log.info("文章删除图片清理开始，articleIds={}, foundCount={}, imageUrlCount={}",
+                articleIdList, articleList.size(), removableUrls.size());
+        if (!removableUrls.isEmpty()) {
+            Set<String> referencedUrls = fileReferenceService.findReferencedUrls(
+                    removableUrls, Collections.emptyList(), Collections.emptyList(), articleIdList);
+            removableUrls.removeAll(referencedUrls);
+            log.info("文章图片引用检查完成，skippedReferencedCount={}, deleteCandidateCount={}",
+                    referencedUrls.size(), removableUrls.size());
+            removableUrls.forEach(url -> {
+                log.info("开始删除文章图片，url={}", url);
+                uploadStrategyContext.deleteFile(url);
+            });
+        }
         // 删除文章标签关联
         articleTagDao.delete(new LambdaQueryWrapper<ArticleTag>().in(ArticleTag::getArticleId, articleIdList));
         // 删除文章

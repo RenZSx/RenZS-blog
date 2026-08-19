@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -20,6 +22,7 @@ import static com.chen.blog.common.enums.UploadModeEnum.getStrategy;
  */
 @Service
 public class UploadStrategyContext {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UploadStrategyContext.class);
     /**
      * 上传模式
      */
@@ -51,6 +54,27 @@ public class UploadStrategyContext {
      */
     public String executeUploadStrategy(String fileName, InputStream inputStream, String path) {
         return uploadStrategyMap.get(getStrategy(uploadMode)).uploadFile(fileName, inputStream, path);
+    }
+
+    /**
+     * 根据文件访问地址匹配历史上传策略并删除文件，兼容运行期间切换上传模式的情况。
+     */
+    public void deleteFile(String fileUrl) {
+        if (fileUrl == null || fileUrl.trim().isEmpty()) {
+            LOGGER.warn("跳过空文件地址删除请求");
+            return;
+        }
+        LOGGER.info("收到文件删除请求，url={}, strategyCount={}", fileUrl, uploadStrategyMap.size());
+        for (UploadStrategy uploadStrategy : uploadStrategyMap.values()) {
+            LOGGER.debug("尝试使用上传策略删除文件，strategy={}, url={}",
+                    uploadStrategy.getClass().getSimpleName(), fileUrl);
+            if (uploadStrategy.deleteFile(fileUrl)) {
+                LOGGER.info("文件删除策略匹配成功，strategy={}, url={}",
+                        uploadStrategy.getClass().getSimpleName(), fileUrl);
+                return;
+            }
+        }
+        LOGGER.warn("未找到可处理该文件地址的上传策略，url={}", fileUrl);
     }
 
 }

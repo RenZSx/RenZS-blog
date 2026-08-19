@@ -63,6 +63,36 @@ public class CosUploadStrategyImpl extends AbstractUploadStrategyImpl {
         return cosConfigProperties.getUrl() + filePath;
     }
 
+    @Override
+    public boolean deleteFile(String fileUrl) {
+        String baseUrl = trimTrailingSlash(cosConfigProperties.getUrl());
+        if (fileUrl == null || !fileUrl.startsWith(baseUrl + "/")) {
+            log.debug("COS 策略不匹配文件地址，baseUrl={}, url={}", baseUrl, fileUrl);
+            return false;
+        }
+
+        String objectKey = fileUrl.substring(baseUrl.length() + 1);
+        log.info("COS 开始删除对象，bucket={}, objectKey={}, url={}",
+                cosConfigProperties.getBucketName(), objectKey, fileUrl);
+        COSClient cosClient = getCosClient();
+        try {
+            cosClient.deleteObject(cosConfigProperties.getBucketName(), objectKey);
+            log.info("COS 对象删除成功，bucket={}, objectKey={}",
+                    cosConfigProperties.getBucketName(), objectKey);
+            return true;
+        } catch (RuntimeException exception) {
+            log.error("COS 对象删除失败，bucket={}, objectKey={}, url={}",
+                    cosConfigProperties.getBucketName(), objectKey, fileUrl, exception);
+            throw exception;
+        } finally {
+            cosClient.shutdown();
+        }
+    }
+
+    private String trimTrailingSlash(String value) {
+        return value == null ? "" : value.replaceFirst("/+$", "");
+    }
+
     public COSClient getCosClient() {
         // 1 初始化用户身份信息(secretId, secretKey)
         COSCredentials cred = new BasicCOSCredentials(cosConfigProperties.getSecretId(), cosConfigProperties.getSecretKey());

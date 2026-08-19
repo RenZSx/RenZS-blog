@@ -16,16 +16,21 @@ import com.chen.blog.module.talk.entity.Talk;
 import com.chen.blog.common.util.*;
 import com.chen.blog.common.domain.vo.ConditionVO;
 import com.chen.blog.common.domain.vo.PageResult;
+import com.chen.blog.common.service.FileReferenceService;
+import com.chen.blog.common.strategy.upload.context.UploadStrategyContext;
 import com.chen.blog.module.talk.vo.TalkVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.chen.blog.common.constant.RedisPrefixConst.*;
@@ -50,6 +55,10 @@ public class TalkServiceImpl extends ServiceImpl<TalkDao, Talk> implements TalkS
     private RedisService redisService;
     @Autowired
     private NoticeService noticeService;
+    @Autowired
+    private UploadStrategyContext uploadStrategyContext;
+    @Autowired
+    private FileReferenceService fileReferenceService;
 
     @Override
     public List<String> listHomeTalks() {
@@ -137,9 +146,41 @@ public class TalkServiceImpl extends ServiceImpl<TalkDao, Talk> implements TalkS
         this.saveOrUpdate(talk);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteTalks(List<Integer> talkIdList) {
+        if (talkIdList == null || talkIdList.isEmpty()) {
+            LOGGER.info("删除说说请求为空，不执行图片清理");
+            return;
+        }
+
+        LOGGER.info("开始删除说说，talkIds={}", talkIdList);
+        List<Talk> talkList = talkDao.selectBatchIds(talkIdList);
+        Set<String> removableUrls = talkList.stream()
+                .flatMap(talk -> parseTalkImages(talk.getImages(), talk.getId()).stream())
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(url -> !url.isEmpty())
+                .collect(Collectors.toCollection(HashSet::new));
+        LOGGER.info("说说查询完成，requestedCount={}, foundCount={}, imageUrlCount={}",
+                talkIdList.size(), talkList.size(), removableUrls.size());
+
+        if (!removableUrls.isEmpty()) {
+            Set<String> referencedUrls = fileReferenceService.findReferencedUrls(
+                    removableUrls, Collections.emptyList(), talkIdList, Collections.emptyList());
+            removableUrls.removeAll(referencedUrls);
+            LOGGER.info("说说图片引用检查完成，skippedReferencedCount={}, deleteCandidateCount={}",
+                    referencedUrls.size(), removableUrls.size());
+            removableUrls.forEach(url -> {
+                LOGGER.info("开始删除说说图片，url={}", url);
+                uploadStrategyContext.deleteFile(url);
+            });
+        } else {
+            LOGGER.info("待删除说说没有可识别的图片 URL");
+        }
+
         talkDao.deleteBatchIds(talkIdList);
+        LOGGER.info("说说数据库记录删除完成，talkIds={}", talkIdList);
     }
 
     @Override
@@ -185,4 +226,3 @@ public class TalkServiceImpl extends ServiceImpl<TalkDao, Talk> implements TalkS
     }
 
 }
-

@@ -17,6 +17,8 @@ import com.chen.blog.module.photo.service.PhotoService;
 import com.chen.blog.common.util.BeanCopyUtils;
 import com.chen.blog.common.util.PageUtils;
 import com.chen.blog.common.domain.vo.*;
+import com.chen.blog.common.service.FileReferenceService;
+import com.chen.blog.common.strategy.upload.context.UploadStrategyContext;
 import com.chen.blog.module.photo.vo.PhotoInfoVO;
 import com.chen.blog.module.photo.vo.PhotoVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.chen.blog.common.constant.CommonConst.FALSE;
@@ -42,6 +47,10 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoDao, Photo> implements Ph
     private PhotoDao photoDao;
     @Autowired
     private PhotoAlbumService photoAlbumService;
+    @Autowired
+    private UploadStrategyContext uploadStrategyContext;
+    @Autowired
+    private FileReferenceService fileReferenceService;
 
     @Override
     public PageResult<PhotoBackDTO> listPhotos(ConditionVO condition) {
@@ -118,6 +127,21 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoDao, Photo> implements Ph
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void deletePhotos(List<Integer> photoIdList) {
+        if (photoIdList == null || photoIdList.isEmpty()) {
+            return;
+        }
+
+        List<Photo> photoList = photoDao.selectBatchIds(photoIdList);
+        Set<String> removableUrls = photoList.stream()
+                .map(Photo::getPhotoSrc)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (!removableUrls.isEmpty()) {
+            Set<String> referencedUrls = fileReferenceService.findReferencedUrls(
+                    removableUrls, photoIdList, Collections.emptyList(), Collections.emptyList());
+            removableUrls.removeAll(referencedUrls);
+            removableUrls.forEach(uploadStrategyContext::deleteFile);
+        }
         photoDao.deleteBatchIds(photoIdList);
     }
 
@@ -155,7 +179,3 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoDao, Photo> implements Ph
     }
 
 }
-
-
-
-

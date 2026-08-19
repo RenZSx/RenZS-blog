@@ -31,4 +31,12 @@ public interface UploadStrategy {
      */
     String uploadFile(String fileName, InputStream inputStream, String path);
 
+    /**
+     * 删除已上传的文件。
+     *
+     * @param fileUrl 文件访问地址
+     * @return 当前策略是否识别并处理了该地址
+     */
+    boolean deleteFile(String fileUrl);
+
 }
