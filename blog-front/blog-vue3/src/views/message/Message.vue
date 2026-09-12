@@ -65,15 +65,12 @@ import { useDisplay } from 'vuetify'
 import { useBlogInfoStore } from '@/stores/blogInfo'
 import { useUserStore } from '@/stores/user'
 import { getMessages, sendMessage } from '@/api/misc'
+import type { MessagePayload } from '@/api/misc'
 import { useToast } from '@/composables/useToast'
 import { formatHour } from '@/utils/filters'
 
-interface MessageItem {
-  avatar: string
-  nickname: string
-  messageContent: string
+interface MessageItem extends MessagePayload {
   createTime?: string
-  time?: number
 }
 
 interface ActiveBarrageItem extends MessageItem {
@@ -95,6 +92,7 @@ const loading = ref(false)
 const sourceMessages = ref<MessageItem[]>([])
 const activeBarrageItems = ref<ActiveBarrageItem[]>([])
 const barrageSeed = ref(0)
+const defaultTouristAvatar = 'https://www.gravatar.com/avatar/?d=mp'
 
 const previousBodyOverflow = ref('')
 const previousHtmlOverflow = ref('')
@@ -259,22 +257,26 @@ async function addMessage() {
     return
   }
 
-  const userAvatar = userStore.avatar || blogInfoStore.blogInfo?.websiteConfig?.touristAvatar || ''
+  const userAvatar = userStore.avatar
+    || blogInfoStore.blogInfo?.websiteConfig?.touristAvatar
+    || defaultTouristAvatar
   const userNickname = userStore.nickname || '游客'
   const speed = Math.floor(Math.random() * 3) + 9
 
-  const message: MessageItem = {
+  const message: MessagePayload = {
     avatar: userAvatar,
     nickname: userNickname,
     messageContent: messageContent.value.trim(),
-    createTime: new Date().toISOString(),
     time: speed
   }
 
   try {
-    const { data } = await sendMessage({ content: message.messageContent })
+    const { data } = await sendMessage(message)
     if (data.flag) {
-      sourceMessages.value.unshift(message)
+      sourceMessages.value.unshift({
+        ...message,
+        createTime: new Date().toISOString()
+      })
       messageContent.value = ''
       useToast({ type: 'success', message: '留言成功' })
     } else {

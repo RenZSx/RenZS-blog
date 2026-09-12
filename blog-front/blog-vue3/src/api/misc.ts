@@ -47,7 +47,14 @@ export function getMessages(params: { current: number }) {
   return request.get('/api/messages', { params })
 }
 
+export interface MessagePayload {
+  nickname: string
+  avatar: string
+  messageContent: string
+  time: number
+}
+
 // 发送留言
-export function sendMessage(data: { content: string }) {
+export function sendMessage(data: MessagePayload) {
   return request.post('/api/messages', data)
 }
