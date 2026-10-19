@@ -1,6 +1,7 @@
 package com.chen.blog.module.music.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.chen.blog.common.annotation.OptLog;
 import com.chen.blog.common.domain.vo.Result;
 import com.chen.blog.common.enums.FileExtEnum;
 import com.chen.blog.common.enums.FilePathEnum;
@@ -23,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.chen.blog.common.constant.OptTypeConst.UPLOAD;
 
 /**
  * 音乐上传接口。
@@ -55,6 +58,7 @@ public class MusicController {
     /**
      * 将音乐文件上传到配置的文件服务器 music/ 目录。
      */
+    @OptLog(optType = UPLOAD)
     @ApiOperation(value = "上传音乐")
     @ApiImplicitParam(name = "file", value = "音乐文件", required = true, dataType = "MultipartFile")
     @PostMapping("/admin/music")

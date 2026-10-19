@@ -33,4 +33,14 @@ public class OptTypeConst {
      */
     public static final String UPLOAD = "上传";
 
+    /**
+     * 导入操作
+     */
+    public static final String IMPORT = "导入";
+
+    /**
+     * 导出操作
+     */
+    public static final String EXPORT = "导出";
+
 }

@@ -1,5 +1,6 @@
 package com.chen.blog.module.rbac.controller;
 
+import com.chen.blog.common.annotation.OptLog;
 import com.chen.blog.module.user.dto.ResourceDTO;
 import com.chen.blog.module.rbac.dto.LabelOptionDTO;
 import com.chen.blog.module.rbac.service.ResourceService;
@@ -13,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+
+import static com.chen.blog.common.constant.OptTypeConst.REMOVE;
+import static com.chen.blog.common.constant.OptTypeConst.SAVE_OR_UPDATE;
 
 /**
  * 资源控制器
@@ -43,6 +47,7 @@ public class ResourceController {
      * @param resourceId 资源id
      * @return {@link Result<>}
      */
+    @OptLog(optType = REMOVE)
     @ApiOperation(value = "删除资源")
     @DeleteMapping("/admin/resources/{resourceId}")
     public Result<?> deleteResource(@PathVariable("resourceId") Integer resourceId) {
@@ -56,6 +61,7 @@ public class ResourceController {
      * @param resourceVO 资源信息
      * @return {@link Result<>}
      */
+    @OptLog(optType = SAVE_OR_UPDATE)
     @ApiOperation(value = "新增或修改资源")
     @PostMapping("/admin/resources")
     public Result<?> saveOrUpdateResource(@RequestBody @Valid ResourceVO resourceVO) {

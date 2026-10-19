@@ -22,6 +22,7 @@ import java.util.List;
 
 import static com.chen.blog.common.constant.OptTypeConst.REMOVE;
 import static com.chen.blog.common.constant.OptTypeConst.SAVE_OR_UPDATE;
+import static com.chen.blog.common.constant.OptTypeConst.UPLOAD;
 
 /**
  * 相册控制器
@@ -43,6 +44,7 @@ public class PhotoAlbumController {
      * @param file 文件
      * @return {@link Result<String>} 相册封面地址
      */
+    @OptLog(optType = UPLOAD)
     @ApiOperation(value = "上传相册封面")
     @ApiImplicitParam(name = "file", value = "相册封面", required = true, dataType = "MultipartFile")
     @PostMapping("/admin/photos/albums/cover")

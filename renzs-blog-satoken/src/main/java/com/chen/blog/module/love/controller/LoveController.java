@@ -1,5 +1,6 @@
 package com.chen.blog.module.love.controller;
 
+import com.chen.blog.common.annotation.OptLog;
 import com.chen.blog.common.domain.vo.Result;
 import com.chen.blog.module.love.dto.LoveLetterDTO;
 import com.chen.blog.module.love.service.LoveLetterService;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+
+import static com.chen.blog.common.constant.OptTypeConst.UPDATE;
 
 /**
  * 飞书传信相关接口。
@@ -57,6 +60,7 @@ public class LoveController {
      * @param loveLetterVO 后台提交的信件内容
      * @return 空成功结果
      */
+    @OptLog(optType = UPDATE)
     @ApiOperation(value = "更新后台信件内容")
     @PutMapping("/admin/love/letter")
     public Result<?> updateLoveLetter(@Valid @RequestBody LoveLetterVO loveLetterVO) {

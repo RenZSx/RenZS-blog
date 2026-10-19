@@ -1,5 +1,6 @@
 package com.chen.blog.module.love.controller;
 
+import com.chen.blog.common.annotation.OptLog;
 import com.chen.blog.common.domain.vo.Result;
 import com.chen.blog.module.love.dto.LoveConfigDTO;
 import com.chen.blog.module.love.service.LoveConfigService;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+
+import static com.chen.blog.common.constant.OptTypeConst.UPDATE;
 
 /**
  * 纪念页基础配置接口。
@@ -60,6 +63,7 @@ public class LoveConfigController {
      * @param loveConfigVO 后台提交的配置
      * @return 空成功结果
      */
+    @OptLog(optType = UPDATE)
     @ApiOperation(value = "更新后台纪念页配置")
     @PutMapping("/admin/love/config")
     public Result<?> updateLoveConfig(@Valid @RequestBody LoveConfigVO loveConfigVO) {

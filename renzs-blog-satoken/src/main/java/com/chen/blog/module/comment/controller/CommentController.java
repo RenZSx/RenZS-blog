@@ -57,6 +57,7 @@ public class CommentController {
      * @param commentVO 评论信息
      * @return {@link Result<>}
      */
+    @OptLog(optType = SAVE)
     @ApiOperation(value = "添加评论")
     @PostMapping("/comments")
     public Result<?> saveComment(@Valid @RequestBody CommentVO commentVO) {

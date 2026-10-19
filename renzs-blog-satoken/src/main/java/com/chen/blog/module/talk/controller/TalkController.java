@@ -1,5 +1,6 @@
 package com.chen.blog.module.talk.controller;
 
+import com.chen.blog.common.annotation.OptLog;
 import com.chen.blog.common.strategy.upload.context.UploadStrategyContext;
 import com.chen.blog.module.talk.dto.TalkBackDTO;
 import com.chen.blog.module.talk.dto.TalkDTO;
@@ -18,6 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
+
+import static com.chen.blog.common.constant.OptTypeConst.REMOVE;
+import static com.chen.blog.common.constant.OptTypeConst.SAVE_OR_UPDATE;
+import static com.chen.blog.common.constant.OptTypeConst.UPLOAD;
 
 /**
  * 说说控制器
@@ -88,6 +93,7 @@ public class TalkController {
      * @param file 文件
      * @return {@link Result<String>} 说说图片地址
      */
+    @OptLog(optType = UPLOAD)
     @ApiOperation(value = "上传说说图片")
     @ApiImplicitParam(name = "file", value = "说说图片", required = true, dataType = "MultipartFile")
     @PostMapping("/admin/talks/images")
@@ -101,6 +107,7 @@ public class TalkController {
      * @param talkVO 说说信息
      * @return {@link Result<>}
      */
+    @OptLog(optType = SAVE_OR_UPDATE)
     @ApiOperation(value = "保存或修改说说")
     @PostMapping("/admin/talks")
     public Result<?> saveOrUpdateTalk(@Valid @RequestBody TalkVO talkVO) {
@@ -114,6 +121,7 @@ public class TalkController {
      * @param talkIdList 说说id列表
      * @return {@link Result<>}
      */
+    @OptLog(optType = REMOVE)
     @ApiOperation(value = "删除说说")
     @DeleteMapping("/admin/talks")
     public Result<?> deleteTalks(@RequestBody List<Integer> talkIdList) {

@@ -1,5 +1,6 @@
 package com.chen.blog.module.log.controller;
 
+import com.chen.blog.common.annotation.OptLog;
 import com.chen.blog.common.domain.vo.ConditionVO;
 import com.chen.blog.common.domain.vo.PageResult;
 import com.chen.blog.module.log.dto.OperationLogDTO;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+
+import static com.chen.blog.common.constant.OptTypeConst.REMOVE;
 
 /**
  * 日志控制器
@@ -45,6 +48,7 @@ public class LogController {
      * @param logIdList 日志id列表
      * @return {@link Result<>}
      */
+    @OptLog(optType = REMOVE)
     @ApiOperation(value = "删除操作日志")
     @DeleteMapping("/admin/operation/logs")
     public Result<?> deleteOperationLogs(@RequestBody List<Integer> logIdList) {

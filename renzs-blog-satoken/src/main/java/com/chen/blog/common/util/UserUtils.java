@@ -29,4 +29,20 @@ public class UserUtils {
         }
         return (UserDetailDTO) obj;
     }
+
+    /**
+     * 静默获取当前登录用户
+     * <p>
+     * 与 {@link #getLoginUser()} 的区别是不会抛异常,未登录或会话中缺少用户信息时返回 {@code null}。
+     * 供操作日志切面等旁路逻辑使用,避免匿名请求因取用户失败而中断。
+     *
+     * @return {@link UserDetailDTO} 当前登录用户,未登录时为 null
+     */
+    public static UserDetailDTO getLoginUserQuietly() {
+        try {
+            return getLoginUser();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

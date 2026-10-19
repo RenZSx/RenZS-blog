@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import static com.chen.blog.common.constant.OptTypeConst.UPDATE;
+import static com.chen.blog.common.constant.OptTypeConst.UPLOAD;
 
 /**
  * 博客信息控制器
@@ -72,6 +73,7 @@ public class BlogInfoController {
      * @param file 文件
      * @return {@link Result<String>} 博客配置图片
      */
+    @OptLog(optType = UPLOAD)
     @ApiOperation(value = "上传博客配置图片")
     @ApiImplicitParam(name = "file", value = "图片", required = true, dataType = "MultipartFile")
     @PostMapping("/admin/config/images")
@@ -85,6 +87,7 @@ public class BlogInfoController {
      * @param websiteConfigVO 网站配置信息
      * @return {@link Result}
      */
+    @OptLog(optType = UPDATE)
     @ApiOperation(value = "更新网站配置")
     @PutMapping("/admin/website/config")
     public Result<?> updateWebsiteConfig(@Valid @RequestBody WebsiteConfigVO websiteConfigVO) {

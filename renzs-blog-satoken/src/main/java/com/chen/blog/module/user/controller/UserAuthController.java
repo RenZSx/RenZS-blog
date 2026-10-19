@@ -2,6 +2,7 @@ package com.chen.blog.module.user.controller;
 
 
 import com.chen.blog.common.annotation.AccessLimit;
+import com.chen.blog.common.annotation.OptLog;
 import com.chen.blog.module.user.dto.LoginUserDTO;
 import com.chen.blog.module.user.dto.UserAreaDTO;
 import com.chen.blog.module.user.dto.UserInfoDTO;
@@ -21,6 +22,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+
+import static com.chen.blog.common.constant.OptTypeConst.SAVE;
+import static com.chen.blog.common.constant.OptTypeConst.UPDATE;
 
 /**
  * 用户账号控制器
@@ -108,6 +112,7 @@ public class UserAuthController {
      * @param adminUserVO 用户信息
      * @return {@link Result<>}
      */
+    @OptLog(optType = SAVE)
     @ApiOperation(value = "管理端添加用户")
     @PostMapping("/admin/users")
     public Result<?> addAdminUser(@Valid @RequestBody AdminUserVO adminUserVO) {
@@ -134,6 +139,7 @@ public class UserAuthController {
      * @param passwordVO 密码信息
      * @return {@link Result<>}
      */
+    @OptLog(optType = UPDATE)
     @ApiOperation(value = "修改管理员密码")
     @PutMapping("/admin/users/password")
     public Result<?> updateAdminPassword(@Valid @RequestBody PasswordVO passwordVO) {

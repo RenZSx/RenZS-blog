@@ -147,6 +147,7 @@ public class ArticleController {
      * @param file 文件
      * @return {@link Result<String>} 文章图片地址
      */
+    @OptLog(optType = UPLOAD)
     @ApiOperation(value = "上传文章图片")
     @ApiImplicitParam(name = "file", value = "文章图片", required = true, dataType = "MultipartFile")
     @PostMapping("/admin/articles/images")
@@ -242,6 +243,7 @@ public class ArticleController {
      * @param questionVO 问题
      * @return {@link Result<String>} AI回答
      */
+    @OptLog(optType = SAVE_OR_UPDATE)
     @ApiOperation(value = "AI文章问答")
     @PostMapping("/articles/{articleId}/ai-question")
     public Result<String> answerArticleQuestion(@PathVariable("articleId") Integer articleId,
@@ -385,6 +387,7 @@ public class ArticleController {
      * @param articleIdList 文章id列表
      * @return {@link List<String>} 文件url列表
      */
+    @OptLog(optType = EXPORT)
     @ApiOperation(value = "导出文章")
     @ApiImplicitParam(name = "articleIdList", value = "文章id", required = true, dataType = "List<Integer>")
     @PostMapping("/admin/articles/export")
@@ -399,6 +402,7 @@ public class ArticleController {
      * @param type 文章类型
      * @return {@link Result<>}
      */
+    @OptLog(optType = IMPORT)
     @ApiOperation(value = "导入文章")
     @PostMapping("/admin/articles/import")
     public Result<?> importArticles(MultipartFile file, @RequestParam(required = false) String type) {

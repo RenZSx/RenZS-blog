@@ -17,7 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 
 
+import static com.chen.blog.common.constant.OptTypeConst.REMOVE;
 import static com.chen.blog.common.constant.OptTypeConst.UPDATE;
+import static com.chen.blog.common.constant.OptTypeConst.UPLOAD;
 
 /**
  * 用户信息控制器
@@ -37,6 +39,7 @@ public class UserInfoController {
      * @param userInfoVO 用户信息
      * @return {@link Result <>}
      */
+    @OptLog(optType = UPDATE)
     @ApiOperation(value = "更新用户信息")
     @PutMapping("/users/info")
     public Result<?> updateUserInfo(@Valid @RequestBody UserInfoVO userInfoVO) {
@@ -50,6 +53,7 @@ public class UserInfoController {
      * @param file 文件
      * @return {@link Result<String>} 头像地址
      */
+    @OptLog(optType = UPLOAD)
     @ApiOperation(value = "更新用户头像")
     @ApiImplicitParam(name = "file", value = "用户头像", required = true, dataType = "MultipartFile")
     @PostMapping("/users/avatar")
@@ -63,6 +67,7 @@ public class UserInfoController {
      * @param avatarVO 头像链接
      * @return {@link Result<String>} 头像地址
      */
+    @OptLog(optType = UPDATE)
     @ApiOperation(value = "使用链接更新用户头像")
     @PutMapping("/users/avatar/link")
     public Result<String> updateUserAvatarLink(@Valid @RequestBody AvatarVO avatarVO) {
@@ -75,6 +80,7 @@ public class UserInfoController {
      * @param emailVO 邮箱信息
      * @return {@link Result<>}
      */
+    @OptLog(optType = UPDATE)
     @ApiOperation(value = "绑定用户邮箱")
     @PostMapping("/users/email")
     public Result<?> saveUserEmail(@Valid @RequestBody EmailVO emailVO) {
@@ -128,6 +134,7 @@ public class UserInfoController {
      * @param userInfoId 用户信息
      * @return {@link Result<>}
      */
+    @OptLog(optType = REMOVE)
     @ApiOperation(value = "下线用户")
     @DeleteMapping("/admin/users/{userInfoId}/online")
     public Result<?> removeOnlineUser(@PathVariable("userInfoId") Integer userInfoId) {

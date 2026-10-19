@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
+import static com.chen.blog.common.constant.OptTypeConst.SAVE;
 import static com.chen.blog.common.constant.OptTypeConst.SAVE_OR_UPDATE;
 import static com.chen.blog.common.constant.OptTypeConst.REMOVE;
 
@@ -48,6 +49,7 @@ public class FriendLinkController {
      * @param friendLinkVO 友链申请信息
      * @return {@link Result<>}
      */
+    @OptLog(optType = SAVE)
     @ApiOperation(value = "提交友链申请")
     @PostMapping("/links/apply")
     public Result<?> applyFriendLink(@Valid @RequestBody FriendLinkVO friendLinkVO) {

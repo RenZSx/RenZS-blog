@@ -4,6 +4,7 @@ import com.chen.blog.module.rbac.dto.LabelOptionDTO;
 import com.chen.blog.module.rbac.service.MenuService;
 import com.chen.blog.module.user.dto.MenuDTO;
 import com.chen.blog.module.user.dto.UserMenuDTO;
+import com.chen.blog.common.annotation.OptLog;
 import com.chen.blog.common.domain.vo.ConditionVO;
 import com.chen.blog.module.rbac.vo.MenuVO;
 import com.chen.blog.common.domain.vo.Result;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+
+import static com.chen.blog.common.constant.OptTypeConst.REMOVE;
+import static com.chen.blog.common.constant.OptTypeConst.SAVE_OR_UPDATE;
 
 /**
  * 菜单控制器
@@ -45,6 +49,7 @@ public class MenuController {
      * @param menuVO 菜单
      * @return {@link Result<>}
      */
+    @OptLog(optType = SAVE_OR_UPDATE)
     @ApiOperation(value = "新增或修改菜单")
     @PostMapping("/admin/menus")
     public Result<?> saveOrUpdateMenu(@Valid @RequestBody MenuVO menuVO) {
@@ -58,6 +63,7 @@ public class MenuController {
      * @param menuId 菜单id
      * @return {@link Result<>}
      */
+    @OptLog(optType = REMOVE)
     @ApiOperation(value = "删除菜单")
     @DeleteMapping("/admin/menus/{menuId}")
     public Result<?> deleteMenu(@PathVariable("menuId") Integer menuId){
