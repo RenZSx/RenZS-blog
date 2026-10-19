@@ -277,9 +277,24 @@ public class WebSocketServiceImpl {
      * @throws IOException io异常
      */
     private void broadcastMessage(WebsocketMessageDTO messageDTO) throws IOException {
+        String payload = JSON.toJSONString(messageDTO);
         for (WebSocketServiceImpl webSocketService : webSocketSet) {
-            synchronized (webSocketService.session) {
-                webSocketService.session.getBasicRemote().sendText(JSON.toJSONString(messageDTO));
+            Session session = webSocketService.session;
+            if (session == null || !session.isOpen()) {
+                webSocketSet.remove(webSocketService);
+                continue;
+            }
+            try {
+                synchronized (session) {
+                    session.getBasicRemote().sendText(payload);
+                }
+            } catch (IOException e) {
+                // 单个会话发送失败时移除该连接，不影响其余客户端广播
+                webSocketSet.remove(webSocketService);
+                try {
+                    session.close();
+                } catch (IOException ignored) {
+                }
             }
         }
     }

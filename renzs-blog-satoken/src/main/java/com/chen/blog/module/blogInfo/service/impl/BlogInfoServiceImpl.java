@@ -171,9 +171,14 @@ public class BlogInfoServiceImpl implements BlogInfoService {
             // 从数据库中加载
             String config = Optional.ofNullable(websiteConfigDao.selectById(DEFAULT_CONFIG_ID))
                     .map(WebsiteConfig::getConfig)
-                    .orElse(null); // 查不到返回null，也可以orElse("")返回空字符串
+                    .orElse(null);
             websiteConfigVO = JSON.parseObject(config, WebsiteConfigVO.class);
-            redisService.set(WEBSITE_CONFIG, config);
+            if (Objects.nonNull(config)) {
+                redisService.set(WEBSITE_CONFIG, config);
+            }
+        }
+        if (Objects.isNull(websiteConfigVO)) {
+            websiteConfigVO = new WebsiteConfigVO();
         }
         if (Objects.isNull(websiteConfigVO.getIsEmailRegister())) {
             websiteConfigVO.setIsEmailRegister(TRUE);
