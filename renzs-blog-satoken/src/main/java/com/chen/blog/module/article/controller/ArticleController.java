@@ -1,7 +1,9 @@
 package com.chen.blog.module.article.controller;
 
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.chen.blog.common.annotation.OptLog;
+import com.chen.blog.common.enums.RoleEnum;
 import com.chen.blog.common.strategy.upload.context.UploadStrategyContext;
 import com.chen.blog.module.article.dto.InitialArticleDto;
 import com.chen.blog.module.article.dto.*;
@@ -194,6 +196,8 @@ public class ArticleController {
     @ApiImplicitParam(name = "articleId", value = "文章id", required = true, dataType = "Integer")
     @PostMapping("/admin/articles/{articleId}/ai-summary")
     public Result<String> generateArticleSummary(@PathVariable("articleId") Integer articleId) {
+        StpUtil.checkLogin();
+        StpUtil.checkRole(RoleEnum.ADMIN.getLabel());
         return Result.ok(articleService.generateArticleSummary(articleId));
     }
 
@@ -203,10 +207,12 @@ public class ArticleController {
      * @param articleVO 当前编辑中的文章信息
      * @return {@link Result<List<String>>} 标签名称列表
      */
-    @OptLog(optType = SAVE_OR_UPDATE)
+    @OptLog(optType = SAVE_OR_UPDATE, abbreviateFields = {"articleContent"})
     @ApiOperation(value = "AI推荐文章标签")
     @PostMapping("/admin/articles/ai-tags")
     public Result<List<String>> recommendArticleTags(@Valid @RequestBody ArticleVO articleVO) {
+        StpUtil.checkLogin();
+        StpUtil.checkRole(RoleEnum.ADMIN.getLabel());
         return Result.ok(articleService.recommendArticleTags(articleVO));
     }
 
@@ -216,10 +222,12 @@ public class ArticleController {
      * @param articleVO 当前编辑中的文章信息
      * @return {@link Result<ArticleSeoDTO>} SEO信息
      */
-    @OptLog(optType = SAVE_OR_UPDATE)
+    @OptLog(optType = SAVE_OR_UPDATE, abbreviateFields = {"articleContent"})
     @ApiOperation(value = "AI生成文章SEO信息")
     @PostMapping("/admin/articles/ai-seo")
     public Result<ArticleSeoDTO> generateArticleSeo(@Valid @RequestBody ArticleVO articleVO) {
+        StpUtil.checkLogin();
+        StpUtil.checkRole(RoleEnum.ADMIN.getLabel());
         return Result.ok(articleService.generateArticleSeo(articleVO));
     }
 

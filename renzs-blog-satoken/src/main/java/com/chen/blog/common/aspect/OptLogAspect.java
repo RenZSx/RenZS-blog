@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -28,8 +29,11 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 操作日志切面处理
@@ -79,6 +83,21 @@ public class OptLogAspect {
      */
     private static final Integer ANONYMOUS_USER_ID = 0;
 
+    /**
+     * 操作成功的状态值
+     */
+    private static final Integer STATUS_SUCCESS = 1;
+
+    /**
+     * 操作失败的状态值
+     */
+    private static final Integer STATUS_FAILED = 0;
+
+    /**
+     * 失败原因的最大长度,异常堆栈可能很长,只保留首行关键信息
+     */
+    private static final int MAX_ERROR_LENGTH = 500;
+
     @Autowired
     private OperationLogDao operationLogDao;
 
@@ -97,16 +116,14 @@ public class OptLogAspect {
     @AfterReturning(value = "optLogPointCut()", returning = "keys")
     public void saveOptLog(JoinPoint joinPoint, Object keys) {
         try {
-            RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-            if (requestAttributes == null) {
-                return;
-            }
-            HttpServletRequest request = (HttpServletRequest) requestAttributes.resolveReference(RequestAttributes.REFERENCE_REQUEST);
+            HttpServletRequest request = currentRequest();
             if (request == null) {
                 return;
             }
-            OperationLog operationLog = buildOperationLog(joinPoint, keys, request);
-            operationLogDao.insert(operationLog);
+            OperationLog operationLog = buildOperationLog(joinPoint, request);
+            operationLog.setResponseData(truncate(sanitize(JSON.toJSONString(keys))));
+            operationLog.setStatus(STATUS_SUCCESS);
+            persist(operationLog);
         } catch (Exception e) {
             // 日志记录属于旁路逻辑,任何异常都不应影响业务请求的正常返回
             log.warn("记录操作日志失败: {}", e.getMessage());
@@ -114,14 +131,82 @@ public class OptLogAspect {
     }
 
     /**
+     * 异常通知，记录失败的写操作
+     * <p>
+     * 只挂 {@link AfterReturning} 时,调用失败的请求(如 AI 接口超时、密钥错误、参数校验不通过)
+     * 完全不会留下日志,恰恰这些失败才是最需要排查的。这里补一条失败记录:
+     * 状态置为失败,错误原因写入 {@code error_msg},后台日志列表可据此筛选。
+     *
+     * @param joinPoint 切入点
+     * @param throwable 抛出的异常
+     */
+    @AfterThrowing(value = "optLogPointCut()", throwing = "throwable")
+    public void saveFailedOptLog(JoinPoint joinPoint, Throwable throwable) {
+        try {
+            HttpServletRequest request = currentRequest();
+            if (request == null) {
+                return;
+            }
+            OperationLog operationLog = buildOperationLog(joinPoint, request);
+            operationLog.setStatus(STATUS_FAILED);
+            operationLog.setErrorMsg(summarizeError(throwable));
+            // response_data 为 NOT NULL,失败时业务没有返回值,留空串而不是 null,否则整条日志插不进去
+            operationLog.setResponseData("");
+            persist(operationLog);
+        } catch (Exception e) {
+            log.warn("记录失败操作日志失败: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 获取当前线程绑定的请求
+     *
+     * @return {@link HttpServletRequest} 当前请求,非 Web 线程或取不到时返回 {@code null}
+     */
+    private HttpServletRequest currentRequest() {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if (requestAttributes == null) {
+            return null;
+        }
+        return (HttpServletRequest) requestAttributes.resolveReference(RequestAttributes.REFERENCE_REQUEST);
+    }
+
+    /**
+     * 落库
+     *
+     * @param operationLog 操作日志
+     */
+    private void persist(OperationLog operationLog) {
+        operationLogDao.insert(operationLog);
+    }
+
+    /**
+     * 提取简洁的异常说明
+     * <p>
+     * 业务异常只需要提示语,系统异常补充异常类型便于定位,过长的内容截断。
+     *
+     * @param throwable 异常
+     * @return {@link String} 异常说明
+     */
+    private String summarizeError(Throwable throwable) {
+        if (throwable == null) {
+            return "未知异常";
+        }
+        String message = throwable.getMessage();
+        String summary = isBlank(message)
+                ? throwable.getClass().getSimpleName()
+                : throwable.getClass().getSimpleName() + ": " + message;
+        return truncate(summary, MAX_ERROR_LENGTH);
+    }
+
+    /**
      * 组装操作日志
      *
      * @param joinPoint 切入点
-     * @param keys      返回结果
      * @param request   当前请求
      * @return {@link OperationLog} 操作日志
      */
-    private OperationLog buildOperationLog(JoinPoint joinPoint, Object keys, HttpServletRequest request) {
+    private OperationLog buildOperationLog(JoinPoint joinPoint, HttpServletRequest request) {
         OperationLog operationLog = new OperationLog();
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
@@ -144,10 +229,10 @@ public class OptLogAspect {
         operationLog.setRequestMethod(request.getMethod());
         // 请求URL
         operationLog.setOptUrl(request.getRequestURI());
-        // 请求参数(文件与敏感字段已处理)
-        operationLog.setRequestParam(truncate(sanitize(JSON.toJSONString(buildSafeArgs(joinPoint.getArgs())))));
-        // 返回结果(敏感字段已处理)
-        operationLog.setResponseData(truncate(sanitize(JSON.toJSONString(keys))));
+        // 请求参数(文件、敏感字段与超长正文已处理)
+        operationLog.setRequestParam(truncate(sanitize(
+                JSON.toJSONString(buildSafeArgs(joinPoint.getArgs())),
+                abbreviateFields(optLog))));
 
         // 请求用户:未登录(如留言、举报、友链申请等匿名接口)时不记录真实用户,而不是中断请求
         UserDetailDTO loginUser = UserUtils.getLoginUserQuietly();
@@ -164,6 +249,19 @@ public class OptLogAspect {
         operationLog.setIpAddress(ipAddress);
         operationLog.setIpSource(IpUtils.getIpSource(ipAddress));
         return operationLog;
+    }
+
+    /**
+     * 读取需要压缩记录的字段名
+     *
+     * @param optLog 注解
+     * @return {@link Set} 字段名集合,没有配置时为空集合
+     */
+    private Set<String> abbreviateFields(OptLog optLog) {
+        if (optLog == null || optLog.abbreviateFields() == null || optLog.abbreviateFields().length == 0) {
+            return new HashSet<>(0);
+        }
+        return new HashSet<>(Arrays.asList(optLog.abbreviateFields()));
     }
 
     /**
@@ -223,12 +321,24 @@ public class OptLogAspect {
      * @return {@link String} 脱敏后的 JSON 字符串
      */
     private String sanitize(String json) {
+        return sanitize(json, new HashSet<>(0));
+    }
+
+    /**
+     * 对 JSON 做脱敏,并把指定字段压缩为长度说明
+     *
+     * @param json             原始 JSON 字符串
+     * @param abbreviateFields 需要压缩为长度说明的字段名
+     * @return {@link String} 处理后的 JSON 字符串
+     */
+    private String sanitize(String json, Set<String> abbreviateFields) {
         if (isBlank(json)) {
             return json;
         }
         try {
             Object parsed = JSON.parse(json);
             redact(parsed);
+            abbreviate(parsed, abbreviateFields);
             return JSON.toJSONString(parsed);
         } catch (Exception e) {
             // 解析失败时保留原内容,不影响日志落库
@@ -259,6 +369,36 @@ public class OptLogAspect {
     }
 
     /**
+     * 递归压缩超长字段
+     * <p>
+     * 例如 AI 生成标签、SEO 信息的入参是整篇文章,正文通常上万字,
+     * 存全文既占空间也没有额外审计价值,替换为长度说明即可。
+     *
+     * @param node              JSON 节点
+     * @param abbreviateFields  需要压缩的字段名
+     */
+    private void abbreviate(Object node, Set<String> abbreviateFields) {
+        if (abbreviateFields == null || abbreviateFields.isEmpty()) {
+            return;
+        }
+        if (node instanceof JSONObject) {
+            JSONObject object = (JSONObject) node;
+            for (String key : new ArrayList<>(object.keySet())) {
+                Object value = object.get(key);
+                if (abbreviateFields.contains(key) && value instanceof String) {
+                    object.put(key, "(正文 " + ((String) value).length() + " 字,已省略)");
+                } else {
+                    abbreviate(value, abbreviateFields);
+                }
+            }
+        } else if (node instanceof JSONArray) {
+            for (Object item : (JSONArray) node) {
+                abbreviate(item, abbreviateFields);
+            }
+        }
+    }
+
+    /**
      * 判断字段名是否需要脱敏
      *
      * @param key 字段名
@@ -284,10 +424,21 @@ public class OptLogAspect {
      * @return {@link String} 截断后的内容
      */
     private String truncate(String content) {
-        if (content == null || content.length() <= MAX_CONTENT_LENGTH) {
+        return truncate(content, MAX_CONTENT_LENGTH);
+    }
+
+    /**
+     * 超长内容截断
+     *
+     * @param content   原始内容
+     * @param maxLength 最大长度
+     * @return {@link String} 截断后的内容
+     */
+    private String truncate(String content, int maxLength) {
+        if (content == null || content.length() <= maxLength) {
             return content;
         }
-        return content.substring(0, MAX_CONTENT_LENGTH) + "...(内容过长已截断)";
+        return content.substring(0, maxLength) + "...(内容过长已截断)";
     }
 
     /**

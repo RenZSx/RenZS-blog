@@ -28,11 +28,16 @@ public class OperationLogServiceImpl extends ServiceImpl<OperationLogDao, Operat
     @Override
     public PageResult<OperationLogDTO> listOperationLogs(ConditionVO conditionVO) {
         Page<OperationLog> page = new Page<>(PageUtils.getCurrent(), PageUtils.getSize());
-        // 查询日志列表
+        String keywords = conditionVO.getKeywords();
+        boolean hasKeywords = StringUtils.isNotBlank(keywords);
+        // 查询日志列表:关键字匹配模块或描述,状态筛选(1成功 0失败)独立生效
+        // 关键字用 and(...) 包一层,避免 or() 与状态条件串成 (A or B and C) 的错误优先级
         Page<OperationLog> operationLogPage = this.page(page, new LambdaQueryWrapper<OperationLog>()
-                .like(StringUtils.isNotBlank(conditionVO.getKeywords()), OperationLog::getOptModule, conditionVO.getKeywords())
-                .or()
-                .like(StringUtils.isNotBlank(conditionVO.getKeywords()), OperationLog::getOptDesc, conditionVO.getKeywords())
+                .and(hasKeywords, wrapper -> wrapper
+                        .like(OperationLog::getOptModule, keywords)
+                        .or()
+                        .like(OperationLog::getOptDesc, keywords))
+                .eq(conditionVO.getStatus() != null, OperationLog::getStatus, conditionVO.getStatus())
                 .orderByDesc(OperationLog::getId));
         List<OperationLogDTO> operationLogDTOList = BeanCopyUtils.copyList(operationLogPage.getRecords(), OperationLogDTO.class);
         return new PageResult<>(operationLogDTOList, (int) operationLogPage.getTotal());

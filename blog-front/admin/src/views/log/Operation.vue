@@ -22,6 +22,17 @@
           style="width:200px"
           @keyup.enter.native="searchLogs"
         />
+        <el-select
+          v-model="status"
+          size="small"
+          clearable
+          placeholder="全部状态"
+          style="width:120px;margin-left:1rem"
+          @change="searchLogs"
+        >
+          <el-option label="成功" :value="1" />
+          <el-option label="失败" :value="0" />
+        </el-select>
         <el-button
           type="primary"
           size="small"
@@ -58,6 +69,13 @@
         align="center"
         width="150"
       />
+      <el-table-column label="状态" align="center" width="90">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.status === 0 ? 'danger' : 'success'">
+            {{ scope.row.status === 0 ? '失败' : '成功' }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="requetMethod"
         label="请求方式"
@@ -155,6 +173,9 @@
         <el-form-item label="返回数据：">
           {{ optLog.responseData }}
         </el-form-item>
+        <el-form-item v-if="optLog.status === 0" label="失败原因：">
+          {{ optLog.errorMsg }}
+        </el-form-item>
         <el-form-item label="操作人员：">
           {{ optLog.nickname }}
         </el-form-item>
@@ -187,6 +208,7 @@ export default {
       logList: [],
       logIdList: [],
       keywords: null,
+      status: null,
       current: 1,
       size: 10,
       count: 0,
@@ -220,7 +242,8 @@ export default {
           params: {
             current: this.current,
             size: this.size,
-            keywords: this.keywords
+            keywords: this.keywords,
+            status: this.status
           }
         })
         .then(({ data }) => {

@@ -23,6 +23,16 @@
         <el-button type="primary" @click="handleQuery" style="margin-left: 10px">
           <el-icon><Search /></el-icon> 搜索
         </el-button>
+        <el-select
+          v-model="queryParams.status"
+          placeholder="全部状态"
+          clearable
+          style="width: 130px; margin-left: 10px"
+          @change="handleQuery"
+        >
+          <el-option label="成功" :value="1" />
+          <el-option label="失败" :value="0" />
+        </el-select>
         <el-button
           type="danger"
           :disabled="multiple"
@@ -44,6 +54,13 @@
         <el-table-column label="系统模块" align="center" prop="optModule" width="120" />
         <el-table-column label="操作类型" align="center" prop="optType" width="100" />
         <el-table-column label="操作描述" align="center" prop="optDesc" width="150" />
+        <el-table-column label="状态" align="center" width="90">
+          <template #default="scope">
+            <el-tag :type="scope.row.status === 0 ? 'danger' : 'success'">
+              {{ scope.row.status === 0 ? '失败' : '成功' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="请求方式" align="center" width="100">
           <template #default="scope">
             <el-tag v-if="scope.row.requestMethod" :type="getMethodType(scope.row.requestMethod)">
@@ -122,6 +139,14 @@
             readonly
           />
         </el-form-item>
+        <el-form-item v-if="currentLog.status === 0" label="失败原因">
+          <el-input
+            :model-value="currentLog.errorMsg"
+            type="textarea"
+            :rows="4"
+            readonly
+          />
+        </el-form-item>
         <el-form-item label="操作人员">
           {{ currentLog.nickname }}
         </el-form-item>
@@ -160,7 +185,8 @@ const currentLog = ref({})
 const queryParams = reactive({
   current: 1,
   size: 10,
-  keywords: ''
+  keywords: '',
+  status: null
 })
 
 // 查询日志列表

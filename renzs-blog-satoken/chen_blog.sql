@@ -741,6 +741,8 @@ CREATE TABLE `tb_operation_log` (
                                     `nickname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户昵称',
                                     `ip_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作ip',
                                     `ip_source` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作地址',
+                                    `status` tinyint NOT NULL DEFAULT '1' COMMENT '操作状态:1成功 0失败',
+                                    `error_msg` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '失败原因',
                                     `create_time` datetime NOT NULL COMMENT '创建时间',
                                     `update_time` datetime DEFAULT NULL COMMENT '更新时间',
                                     PRIMARY KEY (`id`) USING BTREE
@@ -961,7 +963,10 @@ INSERT INTO `tb_resource` (`id`, `resource_name`, `url`, `request_method`, `pare
                                                                                                                                           (294, '前台获取信件正文', '/love/letter', 'GET', 290, 1, '2026-05-17 23:40:25', '2026-05-17 23:40:27'),
                                                                                                                                           (295, '后台查询信件正文', '/admin/love/letter', 'GET', 290, 0, '2026-05-17 23:40:41', NULL),
                                                                                                                                           (296, '后台保存/修改信件正文', '/admin/love/letter', 'PUT', 290, 0, '2026-05-17 23:40:53', NULL),
-                                                                                                                                           (297, '管理端添加用户', '/admin/users', 'POST', 173, 0, '2026-01-01 00:00:00', NULL);
+                                                                                                                                           (297, '管理端添加用户', '/admin/users', 'POST', 173, 0, '2026-01-01 00:00:00', NULL),
+                                                                                                                                           (299, '生成文章AI总结', '/admin/articles/*/ai-summary', 'POST', 168, 0, '2026-10-20 10:20:00', NULL),
+                                                                                                                                           (300, 'AI推荐文章标签', '/admin/articles/ai-tags', 'POST', 168, 0, '2026-10-20 10:20:00', NULL),
+                                                                                                                                           (301, 'AI生成文章SEO信息', '/admin/articles/ai-seo', 'POST', 168, 0, '2026-10-20 10:20:00', NULL);
 
 DROP TABLE IF EXISTS `tb_role`;
 
@@ -1057,7 +1062,10 @@ INSERT INTO `tb_role_menu` (`id`, `role_id`, `menu_id`) VALUES
                                                             (2863, 1, 218),
                                                             (2864, 1, 19),
                                                             (2865, 1, 20),
-                                                            (2866, 1, 5);
+                                                            (2866, 1, 5),
+                                                            (5608, 1, 299),
+                                                            (5609, 1, 300),
+                                                            (5610, 1, 301);
 
 DROP TABLE IF EXISTS `tb_role_resource`;
 

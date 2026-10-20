@@ -88,6 +88,16 @@ public class OperationLog {
     private String ipSource;
 
     /**
+     * 操作状态:1成功 0失败
+     */
+    private Integer status;
+
+    /**
+     * 失败原因,操作成功时为空
+     */
+    private String errorMsg;
+
+    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
