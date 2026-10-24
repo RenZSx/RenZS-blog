@@ -1,104 +1,81 @@
 <template>
-  <main class="magazine-home">
-    <div class="magazine-home__shell">
-      <section class="magazine-home__main">
-        <!-- Hero 精选文章 -->
-        <RouterLink
-          v-if="featuredArticle"
-          :to="articlePath(featuredArticle)"
-          class="featured-post"
+  <main class="hot-rank">
+    <div class="hot-rank__glow" aria-hidden="true"></div>
+
+    <div class="hot-rank__shell">
+      <!-- 头部 -->
+      <header class="rank-head">
+        <p class="rank-head__eyebrow">TRENDING NOW</p>
+        <h1 class="rank-head__title">今日热榜</h1>
+        <p class="rank-head__sub">按阅读量排序,看看大家都在读什么。</p>
+      </header>
+
+      <!-- 分组筛选 -->
+      <nav v-if="sections.length" class="rank-filter" aria-label="分组筛选">
+        <button
+          type="button"
+          class="rank-filter__chip"
+          :class="{ 'rank-filter__chip--on': activeSection === '' }"
+          @click="activeSection = ''"
         >
-          <div class="featured-post__media">
-            <img :src="articleCover(featuredArticle)" :alt="articleTitle(featuredArticle)" />
-          </div>
-          <div class="featured-post__body">
-            <span class="post-chip">{{ articleCategory(featuredArticle) }}</span>
-            <h1>{{ articleTitle(featuredArticle) }}</h1>
-            <p>{{ articleSummary(featuredArticle) }}</p>
-            <div class="post-meta">
-              <span>{{ articleDate(featuredArticle) }}</span>
-              <span aria-hidden="true">·</span>
-              <span>{{ articleReadTime(featuredArticle) }}</span>
-              <span aria-hidden="true">·</span>
-              <span>{{ articleViews(featuredArticle) }} 阅读</span>
-            </div>
-          </div>
-        </RouterLink>
+          全部
+        </button>
+        <button
+          v-for="section in sections"
+          :key="section.id || section.sectionKey || section.sectionName"
+          type="button"
+          class="rank-filter__chip"
+          :class="{ 'rank-filter__chip--on': activeSection === section.sectionName }"
+          @click="activeSection = section.sectionName"
+        >
+          {{ section.sectionName }}
+          <i>{{ section.articleList.length }}</i>
+        </button>
+      </nav>
 
-        <!-- 分组标题 -->
-        <div class="magazine-section-title">
-          <span>专栏分组</span>
+      <!-- 榜首 -->
+      <RouterLink v-if="featuredArticle" :to="articlePath(featuredArticle)" class="rank-champion">
+        <div class="rank-champion__media">
+          <img :src="articleCover(featuredArticle)" :alt="articleTitle(featuredArticle)" loading="lazy" />
         </div>
-
-        <!-- 分组卡片网格 -->
-        <div v-if="sections.length" class="section-grid">
-          <SectionCard
-            v-for="(section, index) in sections"
-            :key="section.id || section.sectionKey || index"
-            :section="section"
-            :color-index="index"
-          />
+        <div class="rank-champion__body">
+          <span class="rank-champion__crown">🏆 今日榜首</span>
+          <h2 class="rank-champion__title">{{ articleTitle(featuredArticle) }}</h2>
+          <p class="rank-champion__summary">{{ articleSummary(featuredArticle) }}</p>
+          <div class="rank-champion__meta">
+            <span class="rank-champion__chip">{{ articleCategory(featuredArticle) }}</span>
+            <span>{{ articleDate(featuredArticle) }}</span>
+            <span><v-icon size="13">mdi-eye-outline</v-icon> {{ shortNum(articleViews(featuredArticle)) }} 阅读</span>
+          </div>
         </div>
+      </RouterLink>
 
-        <!-- 空状态 -->
-        <div v-else class="magazine-empty">暂无专栏内容</div>
+      <!-- 榜单 -->
+      <section aria-label="热榜列表">
+        <div v-if="loading" class="rank-skeletons">
+          <div v-for="i in 6" :key="i" class="rank-skeleton"></div>
+        </div>
+        <div v-else-if="rankList.length === 0" class="rank-empty">
+          <v-icon size="34">mdi-fire-off</v-icon>
+          <p>这里暂时空空如也</p>
+        </div>
+        <ol v-else class="rank-list">
+          <li v-for="(article, index) in restList" :key="article.id || index">
+            <RouterLink :to="articlePath(article)" class="rank-row">
+              <span class="rank-row__no" :class="{ 'rank-row__no--top': index < 2 }">{{ index + 2 }}</span>
+              <div class="rank-row__main">
+                <strong class="rank-row__title">{{ articleTitle(article) }}</strong>
+                <span class="rank-row__meta">
+                  <i class="rank-row__cat">{{ articleCategory(article) }}</i>
+                  {{ articleDate(article) }}
+                  <b><v-icon size="12">mdi-fire</v-icon>{{ shortNum(articleViews(article)) }}</b>
+                </span>
+              </div>
+              <v-icon size="16" class="rank-row__arrow">mdi-chevron-right</v-icon>
+            </RouterLink>
+          </li>
+        </ol>
       </section>
-
-      <!-- 侧边栏 -->
-      <aside class="magazine-sidebar" aria-label="专栏侧边栏">
-        <!-- 作者信息 -->
-        <section class="side-panel author-panel">
-          <img class="author-panel__avatar" :src="authorAvatar" :alt="authorName" />
-          <h2>{{ authorName }}</h2>
-          <p>{{ authorIntro }}</p>
-          <div class="author-panel__stats">
-            <div>
-              <strong>{{ statValue(blogInfo.articleCount) }}</strong>
-              <span>文章</span>
-            </div>
-            <div>
-              <strong>{{ shortNum(blogInfo.viewsCount) }}</strong>
-              <span>阅读</span>
-            </div>
-            <div>
-              <strong>{{ statValue(blogInfo.tagCount) }}</strong>
-              <span>关注</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- 专栏导航 -->
-        <section v-if="sections.length" class="side-panel">
-          <h3>专栏导航</h3>
-          <nav class="section-nav">
-            <a
-              v-for="(section, index) in sections"
-              :key="section.id || index"
-              role="link"
-              tabindex="0"
-              class="section-nav__item"
-              @click="scrollToSection(index)"
-              @keydown.enter="scrollToSection(index)"
-            >
-              <span class="section-nav__name">{{ section.sectionName }}</span>
-              <span class="section-nav__badge">{{ section.articleList.length }}</span>
-            </a>
-          </nav>
-        </section>
-
-        <!-- 热门文章 -->
-        <section v-if="hotArticles.length" class="side-panel">
-          <h3>热门文章</h3>
-          <ol class="hot-list">
-            <li v-for="(article, index) in hotArticles" :key="article.id || index">
-              <RouterLink :to="articlePath(article)">
-                <span>{{ index + 1 }}</span>
-                <strong>{{ articleTitle(article) }}</strong>
-              </RouterLink>
-            </li>
-          </ol>
-        </section>
-      </aside>
     </div>
   </main>
 </template>
@@ -107,59 +84,58 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { fetchHomeArticleSections } from './services/homeService'
-import { useBlogInfoStore, type BlogInfo, type WebsiteConfig } from '@/stores/blogInfo'
 import { formatDate } from '@/utils/filters'
 import {
   getArticleCategory,
   getArticlePath,
-  getArticleReadTime,
   getArticleSummary,
   getArticleTitle,
   getArticleViews,
-  getSectionHotArticles,
   normalizeSections,
   readApiList,
   shortNumber,
   type ArticleItem,
   type ArticleSection,
 } from './homeColumnsContent'
-import SectionCard from './components/SectionCard.vue'
 
-const defaultCover = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80'
-
-const blogInfoStore = useBlogInfoStore()
 const sections = ref<ArticleSection[]>([])
+const loading = ref(true)
+const activeSection = ref('')
 
-const blogInfo = computed<Partial<BlogInfo>>(() => {
-  const value = blogInfoStore.blogInfo
-  return value && typeof value === 'object' ? value : {}
+async function fetchData() {
+  loading.value = true
+  try {
+    const [sectionRes] = await Promise.allSettled([fetchHomeArticleSections()])
+    sections.value =
+      sectionRes.status === 'fulfilled'
+        ? normalizeSections(readApiList(sectionRes.value))
+        : []
+  } finally {
+    loading.value = false
+  }
+}
+
+// 榜单数据:按分组筛选后合并,按阅读量降序取前 20
+const rankList = computed<ArticleItem[]>(() => {
+  const pool = activeSection.value
+    ? sections.value.filter(s => s.sectionName === activeSection.value)
+    : sections.value
+  return (pool as ArticleSection[])
+    .flatMap(s => s.articleList || [])
+    .sort((a, b) => getArticleViews(b) - getArticleViews(a))
+    .slice(0, 20)
 })
 
-const websiteConfig = computed<Partial<WebsiteConfig>>(() => {
-  const config = blogInfo.value.websiteConfig
-  return config && typeof config === 'object' ? config : {}
-})
-
-const authorName = computed(() => websiteConfig.value.websiteAuthor || '林晓')
-const authorIntro = computed(
-  () => websiteConfig.value.websiteIntro || '写字、读书、爬山。记录日常里那些细小的美好。'
-)
-const authorAvatar = computed(() => {
-  return (
-    websiteConfig.value.websiteAvatar ||
-    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=240&q=80'
-  )
-})
-
-const featuredArticle = computed(() => sections.value[0]?.articleList?.[0])
-const hotArticles = computed(() => getSectionHotArticles(sections.value))
+const featuredArticle = computed(() => rankList.value[0])
+// 榜单从第 2 名开始展示,榜首单独展示
+const restList = computed(() => rankList.value.slice(1))
 
 function articlePath(article: ArticleItem) {
   return getArticlePath(article)
 }
 
 function articleCover(article: ArticleItem) {
-  return article.articleCover || defaultCover
+  return article.articleCover || ''
 }
 
 function articleTitle(article: ArticleItem) {
@@ -182,439 +158,366 @@ function articleViews(article: ArticleItem) {
   return getArticleViews(article)
 }
 
-function articleReadTime(article: ArticleItem) {
-  return getArticleReadTime(article)
-}
-
-function statValue(value: unknown) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : 0
-}
-
 function shortNum(value: unknown) {
   return shortNumber(value)
 }
 
-function scrollToSection(index: number) {
-  const el = document.querySelector(`[data-section-index="${index}"]`)
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-}
-
-async function fetchData() {
-  const [sectionRes] = await Promise.allSettled([
-    fetchHomeArticleSections()
-  ])
-
-  sections.value =
-    sectionRes.status === 'fulfilled'
-      ? normalizeSections(readApiList(sectionRes.value))
-      : []
-}
-
 onMounted(() => {
   fetchData().catch((error) => {
-    console.error('加载专栏页面失败:', error)
+    console.error('加载热榜失败:', error)
   })
 })
 </script>
 
 <style scoped>
-.magazine-home {
+.hot-rank {
+  position: relative;
   min-height: 100vh;
-  padding: 96px clamp(28px, 5vw, 72px) 54px;
-  color: #1f2933;
-  background: #f7f7f5;
-}
-
-.magazine-home__shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: clamp(34px, 4vw, 56px);
-  width: min(1320px, 100%);
-  margin: 0 auto;
-}
-
-/* Section title */
-.magazine-section-title {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 32px 0 22px;
-}
-
-.magazine-section-title::after {
-  flex: 1;
-  height: 1px;
-  background: #e5e0dc;
-  content: "";
-}
-
-.magazine-section-title span {
-  color: #8d8a86;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-}
-
-/* Featured post */
-.featured-post {
-  display: grid;
-  grid-template-columns: minmax(360px, 0.82fr) minmax(0, 1.08fr);
-  min-height: 300px;
   overflow: hidden;
-  border: 1px solid #e6e1dc;
-  border-radius: 10px;
-  background: #fff;
-  color: inherit;
+  color: #fff;
+  background: linear-gradient(165deg, #1a1430 0%, #201c42 50%, #131126 100%);
+}
+
+.hot-rank__glow {
+  position: absolute;
+  top: -170px;
+  right: -110px;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 122, 89, 0.2), transparent 68%);
+  pointer-events: none;
+}
+
+.hot-rank__shell {
+  position: relative;
+  z-index: 1;
+  width: min(860px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 56px 0 60px;
+}
+
+/* ========== 头部 ========== */
+.rank-head {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.rank-head__eyebrow {
+  margin: 0 0 8px;
+  color: rgba(255, 171, 145, 0.85);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4em;
+}
+
+.rank-head__title {
+  margin: 0;
+  background: linear-gradient(120deg, #ffb199 10%, #ffd580 55%, #ff8fa4 90%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-size: clamp(30px, 5vw, 40px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.rank-head__sub {
+  margin: 10px 0 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+/* ========== 分组筛选 ========== */
+.rank-filter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+
+.rank-filter__chip {
+  padding: 6px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rank-filter__chip i {
+  margin-left: 4px;
+  font-style: normal;
+  font-size: 11.5px;
+  opacity: 0.65;
+}
+
+.rank-filter__chip:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+.rank-filter__chip--on {
+  border-color: transparent;
+  background: linear-gradient(120deg, #ff7a59, #ff9a6b);
+  color: #fff;
+}
+
+/* ========== 榜首 ========== */
+.rank-champion {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.1fr);
+  overflow: hidden;
+  margin-bottom: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px);
   text-decoration: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: transform 0.25s ease, border-color 0.25s ease;
 }
 
-.featured-post:hover {
-  border-color: #d8d0c8;
-  box-shadow: 0 14px 34px rgba(31, 41, 51, 0.08);
-  transform: translateY(-2px);
+.rank-champion:hover {
+  border-color: rgba(255, 171, 145, 0.55);
+  transform: translateY(-3px);
 }
 
-.featured-post__media {
-  min-height: 300px;
-  background: #e9efee;
+.rank-champion__media {
+  position: relative;
+  min-height: 218px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
-.featured-post__media img {
-  display: block;
+.rank-champion__media img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.45s ease;
 }
 
-.featured-post__body {
+.rank-champion:hover .rank-champion__media img {
+  transform: scale(1.05);
+}
+
+.rank-champion__body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-width: 0;
-  padding: clamp(30px, 3vw, 42px);
+  gap: 10px;
+  padding: 24px 26px;
 }
 
-.post-chip {
-  width: max-content;
-  max-width: 100%;
-  padding: 5px 10px;
-  border-radius: 6px;
-  color: #0b6f76;
-  font-size: 12px;
+.rank-champion__crown {
+  color: #ffd580;
+  font-size: 13px;
   font-weight: 700;
-  background: #dff4f3;
+  letter-spacing: 0.12em;
 }
 
-.featured-post h1 {
-  margin: 20px 0 12px;
-  color: #111827;
-  font-size: clamp(28px, 2.2vw, 34px);
-  font-weight: 700;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-
-.featured-post p {
-  display: -webkit-box;
+.rank-champion__title {
   margin: 0;
-  overflow: hidden;
-  color: #6b625d;
-  font-size: 14px;
-  line-height: 1.8;
-  -webkit-box-orient: vertical;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.4;
+  display: -webkit-box;
   -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.post-meta {
+.rank-champion__summary {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 13.5px;
+  line-height: 1.75;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rank-champion__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 18px;
-  color: #918d89;
-  font-size: 13px;
-}
-
-/* Section grid */
-.section-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(20px, 2vw, 28px);
-}
-
-/* Sidebar */
-.magazine-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  position: sticky;
-  top: 84px;
-  align-self: start;
-}
-
-.side-panel {
-  padding: 20px;
-  border: 1px solid #e6e1dc;
-  border-radius: 10px;
-  background: #fff;
-}
-
-.author-panel {
-  padding-top: 22px;
-  text-align: center;
-}
-
-.author-panel__avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.author-panel h2 {
-  margin: 14px 0 12px;
-  color: #111827;
-  font-size: 18px;
-}
-
-.author-panel p {
-  margin: 0;
-  color: #68645f;
-  font-size: 13px;
-  line-height: 1.8;
-  text-align: left;
-}
-
-.author-panel__stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.author-panel__stats strong,
-.author-panel__stats span {
-  display: block;
-}
-
-.author-panel__stats strong {
-  color: #111827;
-  font-size: 20px;
-}
-
-.author-panel__stats span {
-  margin-top: 4px;
-  color: #9b9690;
-  font-size: 11px;
-}
-
-.side-panel h3 {
-  margin: 0 0 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #ece7e2;
-  color: #111827;
-  font-size: 16px;
-}
-
-/* Section nav */
-.section-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.section-nav__item {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12.5px;
+}
+
+.rank-champion__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rank-champion__chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 171, 145, 0.16);
+  color: #ffab91;
+  font-weight: 600;
+}
+
+/* ========== 榜单 ========== */
+.rank-skeletons {
+  display: grid;
   gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid #ece7e2;
-  color: #3d4a5d;
+}
+
+.rank-skeleton {
+  height: 74px;
+  border-radius: 14px;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0.05) 40%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 60%);
+  background-size: 200% 100%;
+  animation: skeleton-shine 1.4s ease infinite;
+}
+
+@keyframes skeleton-shine {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.rank-empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 60px 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.rank-empty p {
+  margin: 0;
   font-size: 14px;
-  text-decoration: none;
-  cursor: pointer;
 }
 
-.section-nav__item:last-child {
-  border-bottom: none;
-}
-
-.section-nav__item:hover {
-  color: #0b6f76;
-}
-
-.section-nav__name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.section-nav__badge {
-  flex-shrink: 0;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 11px;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 22px;
-  text-align: center;
-  background: #16858d;
-}
-
-/* Hot list */
-.hot-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+.rank-list {
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.hot-list li + li {
-  border-top: 1px solid #ece7e2;
-}
-
-.hot-list a {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
   gap: 10px;
+}
+
+.rank-row {
+  display: flex;
   align-items: center;
-  padding: 10px 0;
-  color: #1f2933;
+  gap: 16px;
+  padding: 15px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
   text-decoration: none;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
-.hot-list span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  color: #fff;
-  font-size: 12px;
+.rank-row:hover {
+  border-color: rgba(255, 171, 145, 0.45);
+  background: rgba(255, 255, 255, 0.09);
+  transform: translateX(4px);
+}
+
+.rank-row__no {
+  flex: 0 0 34px;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 20px;
   font-weight: 800;
-  background: #16858d;
-}
-
-.hot-list li:nth-child(2) span {
-  background: #e77852;
-}
-
-.hot-list li:nth-child(3) span {
-  color: #666;
-  background: #ddd;
-}
-
-.hot-list strong {
-  min-width: 0;
-  overflow: hidden;
-  font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Empty state */
-.magazine-empty {
-  padding: 28px;
-  border: 1px solid #e6e1dc;
-  border-radius: 10px;
-  color: #918d89;
-  background: #fff;
+  font-style: italic;
   text-align: center;
 }
 
-/* Dark mode */
-:global(.dark) .magazine-home {
-  color: #edf3ff;
-  background: #101722;
+.rank-row__no--top {
+  background: linear-gradient(160deg, #ffd580, #ff7a59);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
-:global(.dark) .magazine-section-title::after,
-:global(.dark) .side-panel h3,
-:global(.dark) .hot-list li + li,
-:global(.dark) .section-nav__item {
-  border-color: rgba(186, 200, 224, 0.16);
+.rank-row__main {
+  flex: 1;
+  min-width: 0;
 }
 
-:global(.dark) .featured-post,
-:global(.dark) .side-panel,
-:global(.dark) .magazine-empty {
-  border-color: rgba(186, 200, 224, 0.16);
-  background: rgba(24, 31, 43, 0.92);
+.rank-row__title {
+  display: block;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.2s ease;
 }
 
-:global(.dark) .featured-post h1,
-:global(.dark) .author-panel h2,
-:global(.dark) .author-panel__stats strong,
-:global(.dark) .side-panel h3,
-:global(.dark) .hot-list a,
-:global(.dark) .section-nav__item {
-  color: #edf3ff;
+.rank-row:hover .rank-row__title {
+  color: #ffd580;
 }
 
-:global(.dark) .featured-post p,
-:global(.dark) .post-meta,
-:global(.dark) .author-panel p,
-:global(.dark) .author-panel__stats span,
-:global(.dark) .magazine-empty {
-  color: rgba(226, 235, 248, 0.72);
+.rank-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
 }
 
-:global(.dark) .section-nav__item:hover {
-  color: #93c5fd;
+.rank-row__cat {
+  flex-shrink: 0;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.68);
+  font-style: normal;
+  font-size: 11.5px;
 }
 
-:global(.dark) .post-chip {
-  color: #93c5fd;
-  background: rgba(59, 130, 246, 0.16);
+.rank-row__meta b {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: rgba(255, 171, 145, 0.85);
+  font-weight: 600;
 }
 
-:global(.dark) .section-nav__badge {
-  background: #3b82f6;
+.rank-row__arrow {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.3);
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
-/* Responsive */
-@media (max-width: 980px) {
-  .magazine-home__shell {
+.rank-row:hover .rank-row__arrow {
+  color: #ffd580;
+  transform: translateX(3px);
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 720px) {
+  .hot-rank__shell {
+    width: calc(100% - 28px);
+    padding: 40px 0 44px;
+  }
+
+  .rank-champion {
     grid-template-columns: 1fr;
   }
 
-  .magazine-sidebar {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .author-panel {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 760px) {
-  .magazine-home {
-    padding: 84px 14px 32px;
-  }
-
-  .featured-post,
-  .section-grid,
-  .magazine-sidebar {
-    grid-template-columns: 1fr;
-  }
-
-  .featured-post__media {
-    min-height: 220px;
-  }
-
-  .featured-post__body {
-    padding: 22px;
+  .rank-champion__media {
+    min-height: 180px;
   }
 }
 </style>
