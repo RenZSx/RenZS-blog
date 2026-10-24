@@ -68,16 +68,49 @@
     <el-card shadow="never" class="dashboard-card heatmap-card">
       <template #header>
         <div class="card-header heatmap-header">
-          <span>文章贡献统计</span>
-          <div class="heatmap-stats" v-if="heatmapTotal > 0">
-            <el-tag type="success" effect="plain" size="small">{{ heatmapTotal }} 篇文章</el-tag>
-            <el-tag type="info" effect="plain" size="small">{{ heatmapActiveDays }} 个活跃日</el-tag>
+          <div class="heatmap-title">
+            <span>文章贡献统计</span>
+            <span class="heatmap-title__sub" v-if="heatmapTotal > 0">
+              {{ heatmapYear }} 年 共发布 <b>{{ heatmapTotal }}</b> 篇
+            </span>
+          </div>
+          <div class="heatmap-header__right" v-if="heatmapTotal > 0">
+            <div class="heatmap-summary">
+              <div class="heatmap-summary__item">
+                <span class="heatmap-summary__value">{{ heatmapActiveDays }}</span>
+                <span class="heatmap-summary__label">活跃日</span>
+              </div>
+              <div class="heatmap-summary__divider"></div>
+              <div class="heatmap-summary__item">
+                <span class="heatmap-summary__value">{{ heatmapMaxStreak }}</span>
+                <span class="heatmap-summary__label">最长连续</span>
+              </div>
+              <div class="heatmap-summary__divider"></div>
+              <div class="heatmap-summary__item">
+                <span class="heatmap-summary__value">{{ heatmapBestCount }}</span>
+                <span class="heatmap-summary__label">单日最高</span>
+              </div>
+            </div>
+            <el-radio-group
+              v-if="heatmapYearOptions.length > 1"
+              v-model="heatmapYear"
+              size="small"
+              class="heatmap-year"
+            >
+              <el-radio-button v-for="y in heatmapYearOptions" :key="y" :value="y">{{ y }}</el-radio-button>
+            </el-radio-group>
           </div>
         </div>
       </template>
       <div v-loading="loading" class="heatmap-body">
         <!-- 文章贡献统计日历热力图 -->
-        <div ref="heatmapRef" class="chart-area chart-area--heatmap"></div>
+        <div ref="heatmapRef" class="chart-area chart-area--heatmap" v-if="heatmapHasData"></div>
+        <el-empty v-else description="暂无文章发布记录" :image-size="80" class="heatmap-empty" />
+        <div class="heatmap-legend" v-if="heatmapHasData">
+          <span>少</span>
+          <i v-for="c in heatmapLegendColors" :key="c" :style="{ background: c }"></i>
+          <span>多</span>
+        </div>
       </div>
     </el-card>
 
@@ -136,7 +169,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { View, User, Document, ChatDotRound } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 // 注册中国地图（数据提取自 UMD 格式的 china.js，独立成 ESM 模块后 import 才不会触发 require 报错）
@@ -158,6 +191,19 @@ const mapChartRef = ref(null)
 const heatmapRef = ref(null)
 const heatmapTotal = ref(0)
 const heatmapActiveDays = ref(0)
+const heatmapMaxStreak = ref(0)
+const heatmapBestCount = ref(0)
+const heatmapYear = ref('')
+const heatmapYearOptions = ref([])
+const heatmapHasData = ref(false)
+const articleStatsList = ref([])
+
+// 与主题蓝色系一致的色阶,跟随明暗主题切换(与 initCharts 中 inRange 保持一致)
+const heatmapLegendColors = computed(() =>
+  settingsStore.isDark
+    ? ['#2b3b55', '#33518b', '#3d6fc4', '#4f8cff', '#8db9ff']
+    : ['#dce8ff', '#a9c5ff', '#78a3ff', '#4f7cff', '#2b56d6']
+)
 
 let viewChart = null
 let rankChart = null
@@ -172,6 +218,8 @@ const fetchHomeData = async () => {
     const res = await getHomeData()
     if (res.flag) {
       homeData.value = res.data
+      // 提前标记热力图是否有数据,确保 nextTick 后 heatmapRef 已随 v-if 渲染
+      heatmapHasData.value = (res.data.articleStatisticsList || []).length > 0
 
       // 处理标签数据
       if (res.data.tagDTOList) {
@@ -313,75 +361,116 @@ const initCharts = (data) => {
   }
 
   // 文章贡献统计日历热力图
-  if (heatmapRef.value && data.articleStatisticsList && data.articleStatisticsList.length > 0) {
-    heatmap = echarts.init(heatmapRef.value)
-    const heatmapData = data.articleStatisticsList.map(item => [item.date, item.count])
-    const dates = heatmapData.map(item => item[0]).sort()
-    const minDate = dates[0]
-    const maxDate = dates[dates.length - 1]
-    // 同年数据用年份作为范围，跨年数据用起止日期
-    const range = minDate.slice(0, 4) === maxDate.slice(0, 4) ? minDate.slice(0, 4) : [minDate, maxDate]
-    const maxCount = Math.max(...heatmapData.map(item => item[1]))
-    // 统计信息
-    heatmapTotal.value = heatmapData.reduce((sum, item) => sum + item[1], 0)
-    heatmapActiveDays.value = heatmapData.length
-    heatmap.setOption({
-      tooltip: {
-        backgroundColor: isDark ? '#252c35' : '#ffffff',
-        borderColor: chartGrid,
-        textStyle: { color: chartText },
-        formatter: function(params) {
-          const count = params.value ? params.value[1] : 0
-          return '<div style="font-weight:bold;margin-bottom:4px">' + params.value[0] + '</div>' +
-            (count > 0 ? '发布了 <b style="color:#239a3b">' + count + '</b> 篇文章' : '无文章发布')
-        }
-      },
-      visualMap: {
-        min: 0,
-        max: maxCount > 0 ? maxCount : 1,
-        calculable: false,
-        orient: 'horizontal',
-        left: 'center',
-        bottom: 0,
-        text: ['多', '少'],
-        itemHeight: 10,
-        itemWidth: 12,
-        textStyle: { fontSize: 11, color: chartMuted },
-        inRange: {
-          color: isDark
-            ? ['#26323a', '#315448', '#3c8060', '#47ad76', '#9be6b3']
-            : ['#eef3f1', '#c5e8d2', '#84c99b', '#3fa96b', '#167143']
-        }
-      },
-      calendar: {
-        range: range,
-        cellSize: ['auto', 18],
-        top: 28,
-        left: 34,
-        right: 34,
-        bottom: 34,
-        splitLine: {
-          show: false
-        },
-        itemStyle: {
-          borderWidth: 2,
-          borderColor: isDark ? '#1d1e1f' : '#fff',
-          borderRadius: 4
-        },
-        yearLabel: { show: false },
-        dayLabel: { show: true, firstDay: 1, nameMap: 'cn', fontSize: 10, color: chartMuted },
-        monthLabel: { show: true, nameMap: 'cn', fontSize: 11, color: chartText }
-      },
-      series: [{
-        type: 'heatmap',
-        coordinateSystem: 'calendar',
-        data: heatmapData
-      }]
-    })
-  }
+  articleStatsList.value = data.articleStatisticsList || []
+  initHeatmap()
 
   // 用户地域分布
   fetchUserArea()
+}
+
+// 渲染当前所选年份的贡献热力图(与 GitHub 一致,按年份切换、每次只渲染一年)
+const initHeatmap = () => {
+  const stats = articleStatsList.value
+  if (!heatmapRef.value || !stats.length) return
+  const isDark = settingsStore.isDark
+  const chartText = isDark ? '#d7dee8' : '#526173'
+  const chartMuted = isDark ? '#8f9aaa' : '#8b98a8'
+
+  // 可选年份倒序排列,默认选中最近有数据的年份
+  const years = [...new Set(stats.map(item => item.date.slice(0, 4)))].sort().reverse()
+  heatmapYearOptions.value = years
+  if (!heatmapYear.value || !years.includes(heatmapYear.value)) {
+    heatmapYear.value = years[0]
+  }
+
+  const yearStats = stats.filter(item => item.date.slice(0, 4) === heatmapYear.value)
+  const heatmapData = yearStats.map(item => [item.date, item.count])
+  const maxCount = Math.max(...heatmapData.map(item => item[1]))
+
+  // 统计信息:总篇数 / 活跃日 / 最长连续活跃天数 / 单日最高,均按所选年份计算
+  heatmapTotal.value = heatmapData.reduce((sum, item) => sum + item[1], 0)
+  heatmapActiveDays.value = heatmapData.filter(item => item[1] > 0).length
+  heatmapBestCount.value = maxCount
+  heatmapMaxStreak.value = calcMaxStreak(new Map(heatmapData.map(([date, count]) => [date, count])))
+
+  const option = {
+    tooltip: {
+      backgroundColor: isDark ? '#252c35' : '#ffffff',
+      borderColor: isDark ? '#2a3440' : '#e8edf3',
+      textStyle: { color: chartText },
+      formatter: function(params) {
+        const count = params.value ? params.value[1] : 0
+        return '<div style="font-weight:bold;margin-bottom:4px">' + params.value[0] + '</div>' +
+          (count > 0
+            ? '发布了 <b style="color:#4f7cff">' + count + '</b> 篇文章'
+            : '无文章发布')
+      }
+    },
+    visualMap: {
+      show: false,
+      min: 0,
+      max: maxCount > 0 ? maxCount : 1,
+      inRange: {
+        color: isDark
+          ? ['#2b3b55', '#33518b', '#3d6fc4', '#4f8cff', '#8db9ff']
+          : ['#dce8ff', '#a9c5ff', '#78a3ff', '#4f7cff', '#2b56d6']
+      }
+    },
+    calendar: {
+      range: heatmapYear.value,
+      cellSize: ['auto', 17],
+      top: 36,
+      left: 34,
+      right: 20,
+      bottom: 12,
+      splitLine: { show: false },
+      itemStyle: {
+        color: isDark ? '#252d38' : '#eef2f7',
+        borderWidth: 3,
+        borderColor: isDark ? '#1d1e1f' : '#ffffff',
+        borderRadius: 4
+      },
+      yearLabel: { show: false },
+      dayLabel: { show: true, firstDay: 1, nameMap: 'cn', fontSize: 10, color: chartMuted },
+      monthLabel: { show: true, nameMap: 'cn', fontSize: 11, color: chartText }
+    },
+    series: [{
+      type: 'heatmap',
+      coordinateSystem: 'calendar',
+      data: heatmapData
+    }]
+  }
+
+  if (heatmap) {
+    heatmap.setOption(option, true)
+  } else {
+    heatmap = echarts.init(heatmapRef.value)
+    heatmap.setOption(option)
+  }
+}
+
+// 切换年份时按所选年份重新渲染
+watch(heatmapYear, () => {
+  if (articleStatsList.value.length) initHeatmap()
+})
+
+// 计算最长连续活跃天数(countByDate 只需包含有文章的日期)
+const calcMaxStreak = (countByDate) => {
+  const toDate = (str) => {
+    const [y, m, d] = str.split('-').map(Number)
+    return new Date(y, m - 1, d)
+  }
+  const activeDates = [...countByDate.keys()].filter(d => (countByDate.get(d) || 0) > 0).sort()
+  let maxStreak = 0
+  let streak = 0
+  let prevDate = null
+  for (const date of activeDates) {
+    const gap = prevDate ? Math.round((toDate(date) - toDate(prevDate)) / 86400000) : Infinity
+    streak = gap === 1 ? streak + 1 : 1
+    if (streak > maxStreak) maxStreak = streak
+    prevDate = date
+  }
+  return maxStreak
 }
 
 // 获取用户地域分布
@@ -578,11 +667,83 @@ onBeforeUnmount(() => {
 }
 
 .heatmap-body {
-  min-height: 250px;
+  min-height: 290px;
 }
 
 .chart-area--heatmap {
-  height: 250px;
+  height: 270px;
+}
+
+.heatmap-empty {
+  padding: 30px 0;
+}
+
+.heatmap-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+
+  &__sub {
+    color: var(--el-text-color-secondary, #8491a5);
+    font-size: 12px;
+    font-weight: 400;
+
+    b {
+      color: var(--el-color-primary, #4f7cff);
+      font-size: 14px;
+      font-weight: 700;
+    }
+  }
+}
+
+.heatmap-summary {
+  display: flex;
+  align-items: center;
+  margin-left: 16px;
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 64px;
+  }
+
+  &__value {
+    color: var(--el-text-color-primary, #1d2939);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  &__label {
+    margin-top: 2px;
+    color: var(--el-text-color-secondary, #8491a5);
+    font-size: 11px;
+  }
+
+  &__divider {
+    width: 1px;
+    height: 28px;
+    margin: 0 6px;
+    background: var(--el-border-color-lighter, #e7edf4);
+  }
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 6px;
+  color: var(--el-text-color-secondary, #8491a5);
+  font-size: 11px;
+
+  i {
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+  }
 }
 
 .card-header {
@@ -615,18 +776,20 @@ onBeforeUnmount(() => {
   flex: 0 0 auto;
 }
 
-.heatmap-stats {
+.heatmap-header__right {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 18px;
   margin-left: 16px;
 }
 
-.heatmap-stats .el-tag {
-  height: 26px;
-  border-radius: 13px;
-  font-weight: 600;
-  line-height: 24px;
+.heatmap-year {
+  flex: 0 0 auto;
+
+  :deep(.el-radio-button__inner) {
+    padding: 5px 12px;
+    font-weight: 600;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -643,7 +806,7 @@ onBeforeUnmount(() => {
   }
 
   .chart-area--heatmap {
-    height: 220px;
+    height: 230px;
   }
 
   .heatmap-header {
@@ -652,8 +815,14 @@ onBeforeUnmount(() => {
     gap: 10px;
   }
 
-  .heatmap-stats {
-    margin-left: 14px;
+  .heatmap-header__right {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-left: 0;
+  }
+
+  .heatmap-summary {
+    margin-left: 0;
   }
 }
 
