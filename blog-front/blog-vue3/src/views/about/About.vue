@@ -172,7 +172,6 @@
             </button>
           </div>
         </div>
-        <p class="anime-hint">点击右侧番剧切换,再点一次收起大图</p>
       </section>
 
       <!-- 坐标:中国地图 + 高亮定位 -->
@@ -1269,13 +1268,6 @@ onUnmounted(() => {
     font-weight: 600;
     letter-spacing: 0.1em;
   }
-}
-
-.anime-hint {
-  margin: 6px 0 0;
-  color: var(--text-disabled);
-  font-size: 11.5px;
-  text-align: right;
 }
 
 /* --- 坐标卡:中国地图 --- */
