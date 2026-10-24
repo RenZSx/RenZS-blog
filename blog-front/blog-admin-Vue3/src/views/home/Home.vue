@@ -189,6 +189,8 @@ import { getHomeData, getUserArea } from '@/api/blog/home'
 import TagCloud from '@/components/TagCloud/index.vue'
 import useSettingsStore from '@/store/modules/settings'
 
+
+
 const loading = ref(true)
 const loadError = ref(false)
 const homeData = ref({})

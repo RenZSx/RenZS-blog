@@ -80,11 +80,12 @@ export function uploadArticleImage(data) {
   })
 }
 
-// 生成AI总结
+// 生成AI总结(LLM 生成耗时较长,单独放宽超时)
 export function generateAiSummary(articleId) {
   return request({
     url: '/admin/articles/' + articleId + '/ai-summary',
-    method: 'post'
+    method: 'post',
+    timeout: 60000
   })
 }
 
@@ -93,7 +94,8 @@ export function generateAiTags(data) {
   return request({
     url: '/admin/articles/ai-tags',
     method: 'post',
-    data: data
+    data: data,
+    timeout: 60000
   })
 }
 
@@ -102,6 +104,7 @@ export function generateAiSeo(data) {
   return request({
     url: '/admin/articles/ai-seo',
     method: 'post',
-    data: data
+    data: data,
+    timeout: 60000
   })
 }

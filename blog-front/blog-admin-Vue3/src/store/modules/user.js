@@ -57,8 +57,7 @@ const useUserStore = defineStore(
        *
        * 说明: 博客后端的角色信息不随用户信息下发,访问控制完全由后端菜单
        * (/admin/user/menus)决定 —— 能拿到哪些菜单就能访问哪些页面。
-       * 这里给定固定角色只为满足模板中 v-hasRole / v-hasPermi 指令的
-       * 存在性校验,不作为真正的权限依据。
+       * 这里给定固定角色仅为兼容依赖 roles 字段的逻辑,不作为真正的权限依据。
        *
        * @param {Object} userInfo 后端返回的 UserInfoDTO
        */

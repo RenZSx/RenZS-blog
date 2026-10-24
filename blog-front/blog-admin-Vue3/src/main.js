@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 
 import Cookies from 'js-cookie'
 
-import ElementPlus from 'element-plus'
+import ElementPlus, { ElMessage } from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import locale from 'element-plus/es/locale/lang/zh-cn'
@@ -29,16 +29,8 @@ import { parseTime, resetForm, addDateRange, handleTree } from '@/utils/blogUtil
 
 // 分页组件
 import Pagination from '@/components/Pagination'
-// 自定义表格工具组件
-import RightToolbar from '@/components/RightToolbar'
-// 富文本组件
-import Editor from "@/components/Editor"
-// 文件上传组件
-import FileUpload from "@/components/FileUpload"
 // 图片上传组件
 import ImageUpload from "@/components/ImageUpload"
-// 图片预览组件
-import ImagePreview from "@/components/ImagePreview"
 
 // 导入博客自定义组件
 import BlogEditor from '@/components/BlogEditor/index.vue'
@@ -62,13 +54,15 @@ app.config.globalProperties.$getUploadHeaders = getUploadHeaders
 
 // 全局组件挂载
 app.component('Pagination', Pagination)
-app.component('FileUpload', FileUpload)
 app.component('ImageUpload', ImageUpload)
-app.component('ImagePreview', ImagePreview)
-app.component('RightToolbar', RightToolbar)
-app.component('Editor', Editor)
 app.component('BlogEditor', BlogEditor)
 app.component('TagCloud', TagCloud)
+
+// 全局异常兜底:组件内未捕获的错误统一提示,避免只有控制台可见
+app.config.errorHandler = (err, instance, info) => {
+  console.error('全局异常:', err, 'at', info)
+  ElMessage.error({ message: '系统出现异常，请稍后重试', grouping: true })
+}
 
 app.use(router)
 app.use(store)
