@@ -175,13 +175,11 @@
         <p class="anime-hint">点击右侧番剧切换,再点一次收起大图</p>
       </section>
 
-      <!-- 坐标:雷达扫描 -->
+      <!-- 坐标:中国地图 + 高亮定位 -->
       <section class="bento bento--geo">
-        <div class="geo-radar" aria-hidden="true">
-          <span class="geo-radar__dot" />
-        </div>
+        <div ref="geoChartEl" class="geo-map"></div>
         <p class="geo-city">📍 中国 · 贵州</p>
-        <p class="geo-sub">我在这里生活、写代码</p>
+        <p class="geo-sub">我现在住在这里,写代码,过日子</p>
       </section>
 
       <!-- 个人档案 -->
@@ -245,11 +243,16 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { useTheme } from 'vuetify'
+import * as echarts from 'echarts'
+// 注册中国地图（数据提取自 UMD 格式 china.js,独立成 ESM 模块后 import 才不会触发 require 报错）
+import '@/assets/js/chinaMap'
 import { useBlogInfoStore } from '@/stores/blogInfo'
 import { getAbout } from '@/api/site'
 import markdownToHtml from '@/utils/markdown'
 
 const blogInfoStore = useBlogInfoStore()
+const theme = useTheme()
 
 const aboutContent = ref('')
 const contentLoading = ref(true)
@@ -381,10 +384,62 @@ const gameCards = [
 // 个人档案(网名取自站点配置)
 const profileRows = computed(() => [
   { icon: 'mdi-account-outline', label: '网名', value: author.value },
+  { icon: 'mdi-cake-variant-outline', label: '生于', value: '2003' },
+  { icon: 'mdi-code-brackets', label: '专业', value: '软件工程' },
   { icon: 'mdi-map-marker-outline', label: '坐标', value: '中国 · 贵州' },
-  { icon: 'mdi-briefcase-outline', label: '状态', value: '上班ing' },
   { icon: 'mdi-quote-open-outline', label: '签名', value: '枯木会逢春,人无再少年' }
 ])
+
+// 坐标卡:ECharts 中国地图,高亮贵州并打点
+const geoChartEl = ref<HTMLElement | null>(null)
+let geoChart: echarts.ECharts | null = null
+let geoResizeObserver: ResizeObserver | null = null
+const HOME_COORD: [number, number] = [106.63, 26.65]
+
+const renderGeoMap = () => {
+  if (!geoChartEl.value) return
+  if (!geoChart) geoChart = echarts.init(geoChartEl.value)
+  geoChart.setOption(buildGeoOption(), true)
+}
+
+const buildGeoOption = (): echarts.EChartsCoreOption => {
+  const isDark = theme.global.current.value.dark
+  return {
+    backgroundColor: 'transparent',
+    geo: {
+      map: 'china',
+      zoom: 1.12,
+      aspectScale: 0.75,
+      roam: false,
+      itemStyle: {
+        areaColor: isDark ? '#2b3540' : '#e8eef5',
+        borderColor: isDark ? '#3b4754' : '#ffffff',
+        borderWidth: 1
+      },
+      emphasis: { disabled: true },
+      select: { disabled: true },
+      label: { show: false },
+      regions: [
+        {
+          name: '贵州',
+          itemStyle: { areaColor: '#4f7cff' },
+          label: { show: true, color: '#ffffff', fontSize: 10 }
+        }
+      ]
+    },
+    series: [
+      {
+        type: 'effectScatter',
+        coordinateSystem: 'geo',
+        data: [{ name: 'home', value: [HOME_COORD[0], HOME_COORD[1], 10] }],
+        symbolSize: 8,
+        rippleEffect: { scale: 3.4, brushType: 'stroke' },
+        itemStyle: { color: '#4f7cff', shadowBlur: 6, shadowColor: '#4f7cff' },
+        zlevel: 1
+      }
+    ]
+  }
+}
 
 // 喜好
 const favoriteRows = [
@@ -458,11 +513,24 @@ onMounted(() => {
   taglineTimer = setInterval(() => {
     taglineIndex.value = (taglineIndex.value + 1) % taglines.length
   }, 3200)
+  renderGeoMap()
+  geoResizeObserver = new ResizeObserver(() => geoChart?.resize())
+  if (geoChartEl.value) geoResizeObserver.observe(geoChartEl.value)
 })
+
+// 明暗主题切换时重绘地图配色
+watch(
+  () => theme.global.current.value.dark,
+  () => renderGeoMap()
+)
 
 onUnmounted(() => {
   if (taglineTimer) clearInterval(taglineTimer)
   document.removeEventListener('click', closeTuner)
+  geoResizeObserver?.disconnect()
+  geoResizeObserver = null
+  geoChart?.dispose()
+  geoChart = null
   imageHandlers.forEach((handler, image) => image.removeEventListener('click', handler))
   imageHandlers.clear()
 })
@@ -1210,59 +1278,21 @@ onUnmounted(() => {
   text-align: right;
 }
 
-/* --- 坐标卡:雷达扫描 --- */
+/* --- 坐标卡:中国地图 --- */
 .bento--geo {
   grid-column: span 4;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 240px;
+  gap: 4px;
   text-align: center;
 
-  .geo-radar {
-    position: relative;
-    width: 118px;
-    height: 118px;
-    margin-bottom: 8px;
-
-    /* 同心圆环 + 十字准线 */
-    &::before {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 1.5px solid var(--border-color);
-      background:
-        radial-gradient(circle, transparent 34px, var(--border-color) 35px, transparent 37px),
-        radial-gradient(circle, transparent 16px, var(--border-color) 17px, transparent 19px),
-        linear-gradient(var(--border-color), var(--border-color)) center / 100% 1px no-repeat,
-        linear-gradient(var(--border-color), var(--border-color)) center / 1px 100% no-repeat;
-      content: '';
-    }
-
-    /* 扫描扇形 */
-    &::after {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      background: conic-gradient(from 0deg, rgba(25, 118, 210, 0.4), transparent 80deg);
-      animation: radar-sweep 4s linear infinite;
-      content: '';
-    }
-  }
-
-  .geo-radar__dot {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.18), 0 0 0 10px rgba(25, 118, 210, 0.08);
-    transform: translate(-50%, -50%);
-    animation: radar-pulse 2s ease-in-out infinite;
+  .geo-map {
+    width: 100%;
+    height: 172px;
+    margin-bottom: 6px;
+    pointer-events: none;
   }
 
   .geo-city {
@@ -1276,18 +1306,6 @@ onUnmounted(() => {
     margin: 0;
     color: var(--text-secondary);
     font-size: 13px;
-  }
-}
-
-@keyframes radar-sweep {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes radar-pulse {
-  50% {
-    box-shadow: 0 0 0 7px rgba(25, 118, 210, 0.14), 0 0 0 16px rgba(25, 118, 210, 0.05);
   }
 }
 
