@@ -1,5 +1,16 @@
 <template>
-  <div class="blog-home">
+  <div ref="homeRef" class="blog-home">
+    <el-alert
+      v-if="loadError"
+      title="首页数据加载失败，请稍后重试"
+      type="error"
+      show-icon
+      :closable="false"
+      class="home-error"
+    >
+      <el-button type="primary" size="small" @click="fetchHomeData">重试</el-button>
+    </el-alert>
+
     <!-- 统计卡片 -->
     <el-row class="stats-row" :gutter="16">
       <el-col :xs="24" :sm="12" :lg="6">
@@ -169,7 +180,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onActivated, onBeforeUnmount, watch, nextTick } from 'vue'
 import { View, User, Document, ChatDotRound } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 // 注册中国地图（数据提取自 UMD 格式的 china.js，独立成 ESM 模块后 import 才不会触发 require 报错）
@@ -179,10 +190,12 @@ import TagCloud from '@/components/TagCloud/index.vue'
 import useSettingsStore from '@/store/modules/settings'
 
 const loading = ref(true)
+const loadError = ref(false)
 const homeData = ref({})
 const userType = ref(1)
 const tagList = ref([])
 const settingsStore = useSettingsStore()
+const homeRef = ref(null)
 
 const viewChartRef = ref(null)
 const rankChartRef = ref(null)
@@ -210,11 +223,17 @@ let rankChart = null
 let categoryChart = null
 let mapChart = null
 let heatmap = null
+let heatmapRenderedYear = ''
+let resizeObserver = null
+
+// 标题过长时截断,完整内容通过 tooltip 查看
+const truncate = (str, len = 10) => (str && str.length > len ? str.slice(0, len) + '…' : str)
 
 // 获取首页数据
 const fetchHomeData = async () => {
   try {
     loading.value = true
+    loadError.value = false
     const res = await getHomeData()
     if (res.flag) {
       homeData.value = res.data
@@ -234,6 +253,7 @@ const fetchHomeData = async () => {
     }
   } catch (error) {
     console.error('获取首页数据失败:', error)
+    loadError.value = true
   } finally {
     loading.value = false
   }
@@ -248,7 +268,7 @@ const initCharts = (data) => {
 
   // 一周访问量图表
   if (viewChartRef.value && data.uniqueViewDTOList) {
-    viewChart = echarts.init(viewChartRef.value)
+    if (!viewChart) viewChart = echarts.init(viewChartRef.value)
     const xData = []
     const yData = []
     data.uniqueViewDTOList.forEach(item => {
@@ -298,66 +318,96 @@ const initCharts = (data) => {
     })
   }
 
-  // 文章浏览量排行
+  // 文章浏览量排行(横向条形图,长标题在轴上截断,tooltip 显示全称)
   if (rankChartRef.value && data.articleRankDTOList) {
-    rankChart = echarts.init(rankChartRef.value)
-    const xData = []
-    const yData = []
-    data.articleRankDTOList.forEach(item => {
-      xData.push(item.articleTitle)
-      yData.push(item.viewsCount)
-    })
+    if (!rankChart) rankChart = echarts.init(rankChartRef.value)
+    const rankList = [...data.articleRankDTOList].sort((a, b) => a.viewsCount - b.viewsCount)
     rankChart.setOption({
       tooltip: {
         trigger: 'axis',
-        axisPointer: { type: 'shadow' }
+        axisPointer: { type: 'shadow' },
+        backgroundColor: isDark ? '#252c35' : '#ffffff',
+        borderColor: chartGrid,
+        textStyle: { color: chartText },
+        formatter: (params) => {
+          const p = Array.isArray(params) ? params[0] : params
+          const item = rankList[p.dataIndex]
+          if (!item) return ''
+          return item.articleTitle + '<br/>浏览量：<b>' + item.viewsCount + '</b>'
+        }
       },
-      color: ['#58AFFF'],
       grid: {
         left: '3%',
-        right: '4%',
+        right: '10%',
+        top: '6%',
         bottom: '3%',
         containLabel: true
       },
-      xAxis: { type: 'category', data: xData },
-      yAxis: { type: 'value' },
+      xAxis: {
+        type: 'value',
+        splitLine: { lineStyle: { color: chartGrid, type: 'dashed' } },
+        axisLabel: { color: chartMuted }
+      },
+      yAxis: {
+        type: 'category',
+        data: rankList.map(item => truncate(item.articleTitle)),
+        axisLine: { lineStyle: { color: chartGrid } },
+        axisTick: { show: false },
+        axisLabel: { color: chartText, fontSize: 12 }
+      },
       series: [{
         name: '浏览量',
         type: 'bar',
-        data: yData
+        barMaxWidth: 16,
+        itemStyle: { borderRadius: [0, 4, 4, 0] },
+        label: { show: true, position: 'right', color: chartMuted, fontSize: 11 },
+        data: rankList.map(item => item.viewsCount)
       }]
-    })
+    }, true)
   }
 
-  // 文章分类统计
+  // 文章分类统计(环形图,配色与统计卡片的主色系一致)
   if (categoryChartRef.value && data.categoryDTOList) {
-    categoryChart = echarts.init(categoryChartRef.value)
+    if (!categoryChart) categoryChart = echarts.init(categoryChartRef.value)
     const categoryData = data.categoryDTOList.map(item => ({
       value: item.articleCount,
       name: item.categoryName
     }))
     categoryChart.setOption({
-      tooltip: { trigger: 'item' },
-      color: ['#7EC0EE', '#FF9F7F', '#FFD700', '#C9C9C9', '#E066FF', '#C0FF3E'],
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: isDark ? '#252c35' : '#ffffff',
+        borderColor: chartGrid,
+        textStyle: { color: chartText }
+      },
+      color: ['#4f7cff', '#22b07d', '#f59e0b', '#8250df', '#ef6c6c', '#38bdf8', '#94a3b8'],
       legend: {
         orient: 'vertical',
-        left: 'left'
+        left: 'left',
+        top: 'middle',
+        textStyle: { color: chartMuted }
       },
       series: [{
         name: '文章分类',
         type: 'pie',
-        radius: '50%',
-        roseType: 'radius',
+        radius: ['42%', '68%'],
+        center: ['58%', '50%'],
+        itemStyle: {
+          borderColor: isDark ? '#1d1e1f' : '#ffffff',
+          borderWidth: 2,
+          borderRadius: 4
+        },
+        label: { color: chartMuted, fontSize: 11 },
         data: categoryData,
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
             shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
+            shadowColor: 'rgba(0, 0, 0, 0.3)'
           }
         }
       }]
-    })
+    }, true)
   }
 
   // 文章贡献统计日历热力图
@@ -447,11 +497,14 @@ const initHeatmap = () => {
     heatmap = echarts.init(heatmapRef.value)
     heatmap.setOption(option)
   }
+  heatmapRenderedYear = heatmapYear.value
 }
 
-// 切换年份时按所选年份重新渲染
+// 切换年份时按所选年份重新渲染;initHeatmap 内部补默认值触发的变更不重复渲染
 watch(heatmapYear, () => {
-  if (articleStatsList.value.length) initHeatmap()
+  if (articleStatsList.value.length && heatmapYear.value !== heatmapRenderedYear) {
+    initHeatmap()
+  }
 })
 
 // 计算最长连续活跃天数(countByDate 只需包含有文章的日期)
@@ -478,35 +531,49 @@ const fetchUserArea = async () => {
   try {
     const res = await getUserArea(userType.value)
     if (res.flag && mapChartRef.value) {
-      if (!mapChart) {
-        mapChart = echarts.init(mapChartRef.value)
-      }
+      if (!mapChart) mapChart = echarts.init(mapChartRef.value)
+      const isDark = settingsStore.isDark
+      const areaData = res.data || []
+      // 图例阈值按实际数据动态分段,避免数据量小时永远落在同一档
+      const maxV = Math.max(...areaData.map(item => item.value || 0), 1)
+      const t1 = Math.max(4, Math.ceil(maxV * 0.6))
+      const t2 = Math.max(3, Math.ceil(maxV * 0.3))
+      const t3 = Math.max(2, Math.ceil(maxV * 0.1))
       mapChart.setOption({
         tooltip: {
+          backgroundColor: isDark ? '#252c35' : '#ffffff',
+          borderColor: isDark ? '#2a3440' : '#e8edf3',
+          textStyle: { color: isDark ? '#d7dee8' : '#526173' },
           formatter: function(e) {
             const value = e.value ? e.value : 0
             return e.seriesName + '<br />' + e.name + '：' + value
           }
         },
         visualMap: {
-          min: 0,
-          max: 1000,
           right: 26,
           bottom: 40,
           pieces: [
-            { gt: 100, label: '100人以上', color: '#ED5351' },
-            { gte: 51, lte: 100, label: '51-100人', color: '#59D9A5' },
-            { gte: 21, lte: 50, label: '21-50人', color: '#F6C021' },
-            { gt: 0, lte: 20, label: '1-20人', color: '#6DCAEC' }
-          ]
+            { gt: t1, label: t1 + '人以上', color: '#ED5351' },
+            { gte: t2, lte: t1, label: t2 + '-' + t1 + '人', color: '#59D9A5' },
+            { gte: t3, lte: t2, label: t3 + '-' + t2 + '人', color: '#F6C021' },
+            { gt: 0, lte: t3, label: '1-' + t3 + '人', color: '#6DCAEC' }
+          ],
+          textStyle: { color: isDark ? '#8f9aaa' : '#8b98a8' }
         },
         series: [{
           name: '用户人数',
           type: 'map',
           map: 'china',
-          data: res.data || []
+          data: areaData,
+          itemStyle: {
+            areaColor: isDark ? '#2a3440' : '#eef2f7',
+            borderColor: isDark ? '#3d4a58' : '#d8e2ec'
+          },
+          emphasis: {
+            label: { color: isDark ? '#d7dee8' : '#202a34' }
+          }
         }]
-      })
+      }, true)
     }
   } catch (error) {
     console.error('获取用户地域分布失败:', error)
@@ -528,6 +595,11 @@ const disposeCharts = () => {
   heatmap = null
 }
 
+const resizeCharts = () => {
+  const charts = [viewChart, rankChart, categoryChart, mapChart, heatmap]
+  charts.forEach(chart => chart?.resize())
+}
+
 // ECharts does not inherit Element Plus theme variables, so redraw on theme changes.
 watch(() => settingsStore.isDark, async () => {
   if (!Object.keys(homeData.value).length) return
@@ -538,9 +610,19 @@ watch(() => settingsStore.isDark, async () => {
 
 onMounted(() => {
   fetchHomeData()
+  // 容器尺寸变化(窗口缩放、侧边栏折叠)时同步重绘图表
+  resizeObserver = new ResizeObserver(resizeCharts)
+  if (homeRef.value) resizeObserver.observe(homeRef.value)
+})
+
+// keep-alive 缓存页签切回时,容器尺寸可能已变化,补一次重绘
+onActivated(() => {
+  nextTick(resizeCharts)
 })
 
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
   disposeCharts()
 })
 </script>
@@ -553,6 +635,10 @@ onBeforeUnmount(() => {
 }
 
 .stats-row {
+  margin-bottom: 16px;
+}
+
+.home-error {
   margin-bottom: 16px;
 }
 
