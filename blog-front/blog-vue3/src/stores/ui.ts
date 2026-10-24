@@ -40,6 +40,8 @@ export function normalizeAuthRedirect(redirect?: string) {
 export const useUIStore = defineStore('ui', () => {
   // State - 模态框状态
   const searchFlag = ref(false)
+  // 起始页等外部入口带入的搜索关键词,搜索弹窗打开时读取并清空
+  const searchKeyword = ref('')
   const loginFlag = ref(false)
   const registerFlag = ref(false)
   const forgetFlag = ref(false)
@@ -55,6 +57,10 @@ export const useUIStore = defineStore('ui', () => {
   // Actions - 模态框控制
   function setSearchFlag(value: boolean) {
     searchFlag.value = value
+  }
+
+  function setSearchKeyword(value: string) {
+    searchKeyword.value = value
   }
 
   function setLoginFlag(value: boolean) {
@@ -134,6 +140,7 @@ export const useUIStore = defineStore('ui', () => {
   return {
     // State
     searchFlag,
+    searchKeyword,
     loginFlag,
     registerFlag,
     forgetFlag,
@@ -147,6 +154,7 @@ export const useUIStore = defineStore('ui', () => {
     authPromptConfirmText,
     // Actions
     setSearchFlag,
+    setSearchKeyword,
     setLoginFlag,
     setRegisterFlag,
     setForgetFlag,

@@ -324,7 +324,16 @@ watch(showFilters, (val) => {
 watch(
   () => uiStore.searchFlag,
   (value) => {
-    if (!value) resetSearchState()
+    if (!value) {
+      resetSearchState()
+      return
+    }
+    // 起始页等外部入口带入了关键词时,自动填入并触发搜索
+    const external = uiStore.searchKeyword.trim()
+    if (external) {
+      keywords.value = external
+      uiStore.setSearchKeyword('')
+    }
   }
 )
 </script>

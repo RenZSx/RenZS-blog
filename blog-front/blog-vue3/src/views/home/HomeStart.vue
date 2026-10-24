@@ -1,44 +1,81 @@
 <template>
   <main class="start-page" :style="pageStyle">
-    <div class="start-page__shade"></div>
+    <div class="start-page__shade" aria-hidden="true"></div>
+    <div class="start-page__glow" aria-hidden="true"></div>
+
     <section class="start-shell" aria-labelledby="start-title">
-      <div class="profile-panel">
-        <div class="profile-head">
-          <v-avatar size="96" class="profile-avatar">
-            <v-img :src="avatarUrl" />
-          </v-avatar>
-          <div class="profile-copy">
-            <p class="profile-kicker">Personal Start</p>
-            <h1 id="start-title" class="profile-name">{{ siteName }}</h1>
-          </div>
+      <!-- 时钟与问候 -->
+      <header class="start-hero">
+        <p class="hero-greeting">{{ greeting }},{{ authorName }}</p>
+        <h1 id="start-title" class="hero-clock">{{ clock.time }}</h1>
+        <p class="hero-date">{{ clock.date }} · {{ clock.weekday }}</p>
+      </header>
+
+      <!-- 全站搜索 -->
+      <form class="search-shell" @submit.prevent="openSearch">
+        <v-icon size="21" class="search-icon">mdi-magnify</v-icon>
+        <div class="engine-toggle" role="tablist" aria-label="搜索引擎">
+          <button
+            type="button"
+            class="engine-toggle__item"
+            :class="{ 'engine-toggle__item--on': engine === 'site' }"
+            @click="engine = 'site'"
+          >
+            站内
+          </button>
+          <button
+            type="button"
+            class="engine-toggle__item"
+            :class="{ 'engine-toggle__item--on': engine === 'bing' }"
+            @click="engine = 'bing'"
+          >
+            Bing
+          </button>
         </div>
+        <input
+          v-model="searchInput"
+          class="search-input"
+          type="text"
+          :placeholder="engine === 'bing' ? '用 Bing 搜索,回车直达…' : '搜索全站文章,回车直达…'"
+          aria-label="搜索"
+          @keydown.enter.prevent="openSearch"
+        />
+        <button v-if="searchInput" class="search-clear" type="button" aria-label="清空" @click="searchInput = ''">
+          <v-icon size="17">mdi-close</v-icon>
+        </button>
+        <button class="search-go" type="submit">搜索</button>
+      </form>
 
-        <div class="heatmap" aria-label="站点活动">
-          <span
-            v-for="(cell, index) in heatCells"
-            :key="index"
-            class="heatmap-cell"
-            :class="`heatmap-cell--${cell}`"
-          ></span>
+      <!-- 快捷入口 -->
+      <nav class="quick-grid" aria-label="快捷入口">
+        <RouterLink
+          v-for="entry in quickEntries"
+          :key="entry.label"
+          class="quick-entry"
+          :to="entry.to"
+        >
+          <span class="quick-entry__icon"><v-icon size="22">{{ entry.icon }}</v-icon></span>
+          <span class="quick-entry__name">{{ entry.label }}</span>
+          <span class="quick-entry__desc">{{ entry.desc }}</span>
+        </RouterLink>
+      </nav>
+
+      <!-- 底部信息条:公告 + 统计 + 社交 -->
+      <footer class="start-foot">
+        <div class="foot-notice" :title="noticeText">
+          <v-icon size="16" class="foot-notice__icon">mdi-bullhorn-outline</v-icon>
+          <span>{{ noticeText }}</span>
         </div>
-
-        <div class="profile-line"></div>
-
-        <div class="quote-card glass-card">
-          <v-icon size="26" class="quote-mark">mdi-format-quote-open</v-icon>
-          <div>
-            <strong>{{ introTitle }}</strong>
-            <p>{{ introText }}</p>
-          </div>
-          <v-icon size="24" class="quote-mark quote-mark--end">mdi-format-quote-close</v-icon>
+        <div class="foot-stats">
+          <span v-for="stat in stats" :key="stat.label" class="foot-stat">
+            <b>{{ stat.value }}</b>{{ stat.label }}
+          </span>
         </div>
-
-        <nav v-if="socialLinks.length" class="social-links" aria-label="社交链接">
+        <nav v-if="socialLinks.length" class="foot-social" aria-label="社交链接">
           <a
             v-for="link in socialLinks"
             :key="link.type"
             :href="link.href"
-            class="social-link"
             target="_blank"
             rel="noopener noreferrer"
             :aria-label="link.label"
@@ -46,44 +83,7 @@
             <span :class="['iconfont', link.icon]"></span>
           </a>
         </nav>
-      </div>
-
-      <div class="dashboard-panel">
-        <div class="dashboard-top">
-          <article class="poem-card glass-card">
-            <p>{{ noticeText }}</p>
-            <strong>- 「说苑」</strong>
-          </article>
-
-          <article class="clock-card glass-card">
-            <p>{{ currentDateText }}</p>
-          <strong>{{ currentTimeText }}</strong>
-            <div class="music-line">
-              <span>Dancing Line - Local</span>
-              <small>00:00 / 01:24</small>
-            </div>
-          </article>
-        </div>
-
-        <nav class="quick-grid" aria-label="快捷入口">
-          <RouterLink
-            v-for="entry in quickEntries"
-            :key="entry.label"
-            class="quick-entry glass-card"
-            :to="entry.to"
-          >
-            <v-icon size="22">{{ entry.icon }}</v-icon>
-            <span>{{ entry.label }}</span>
-          </RouterLink>
-        </nav>
-
-        <div class="stat-strip">
-          <div v-for="stat in stats" :key="stat.label" class="stat-item">
-            <span>{{ stat.label }}</span>
-            <strong>{{ stat.value }}</strong>
-          </div>
-        </div>
-      </div>
+      </footer>
     </section>
   </main>
 </template>
@@ -92,9 +92,12 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useBlogInfoStore, type BlogInfo, type WebsiteConfig } from '@/stores/blogInfo'
+import { useUIStore } from '@/stores/ui'
 
 const blogInfoStore = useBlogInfoStore()
+const uiStore = useUIStore()
 const now = ref(new Date())
+const searchInput = ref('')
 let clockTimer: ReturnType<typeof setInterval> | null = null
 
 const fallbackWebsiteConfig: Partial<WebsiteConfig> = {
@@ -117,18 +120,7 @@ const websiteConfig = computed<Partial<WebsiteConfig>>(() => {
     : fallbackWebsiteConfig
 })
 
-const siteName = computed(() => {
-  return websiteConfig.value.websiteName || websiteConfig.value.websiteAuthor || 'Renzs Blog'
-})
-
-const avatarUrl = computed(() => {
-  return websiteConfig.value.websiteAvatar || websiteConfig.value.touristAvatar || ''
-})
-
-const introTitle = computed(() => websiteConfig.value.websiteAuthor || siteName.value)
-const introText = computed(() => {
-  return websiteConfig.value.websiteIntro || '一个建立于互联网边缘的博客，记录技术、生活与灵感。'
-})
+const authorName = computed(() => websiteConfig.value.websiteAuthor || '朋友')
 const noticeText = computed(() => {
   return websiteConfig.value.websiteNotice || '乘风破浪，虎豹避之；飞鸟成列，鹰鹫不击。'
 })
@@ -146,39 +138,52 @@ const pageStyle = computed(() => {
   }
 })
 
-const currentDateText = computed(() => {
-  return new Intl.DateTimeFormat('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    weekday: 'long'
-  }).format(now.value)
-})
-
-const currentTimeText = computed(() => {
-  return new Intl.DateTimeFormat('zh-CN', {
+// 时钟与时段问候
+const clock = computed(() => ({
+  time: new Intl.DateTimeFormat('zh-CN', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false
-  }).format(now.value)
+  }).format(now.value),
+  date: new Intl.DateTimeFormat('zh-CN', {
+    month: 'long',
+    day: 'numeric'
+  }).format(now.value),
+  weekday: new Intl.DateTimeFormat('zh-CN', { weekday: 'long' }).format(now.value)
+}))
+
+const greeting = computed(() => {
+  const hour = now.value.getHours()
+  if (hour < 5) return '夜深了'
+  if (hour < 9) return '早上好'
+  if (hour < 12) return '上午好'
+  if (hour < 14) return '中午好'
+  if (hour < 18) return '下午好'
+  if (hour < 23) return '晚上好'
+  return '夜深了'
 })
 
-const heatCells = computed(() => {
-  return Array.from({ length: 70 }, (_, index) => {
-    const seed = (index * 17 + toStatValue(blogInfo.value.articleCount) + toStatValue(blogInfo.value.viewsCount)) % 11
-    if (seed > 8) return 'hot'
-    if (seed > 5) return 'warm'
-    if (seed > 2) return 'cool'
-    return 'empty'
-  })
-})
+// 搜索引擎:站内走搜索弹窗,Bing 新标签页直达
+const engine = ref<'site' | 'bing'>('site')
+
+function openSearch() {
+  const keyword = searchInput.value.trim()
+  if (!keyword) return
+  if (engine.value === 'bing') {
+    window.open('https://www.bing.com/search?q=' + encodeURIComponent(keyword) + '&ensearch=0', '_blank', 'noopener')
+    return
+  }
+  uiStore.setSearchKeyword(keyword)
+  uiStore.setSearchFlag(true)
+}
 
 const quickEntries = [
-  { label: '博客', icon: 'mdi-rss', to: '/' },
-  { label: '网盘', icon: 'mdi-cloud', to: '/links' },
-  { label: '起始页', icon: 'mdi-compass', to: '/home/start' },
-  { label: '网址集', icon: 'mdi-book-open-page-variant', to: '/home/content' },
-  { label: '今日热榜', icon: 'mdi-fire', to: '/home/columns' }
+  { label: '博客', desc: '最新文章', icon: 'mdi-rss', to: '/' },
+  { label: '归档', desc: '全部文章', icon: 'mdi-text-box-multiple-outline', to: '/archives' },
+  { label: '相册', desc: '光影记录', icon: 'mdi-image-multiple-outline', to: '/albums' },
+  { label: '网址集', desc: '收藏夹', icon: 'mdi-book-open-page-variant', to: '/home/content' },
+  { label: '今日热榜', desc: '热点速览', icon: 'mdi-fire', to: '/home/columns' },
+  { label: '留言板', desc: '说点什么', icon: 'mdi-message-text-outline', to: '/message' }
 ] as const
 
 const socialLinks = computed(() => {
@@ -212,7 +217,7 @@ onMounted(() => {
   now.value = new Date()
   clockTimer = setInterval(() => {
     now.value = new Date()
-  }, 60000)
+  }, 10000)
 })
 
 onBeforeUnmount(() => {
@@ -227,10 +232,12 @@ onBeforeUnmount(() => {
 .start-page {
   position: relative;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   color: #fff;
   background:
-    linear-gradient(135deg, #5d2f28 0%, #41647c 48%, #162436 100%);
+    linear-gradient(160deg, #14213d 0%, #1f3a5f 48%, #10203a 100%);
   background-position: center;
   background-size: cover;
 }
@@ -238,305 +245,319 @@ onBeforeUnmount(() => {
 .start-page__shade {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 42% 58%, rgba(255, 234, 169, 0.28), transparent 28%),
-    linear-gradient(90deg, rgba(30, 14, 14, 0.42), rgba(12, 24, 40, 0.18) 48%, rgba(9, 15, 26, 0.58));
+  background: linear-gradient(180deg, rgba(8, 14, 28, 0.55), rgba(8, 14, 28, 0.25) 45%, rgba(8, 14, 28, 0.66));
+}
+
+/* 顶部一角的环境光 */
+.start-page__glow {
+  position: absolute;
+  top: -180px;
+  right: -120px;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(96, 148, 255, 0.28), transparent 68%);
+  pointer-events: none;
 }
 
 .start-shell {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(360px, 1fr) minmax(420px, 520px);
-  align-items: center;
-  gap: 74px;
-  width: min(1060px, calc(100% - 56px));
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 78px 0 54px;
-}
-
-.profile-panel,
-.dashboard-panel {
-  min-width: 0;
-}
-
-.profile-head {
   display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-.profile-avatar {
-  flex: 0 0 auto;
-  border: 2px solid rgba(255, 255, 255, 0.42);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
-}
-
-.profile-kicker {
-  margin: 0 0 6px;
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.profile-name {
-  margin: 0;
-  font-size: clamp(42px, 6vw, 58px);
-  font-weight: 800;
-  line-height: 1;
-  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
-  overflow-wrap: anywhere;
-}
-
-.heatmap {
-  display: grid;
-  grid-template-columns: repeat(14, 1fr);
-  gap: 4px;
-  width: min(382px, 100%);
-  margin-top: 38px;
-}
-
-.heatmap-cell {
-  aspect-ratio: 1;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.heatmap-cell--cool {
-  background: rgba(111, 204, 135, 0.72);
-}
-
-.heatmap-cell--warm {
-  background: rgba(45, 172, 79, 0.86);
-}
-
-.heatmap-cell--hot {
-  background: rgba(166, 86, 213, 0.9);
-}
-
-.profile-line {
-  width: 86px;
-  height: 5px;
-  margin: 16px 0 40px;
-  border-radius: 999px;
-  background: rgba(142, 244, 205, 0.9);
-}
-
-.glass-card {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 4px;
-  background: rgba(42, 38, 34, 0.54);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
-}
-
-.quote-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 12px;
-  width: min(420px, 100%);
-  padding: 22px 24px;
-}
-
-.quote-card strong,
-.quote-card p {
-  margin: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
-}
-
-.quote-card p {
-  margin-top: 8px;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-.quote-mark {
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.quote-mark--end {
-  align-self: end;
-}
-
-.social-links {
-  display: flex;
-  gap: 18px;
-  margin-top: 18px;
-}
-
-.social-link {
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 20px;
-  text-decoration: none;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.social-link:hover {
-  color: #fff;
-  transform: translateY(-2px);
-}
-
-.dashboard-panel {
-  display: grid;
-  gap: 14px;
-}
-
-.dashboard-top {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.poem-card,
-.clock-card {
-  min-height: 168px;
-  padding: 22px 24px;
-}
-
-.poem-card {
-  display: flex;
+  flex: 1;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 34px;
+  width: min(880px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 84px 0 44px;
 }
 
-.poem-card p {
+/* ========== 时钟 ========== */
+.start-hero {
+  text-align: center;
+}
+
+.hero-greeting {
+  margin: 0 0 6px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 16px;
+  letter-spacing: 0.14em;
+}
+
+.hero-clock {
   margin: 0;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 15px;
+  font-family: 'SFMono-Regular', 'Cascadia Code', Consolas, monospace;
+  font-size: clamp(64px, 13vw, 108px);
   font-weight: 700;
-  line-height: 1.9;
-}
-
-.poem-card strong {
-  align-self: flex-end;
-  color: rgba(255, 255, 255, 0.88);
-}
-
-.clock-card p {
-  margin: 0 0 8px;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.clock-card strong {
-  display: block;
-  font-family: Consolas, "Courier New", monospace;
-  font-size: clamp(34px, 4vw, 43px);
   line-height: 1.05;
-  text-shadow: 0 0 18px rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.04em;
+  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  font-variant-numeric: tabular-nums;
 }
 
-.music-line {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
+.hero-date {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 14px;
+  letter-spacing: 0.2em;
 }
 
-.music-line span,
-.music-line small {
-  display: block;
-  color: rgba(255, 255, 255, 0.78);
+/* ========== 搜索 ========== */
+.search-shell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(620px, 100%);
+  margin: 0 auto;
+  padding: 6px 8px 6px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.search-shell:focus-within {
+  border-color: rgba(140, 190, 255, 0.75);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px rgba(20, 40, 90, 0.35);
+}
+
+.search-icon {
+  color: rgba(255, 255, 255, 0.66);
+}
+
+/* 引擎切换 */
+.engine-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.engine-toggle__item {
+  padding: 4px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.62);
   font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.music-line small {
-  margin-top: 4px;
+.engine-toggle__item--on {
+  background: rgba(140, 190, 255, 0.28);
+  color: #fff;
 }
 
+.engine-toggle__item:hover {
+  color: #fff;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font-size: 15px;
+  line-height: 40px;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-clear {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+}
+
+.search-go {
+  flex: 0 0 auto;
+  padding: 9px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(120deg, #3f7bff, #6a5cff);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.search-go:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+/* ========== 快捷入口 ========== */
 .quick-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .quick-entry {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 11px;
-  min-height: 74px;
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 15px;
-  font-weight: 800;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 16px 8px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  color: #fff;
   text-decoration: none;
+  text-align: center;
   transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
 .quick-entry:hover {
-  border-color: rgba(255, 255, 255, 0.34);
-  background: rgba(255, 255, 255, 0.16);
-  transform: translateY(-2px);
+  border-color: rgba(140, 190, 255, 0.55);
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateY(-3px);
 }
 
-.stat-strip {
+.quick-entry__icon {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 3px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.quick-entry__name {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.quick-entry__desc {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 11px;
+}
+
+/* ========== 底部信息条 ========== */
+.start-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 22px;
+  padding: 13px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(10, 18, 38, 0.42);
+  backdrop-filter: blur(10px);
+  font-size: 13px;
+}
+
+.foot-notice {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
-  margin-top: 4px;
+  min-width: 0;
+  flex: 1 1 260px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.stat-item {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.82);
+.foot-notice__icon {
+  flex: 0 0 auto;
+  color: #8bc5ff;
 }
 
-.stat-item span,
-.stat-item strong {
-  display: block;
+.foot-notice span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.stat-item span {
+.foot-stats {
+  display: inline-flex;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.foot-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 12px;
 }
 
-.stat-item strong {
-  margin-top: 4px;
-  font-size: 18px;
+.foot-stat b {
+  color: #fff;
+  font-size: 15px;
 }
 
+.foot-social {
+  display: inline-flex;
+  gap: 14px;
+}
+
+.foot-social a {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 18px;
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.foot-social a:hover {
+  color: #8bc5ff;
+  transform: translateY(-2px);
+}
+
+/* ========== 响应式 ========== */
 @media (max-width: 960px) {
   .start-shell {
-    grid-template-columns: 1fr;
-    gap: 34px;
-    width: min(640px, calc(100% - 32px));
-    padding: 86px 0 34px;
+    gap: 26px;
+    width: calc(100% - 32px);
+    padding: 96px 0 34px;
   }
 
-  .dashboard-top,
   .quick-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .foot-stats {
+    margin-left: 0;
   }
 }
 
 @media (max-width: 560px) {
-  .profile-head {
+  .hero-clock {
+    font-size: 58px;
+  }
+
+  .quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .start-foot {
+    flex-direction: column;
     align-items: flex-start;
   }
 
-  .profile-avatar {
-    width: 72px !important;
-    height: 72px !important;
-  }
-
-  .profile-name {
-    font-size: 34px;
-  }
-
-  .dashboard-top,
-  .quick-grid,
-  .stat-strip {
-    grid-template-columns: 1fr;
-  }
-
-  .quote-card {
-    grid-template-columns: 1fr;
-  }
-
-  .quote-mark--end {
-    display: none;
+  .foot-social {
+    margin-left: auto;
   }
 }
 </style>
