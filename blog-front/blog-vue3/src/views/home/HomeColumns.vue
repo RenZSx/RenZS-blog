@@ -26,7 +26,7 @@
           type="button"
           class="rank-filter__chip"
           :class="{ 'rank-filter__chip--on': activeSection === section.sectionName }"
-          @click="activeSection = section.sectionName"
+          @click="activeSection = section.sectionName ?? ''"
         >
           {{ section.sectionName }}
           <i>{{ section.articleList.length }}</i>
