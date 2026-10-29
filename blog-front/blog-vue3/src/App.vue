@@ -230,6 +230,12 @@ watch(
   min-height: 100vh;
 }
 
+/* 认证页全屏沉浸：无顶栏、无滚动 */
+.auth-main:has(.auth-screen) {
+  height: 100vh;
+  overflow: hidden;
+}
+
 .auth-main .auth-screen {
   width: 100%;
   min-height: 100vh;

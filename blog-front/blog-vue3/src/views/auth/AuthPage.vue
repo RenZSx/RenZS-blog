@@ -2,31 +2,35 @@
   功能说明：Auth 页面统一承载登录、注册和找回密码表单。
   作者：ChenFY
   创建时间：2026-06-17
-  用途概述：提供居中的主题化账号入口，并复用现有认证业务逻辑。
+  用途概述：全屏沉浸式认证页——站点封面铺底，表单以玻璃质感直接悬浮于背景之上。
 -->
 <template>
-  <main class="auth-screen" :class="`auth-mode-${currentMode}`">
-    <!-- 单卡片壳承载三种认证模式，避免旧版翻转卡片造成布局抖动。 -->
-    <section class="auth-card" aria-labelledby="auth-title">
-      <header class="auth-card-head">
-        <div class="auth-brand-row">
-          <v-avatar size="46" class="auth-brand-avatar">
-            <v-img :src="websiteConfig.websiteAvatar || fallbackAvatar" />
-          </v-avatar>
-          <div class="auth-brand-copy">
-            <div class="auth-card-kicker">{{ currentContent.kicker }}</div>
-            <div class="auth-site-name">{{ siteName }}</div>
-          </div>
-          <div class="auth-mode-symbol" aria-hidden="true">
-            <v-icon :icon="modeIcon" size="20" />
-          </div>
-        </div>
+  <main class="auth-screen" @animationstart="handleAnimationStart">
+    <!-- 背景：站点封面图打底 + 深色遮罩 + 光斑 -->
+    <div class="auth-bg" aria-hidden="true">
+      <div class="auth-bg-cover" :style="coverStyle" />
+      <div class="auth-bg-veil" />
+      <div class="auth-orb auth-orb-one" />
+      <div class="auth-orb auth-orb-two" />
+      <div class="auth-orb auth-orb-three" />
+    </div>
 
-        <h1 id="auth-title" class="auth-card-title">{{ currentContent.title }}</h1>
-        <p class="auth-card-subtitle">{{ currentContent.subtitle }}</p>
-        <p v-if="siteIntro" class="auth-site-intro">{{ siteIntro }}</p>
-      </header>
+    <!-- 页面顶部：品牌 + 返回首页 -->
+    <header class="auth-top">
+      <router-link to="/" class="auth-brand">
+        <v-avatar size="40" class="auth-brand-avatar">
+          <v-img :src="websiteConfig.websiteAvatar || fallbackAvatar" />
+        </v-avatar>
+        <span class="auth-brand-name">{{ brandName }}</span>
+      </router-link>
 
+      <v-btn class="auth-home-btn" variant="text" size="small" prepend-icon="mdi-arrow-left" @click="goHome">
+        返回首页
+      </v-btn>
+    </header>
+
+    <!-- 中央表单区 -->
+    <div class="auth-body">
       <nav class="auth-tabs" aria-label="认证方式">
         <button
           v-for="item in navItems"
@@ -42,248 +46,259 @@
       </nav>
 
       <Transition name="auth-form-fade" mode="out-in">
-        <form v-if="currentMode === 'login'" key="login" class="auth-form" @submit.prevent="handleLogin">
-          <v-text-field
-            v-model="loginUsername"
-            label="邮箱号"
-            placeholder="name@example.com"
-            clearable
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            inputmode="email"
-            prepend-inner-icon="mdi-email-outline"
-            spellcheck="false"
-            autocomplete="email"
-          />
+        <div v-if="currentMode === 'login'" key="login" class="auth-pane">
+          <h1 class="auth-title">{{ currentContent.title }}</h1>
+          <p class="auth-subtitle">{{ currentContent.subtitle }}</p>
 
-          <v-text-field
-            v-model="loginPassword"
-            class="mt-4"
-            label="密码"
-            placeholder="请输入您的密码"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            prepend-inner-icon="mdi-lock-outline"
-            autocomplete="current-password"
-            :append-inner-icon="showLoginPassword ? 'mdi-eye' : 'mdi-eye-off'"
-            :type="showLoginPassword ? 'text' : 'password'"
-            @click:append-inner="showLoginPassword = !showLoginPassword"
-          />
-
-          <div class="auth-form-row">
-            <button type="button" class="auth-inline-link" @click="setCurrentMode('forgot-password')">
-              忘记密码？
-            </button>
-          </div>
-
-          <v-btn
-            class="auth-submit"
-            block
-            color="primary"
-            size="large"
-            :loading="loginSubmitting"
-            :prepend-icon="modeIcon"
-            type="submit"
-          >
-            {{ currentContent.actionLabel }}
-          </v-btn>
-        </form>
-
-        <form v-else-if="currentMode === 'register'" key="register" class="auth-form" @submit.prevent="handleRegister">
-          <v-alert v-if="!emailRegisterEnabled" class="mb-4" type="warning" variant="tonal" density="comfortable">
-            邮箱注册已关闭
-          </v-alert>
-
-          <v-text-field
-            v-model="registerUsername"
-            label="邮箱号"
-            placeholder="name@example.com"
-            clearable
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            inputmode="email"
-            prepend-inner-icon="mdi-email-outline"
-            spellcheck="false"
-            autocomplete="email"
-          />
-
-          <v-text-field
-            v-model="registerNickname"
-            class="mt-4"
-            label="昵称"
-            placeholder="给自己起一个名字"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            prepend-inner-icon="mdi-account-outline"
-            autocomplete="nickname"
-          />
-
-          <v-text-field
-            v-model="registerPassword"
-            class="mt-4"
-            label="密码"
-            placeholder="至少 6 位"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            prepend-inner-icon="mdi-lock-outline"
-            autocomplete="new-password"
-            :append-inner-icon="showRegisterPassword ? 'mdi-eye' : 'mdi-eye-off'"
-            :type="showRegisterPassword ? 'text' : 'password'"
-            @click:append-inner="showRegisterPassword = !showRegisterPassword"
-          />
-
-          <div class="code-wrapper mt-4">
+          <form class="auth-form" @submit.prevent="handleLogin">
             <v-text-field
-              v-model="registerCode"
-              label="验证码"
-              placeholder="请输入 6 位验证码"
-              variant="outlined"
+              v-model="loginUsername"
+              label="邮箱号"
+              placeholder="name@example.com"
+              variant="solo"
+              elevation="0"
               density="comfortable"
               hide-details="auto"
-              inputmode="numeric"
-              maxlength="6"
-              prepend-inner-icon="mdi-shield-key-outline"
+              inputmode="email"
+              prepend-inner-icon="mdi-email-outline"
               spellcheck="false"
-              autocomplete="one-time-code"
+              autocomplete="email"
             />
-            <v-btn
-              class="code-btn"
-              color="primary"
-              variant="tonal"
-              :disabled="!emailRegisterEnabled || registerCountdown > 0 || registerSendingCode"
-              :loading="registerSendingCode"
-              @click="sendRegisterCode"
-            >
-              {{ registerCountdown > 0 ? `${registerCountdown}s` : '发送验证码' }}
-            </v-btn>
-          </div>
 
-          <v-btn
-            class="auth-submit"
-            block
-            color="primary"
-            size="large"
-            :disabled="!emailRegisterEnabled"
-            :loading="registerSubmitting"
-            :prepend-icon="modeIcon"
-            type="submit"
-          >
-            {{ currentContent.actionLabel }}
-          </v-btn>
-        </form>
-
-        <form v-else key="forgot-password" class="auth-form" @submit.prevent="handleReset">
-          <v-text-field
-            v-model="forgotUsername"
-            label="邮箱号"
-            placeholder="name@example.com"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            inputmode="email"
-            prepend-inner-icon="mdi-email-outline"
-            spellcheck="false"
-            autocomplete="email"
-          />
-
-          <div class="code-wrapper mt-4">
             <v-text-field
-              v-model="forgotCode"
-              label="验证码"
-              placeholder="请输入 6 位验证码"
-              variant="outlined"
+              v-model="loginPassword"
+              label="密码"
+              placeholder="请输入您的密码"
+              variant="solo"
+              elevation="0"
               density="comfortable"
               hide-details="auto"
-              inputmode="numeric"
-              maxlength="6"
-              prepend-inner-icon="mdi-shield-key-outline"
-              spellcheck="false"
-              autocomplete="one-time-code"
+              prepend-inner-icon="mdi-lock-outline"
+              autocomplete="current-password"
+              :append-inner-icon="showLoginPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              :type="showLoginPassword ? 'text' : 'password'"
+              @click:append-inner="showLoginPassword = !showLoginPassword"
             />
-            <v-btn
-              class="code-btn"
-              color="primary"
-              variant="tonal"
-              :disabled="forgotCountdown > 0 || forgotSendingCode"
-              :loading="forgotSendingCode"
-              @click="sendForgotCode"
-            >
-              {{ forgotCountdown > 0 ? `${forgotCountdown}s` : '发送验证码' }}
+
+            <div class="auth-form-row">
+              <button type="button" class="auth-inline-link" @click="setCurrentMode('forgot-password')">
+                忘记密码？
+              </button>
+            </div>
+
+            <v-btn class="auth-submit" block size="large" :loading="loginSubmitting" type="submit">
+              {{ currentContent.actionLabel }}
             </v-btn>
+          </form>
+
+          <!-- 社交登录只属于登录模式，避免注册和找回密码流程被额外入口打断。 -->
+          <div v-if="socialLoginList.length > 0" class="auth-social">
+            <div class="auth-social-title">或者用社交账号继续</div>
+            <div class="auth-social-list">
+              <button v-if="showLogin('qq')" type="button" class="auth-social-btn" aria-label="使用 QQ 登录" @click="qqLogin">
+                <span class="iconfont iconqq auth-social-icon" style="color:#4aa8ff" aria-hidden="true" />
+                <span>QQ</span>
+              </button>
+              <button
+                v-if="showLogin('gitee')"
+                type="button"
+                class="auth-social-btn"
+                aria-label="使用 Gitee 登录"
+                @click="giteeLogin"
+              >
+                <span class="iconfont icongitee-fill-round auth-social-icon" style="color:#ff6b5e" aria-hidden="true" />
+                <span>Gitee</span>
+              </button>
+              <button
+                v-if="showLogin('weibo')"
+                type="button"
+                class="auth-social-btn"
+                aria-label="使用微博登录"
+                @click="weiboLogin"
+              >
+                <span class="iconfont iconweibo auth-social-icon" style="color:#ff8073" aria-hidden="true" />
+                <span>微博</span>
+              </button>
+            </div>
           </div>
+        </div>
 
-          <v-text-field
-            v-model="forgotPassword"
-            class="mt-4"
-            label="新密码"
-            placeholder="请输入新密码"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            prepend-inner-icon="mdi-lock-reset"
-            autocomplete="new-password"
-            :append-inner-icon="showForgotPassword ? 'mdi-eye' : 'mdi-eye-off'"
-            :type="showForgotPassword ? 'text' : 'password'"
-            @click:append-inner="showForgotPassword = !showForgotPassword"
-          />
+        <div v-else-if="currentMode === 'register'" key="register" class="auth-pane">
+          <h1 class="auth-title">{{ currentContent.title }}</h1>
+          <p class="auth-subtitle">{{ currentContent.subtitle }}</p>
 
-          <v-btn
-            class="auth-submit"
-            block
-            color="primary"
-            size="large"
-            :loading="forgotSubmitting"
-            :prepend-icon="modeIcon"
-            type="submit"
-          >
-            {{ currentContent.actionLabel }}
-          </v-btn>
-        </form>
+          <form class="auth-form" @submit.prevent="handleRegister">
+            <v-alert v-if="!emailRegisterEnabled" type="warning" variant="tonal" density="comfortable">
+              邮箱注册已关闭
+            </v-alert>
+
+            <v-text-field
+              v-model="registerUsername"
+              label="邮箱号"
+              placeholder="name@example.com"
+              variant="solo"
+              elevation="0"
+              density="comfortable"
+              hide-details="auto"
+              inputmode="email"
+              prepend-inner-icon="mdi-email-outline"
+              spellcheck="false"
+              autocomplete="email"
+            />
+
+            <v-text-field
+              v-model="registerNickname"
+              label="昵称"
+              placeholder="给自己起一个名字"
+              variant="solo"
+              elevation="0"
+              density="comfortable"
+              hide-details="auto"
+              prepend-inner-icon="mdi-account-outline"
+              autocomplete="nickname"
+            />
+
+            <v-text-field
+              v-model="registerPassword"
+              label="密码"
+              placeholder="至少 6 位"
+              variant="solo"
+              elevation="0"
+              density="comfortable"
+              hide-details="auto"
+              prepend-inner-icon="mdi-lock-outline"
+              autocomplete="new-password"
+              :append-inner-icon="showRegisterPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              :type="showRegisterPassword ? 'text' : 'password'"
+              @click:append-inner="showRegisterPassword = !showRegisterPassword"
+            />
+
+            <div class="code-wrapper">
+              <v-text-field
+                v-model="registerCode"
+                label="验证码"
+                placeholder="请输入 6 位验证码"
+                variant="solo"
+                elevation="0"
+                density="comfortable"
+                hide-details="auto"
+                inputmode="numeric"
+                maxlength="6"
+                prepend-inner-icon="mdi-shield-key-outline"
+                spellcheck="false"
+                autocomplete="one-time-code"
+              />
+              <v-btn
+                class="code-btn"
+                variant="tonal"
+                :disabled="!emailRegisterEnabled || registerCountdown > 0 || registerSendingCode"
+                :loading="registerSendingCode"
+                @click="sendRegisterCode"
+              >
+                {{ registerCountdown > 0 ? `${registerCountdown}s` : '发送验证码' }}
+              </v-btn>
+            </div>
+
+            <v-btn
+              class="auth-submit"
+              block
+              size="large"
+              :disabled="!emailRegisterEnabled"
+              :loading="registerSubmitting"
+              type="submit"
+            >
+              {{ currentContent.actionLabel }}
+            </v-btn>
+          </form>
+        </div>
+
+        <div v-else key="forgot-password" class="auth-pane">
+          <h1 class="auth-title">{{ currentContent.title }}</h1>
+          <p class="auth-subtitle">{{ currentContent.subtitle }}</p>
+
+          <form class="auth-form" @submit.prevent="handleReset">
+            <v-text-field
+              v-model="forgotUsername"
+              label="邮箱号"
+              placeholder="name@example.com"
+              variant="solo"
+              elevation="0"
+              density="comfortable"
+              hide-details="auto"
+              inputmode="email"
+              prepend-inner-icon="mdi-email-outline"
+              spellcheck="false"
+              autocomplete="email"
+            />
+
+            <div class="code-wrapper">
+              <v-text-field
+                v-model="forgotCode"
+                label="验证码"
+                placeholder="请输入 6 位验证码"
+                variant="solo"
+                elevation="0"
+                density="comfortable"
+                hide-details="auto"
+                inputmode="numeric"
+                maxlength="6"
+                prepend-inner-icon="mdi-shield-key-outline"
+                spellcheck="false"
+                autocomplete="one-time-code"
+              />
+              <v-btn
+                class="code-btn"
+                variant="tonal"
+                :disabled="forgotCountdown > 0 || forgotSendingCode"
+                :loading="forgotSendingCode"
+                @click="sendForgotCode"
+              >
+                {{ forgotCountdown > 0 ? `${forgotCountdown}s` : '发送验证码' }}
+              </v-btn>
+            </div>
+
+            <v-text-field
+              v-model="forgotPassword"
+              label="新密码"
+              placeholder="请输入新密码"
+              variant="solo"
+              elevation="0"
+              density="comfortable"
+              hide-details="auto"
+              prepend-inner-icon="mdi-lock-reset"
+              autocomplete="new-password"
+              :append-inner-icon="showForgotPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              :type="showForgotPassword ? 'text' : 'password'"
+              @click:append-inner="showForgotPassword = !showForgotPassword"
+            />
+
+            <v-btn class="auth-submit" block size="large" :loading="forgotSubmitting" type="submit">
+              {{ currentContent.actionLabel }}
+            </v-btn>
+          </form>
+        </div>
       </Transition>
 
-      <!-- 社交登录只属于登录模式，避免注册和找回密码流程被额外入口打断。 -->
-      <div v-if="currentMode === 'login' && socialLoginList.length > 0" class="auth-social">
-        <div class="auth-social-title">或者用社交账号继续</div>
-        <div class="auth-social-list">
-          <button v-if="showLogin('qq')" type="button" class="auth-social-btn" aria-label="使用 QQ 登录" @click="qqLogin">
-            <span class="iconfont iconqq auth-social-icon" style="color:#00AAEE" aria-hidden="true" />
-            <span>QQ</span>
-          </button>
-          <button
-            v-if="showLogin('gitee')"
-            type="button"
-            class="auth-social-btn"
-            aria-label="使用 Gitee 登录"
-            @click="giteeLogin"
-          >
-            <span class="iconfont icongitee-fill-round auth-social-icon" style="color:#d90909" aria-hidden="true" />
-            <span>Gitee</span>
-          </button>
-          <button
-            v-if="showLogin('weibo')"
-            type="button"
-            class="auth-social-btn"
-            aria-label="使用微博登录"
-            @click="weiboLogin"
-          >
-            <span class="iconfont iconweibo auth-social-icon" style="color:#e05244" aria-hidden="true" />
-            <span>微博</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="auth-footer-note">
+      <p class="auth-footer-note">
         {{ currentContent.footerLead }}
         <button type="button" class="auth-inline-link" @click="setCurrentMode(currentContent.footerTarget)">
           {{ currentContent.footerAction }}
         </button>
-      </div>
-    </section>
+      </p>
+    </div>
+
+    <!-- 底部：站点数据与备案 -->
+    <footer class="auth-bottom">
+      <ul class="auth-stats">
+        <li v-for="stat in siteStats" :key="stat.key" class="auth-stat">
+          <span class="auth-stat-value">{{ stat.value }}</span>
+          <span class="auth-stat-label">{{ stat.label }}</span>
+        </li>
+      </ul>
+      <p v-if="websiteConfig.websiteRecordNo" class="auth-beian">
+        {{ websiteConfig.websiteRecordNo }}
+      </p>
+    </footer>
   </main>
 </template>
 
@@ -346,27 +361,34 @@ const emailRegisterEnabled = computed(() => {
 // 当前模式文案由独立 helper 提供，避免模板内堆叠模式判断。
 const currentContent = computed(() => getAuthModeContent(currentMode.value))
 const navItems = authNavItems
-// 模式图标只服务于视觉识别，实际业务分支仍由 currentMode 控制。
-const modeIcon = computed(() => {
-  const icons: Record<AuthMode, string> = {
-    login: 'mdi-login-variant',
-    register: 'mdi-account-plus-outline',
-    'forgot-password': 'mdi-lock-reset'
-  }
-  return icons[currentMode.value]
+const brandName = computed(() => {
+  return websiteConfig.value.websiteAuthor || websiteConfig.value.websiteName || 'Renzs Blog'
 })
-// 站点名与简介沿用博客配置，并提供兜底文案保证首屏稳定。
-const siteName = computed(() => {
-  return websiteConfig.value.websiteName || websiteConfig.value.websiteAuthor || 'Renzs Blog'
-})
-const siteIntro = computed(() => {
-  return websiteConfig.value.websiteIntro || websiteConfig.value.websiteNotice || '欢迎回来'
+const siteStats = computed(() => [
+  { key: 'articles', label: '文章', value: blogInfoStore.blogInfo.articleCount ?? 0 },
+  { key: 'categories', label: '分类', value: blogInfoStore.blogInfo.categoryCount ?? 0 },
+  { key: 'tags', label: '标签', value: blogInfoStore.blogInfo.tagCount ?? 0 }
+])
+
+// 背景优先使用站点配置的首页封面，保证认证页与主站视觉一致。
+const coverStyle = computed(() => {
+  const cover = blogInfoStore.getPageCover('home') || blogInfoStore.getPageCover('about')
+  return cover ? { backgroundImage: `url(${cover})` } : undefined
 })
 
 function getRedirectTarget() {
   return normalizeAuthRedirect(
     typeof route.query.redirect === 'string' ? route.query.redirect : uiStore.loginUrl
   )
+}
+
+function goHome() {
+  const redirect = getRedirectTarget()
+  if (redirect && redirect !== '/') {
+    router.replace(redirect)
+    return
+  }
+  router.replace('/')
 }
 
 function setCurrentMode(mode: AuthMode) {
@@ -384,6 +406,25 @@ function setCurrentMode(mode: AuthMode) {
 
 function isEmail(value: string) {
   return /^[A-Za-z0-9一-龥]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(value)
+}
+
+/*
+ * Chrome/Edge 自动填充时以动画事件（onautofillstart）而非 input 事件通知页面，
+ * Vuetify 感知不到值变化，浮动标签停留在原位与填充文字重叠。
+ * 通过在 autofill 专属动画上补发 input 事件，让 Vuetify 正常收起标签。
+ */
+function handleAnimationStart(event: AnimationEvent) {
+  const target = event.target as HTMLInputElement | null
+  if (
+    !target ||
+    target.tagName !== 'INPUT' ||
+    event.animationName !== 'onautofillstart' ||
+    target.dataset.autofillSynced === 'true'
+  ) {
+    return
+  }
+  target.dataset.autofillSynced = 'true'
+  target.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
 function startCountdown(target: typeof registerCountdown, timerSetter: (timer: ReturnType<typeof setInterval> | null) => void) {
@@ -688,43 +729,18 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .auth-screen {
-  --auth-accent: #1f76d2;
-  --auth-accent-strong: #1558a6;
-  --auth-accent-soft: rgba(31, 118, 210, 0.12);
-  --auth-teal-soft: rgba(20, 184, 166, 0.12);
-  --auth-focus-ring: rgba(31, 118, 210, 0.24);
-  --auth-card-border: rgba(105, 132, 166, 0.24);
-  --auth-card-bg:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.98));
-  --auth-screen-bg:
-    linear-gradient(135deg, rgba(31, 118, 210, 0.08) 0%, rgba(255, 255, 255, 0) 32%),
-    linear-gradient(225deg, rgba(20, 184, 166, 0.07) 0%, rgba(255, 255, 255, 0) 34%),
-    linear-gradient(180deg, #f5f8fb 0%, #edf3f8 100%);
   position: relative;
   box-sizing: border-box;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-  padding: 32px 16px;
+  padding: 28px clamp(16px, 6vw, 64px) 24px;
   overflow: hidden;
-  background: var(--auth-screen-bg);
-  color: var(--text-primary);
-}
-
-.auth-screen::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(83, 110, 145, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(83, 110, 145, 0.08) 1px, transparent 1px);
-  background-position: center;
-  background-size: 36px 36px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.86), rgba(0, 0, 0, 0.18));
+  /* 深色打底兜底：封面图加载前也保证白色文字可读 */
+  background: linear-gradient(180deg, #0d1a30 0%, #0a1425 100%);
+  color: #f7fbff;
 }
 
 .auth-screen,
@@ -734,303 +750,392 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
 }
 
-.auth-mode-register {
-  --auth-accent: #157b72;
-  --auth-accent-strong: #0f625b;
-  --auth-accent-soft: rgba(21, 123, 114, 0.13);
-  --auth-teal-soft: rgba(31, 118, 210, 0.08);
-  --auth-focus-ring: rgba(21, 123, 114, 0.24);
-}
-
-.auth-mode-forgot-password {
-  --auth-accent: #6b5bd2;
-  --auth-accent-strong: #4d3fa8;
-  --auth-accent-soft: rgba(107, 91, 210, 0.13);
-  --auth-teal-soft: rgba(31, 118, 210, 0.08);
-  --auth-focus-ring: rgba(107, 91, 210, 0.24);
-}
-
-.auth-card {
-  position: relative;
-  z-index: 1;
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 462px;
-  padding: 30px;
-  overflow: hidden;
-  border: 1px solid var(--auth-card-border);
-  border-radius: 8px;
-  background: var(--auth-card-bg) !important;
-  box-shadow:
-    0 28px 70px rgba(55, 77, 103, 0.18),
-    0 8px 18px rgba(55, 77, 103, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
-}
-
-.auth-card::before {
-  content: '';
+/* ========== 背景层 ========== */
+.auth-bg {
   position: absolute;
-  inset: 0 0 auto;
-  height: 4px;
-  background: linear-gradient(90deg, var(--auth-accent), #35b7a5);
-}
-
-.auth-card::after {
-  content: '';
-  position: absolute;
-  inset: 4px 0 auto;
-  height: 96px;
+  inset: 0;
   pointer-events: none;
-  z-index: -1;
-  background:
-    linear-gradient(180deg, var(--auth-accent-soft), rgba(255, 255, 255, 0)),
-    linear-gradient(90deg, rgba(255, 255, 255, 0), var(--auth-teal-soft));
 }
 
-.auth-card-head {
+.auth-bg-cover {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+}
+
+.auth-bg-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1100px 560px at 16% 10%, rgba(47, 128, 237, 0.28), transparent 62%),
+    radial-gradient(900px 600px at 86% 86%, rgba(22, 189, 178, 0.2), transparent 62%),
+    linear-gradient(180deg, rgba(7, 14, 28, 0.42) 0%, rgba(6, 12, 25, 0.62) 55%, rgba(4, 10, 22, 0.78) 100%);
+}
+
+.auth-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(14px);
+}
+
+.auth-orb-one {
+  top: 12%;
+  left: 8%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(80, 158, 255, 0.3), transparent 68%);
+  animation: auth-float 11s ease-in-out infinite;
+}
+
+.auth-orb-two {
+  right: 10%;
+  top: 20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(150, 128, 255, 0.24), transparent 70%);
+  animation: auth-float 13s ease-in-out 1.2s infinite reverse;
+}
+
+.auth-orb-three {
+  right: -4%;
+  bottom: -8%;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, rgba(45, 208, 196, 0.22), transparent 72%);
+  animation: auth-float 15s ease-in-out 0.6s infinite;
+}
+
+@keyframes auth-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -22px, 0);
+  }
+}
+
+/* ========== 顶部品牌行 ========== */
+.auth-top {
   position: relative;
   z-index: 1;
-  display: grid;
-  gap: 8px;
-}
-
-.auth-brand-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  min-height: 50px;
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
 }
 
 .auth-brand-avatar {
-  flex: 0 0 auto;
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  background: var(--surface-base);
-  box-shadow:
-    0 10px 22px rgba(31, 118, 210, 0.14),
-    0 0 0 4px var(--auth-accent-soft);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-.auth-brand-copy {
-  min-width: 0;
-  flex: 1;
-}
-
-.auth-card-kicker {
-  color: var(--auth-accent);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.auth-site-name {
-  overflow: hidden;
-  color: var(--text-primary);
-  font-size: 15px;
+.auth-brand-name {
+  font-size: 16px;
   font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
 }
 
-.auth-mode-symbol {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  border: 1px solid var(--auth-card-border);
-  border-radius: 8px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 249, 255, 0.82));
-  color: var(--auth-accent);
-  box-shadow: 0 8px 18px rgba(55, 77, 103, 0.08);
+.auth-home-btn {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px);
+  color: rgba(255, 255, 255, 0.92) !important;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
-.auth-card-title {
-  margin: 12px 0 0;
-  color: var(--text-primary);
-  font-size: 29px;
-  font-weight: 800;
-  line-height: 1.22;
+.auth-home-btn:hover {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.18) !important;
 }
 
-.auth-card-subtitle,
-.auth-site-intro {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.65;
-}
-
-.auth-site-intro {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.auth-tabs {
+/* ========== 中央表单区 ========== */
+.auth-body {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px;
-  margin-top: 25px;
-  padding: 5px;
-  border: 1px solid var(--auth-card-border);
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(237, 243, 249, 0.94), rgba(247, 250, 253, 0.88));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 32px 0;
+  animation: auth-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes auth-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 模式切换：纯文字 + 渐变下划线 */
+.auth-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
 }
 
 .auth-tab {
-  min-width: 0;
-  min-height: 38px;
-  padding: 0 6px;
+  position: relative;
+  padding: 6px 2px 10px;
   border: 0;
-  border-radius: 7px;
   background: transparent;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.62);
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1.2;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: color var(--transition-fast);
 }
 
-.auth-tab:hover,
-.auth-tab-active {
-  color: var(--auth-accent-strong);
+.auth-tab::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #57a6ff, #3ad6c5);
+  transform: translateX(-50%);
+  transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.auth-tab:hover {
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .auth-tab-active {
-  background: var(--surface-base);
-  box-shadow:
-    0 8px 18px rgba(55, 77, 103, 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+  color: #ffffff;
+}
+
+.auth-tab-active::after {
+  width: 26px;
 }
 
 .auth-tab:focus-visible,
 .auth-inline-link:focus-visible,
 .auth-social-btn:focus-visible {
-  outline: 3px solid var(--auth-focus-ring);
+  outline: 3px solid rgba(125, 186, 255, 0.5);
   outline-offset: 3px;
+  border-radius: 4px;
 }
 
+.auth-pane {
+  width: 100%;
+  margin-top: 26px;
+}
+
+.auth-title {
+  margin: 0;
+  font-size: clamp(28px, 3.2vw, 36px);
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+}
+
+.auth-subtitle {
+  margin: 10px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* ========== 表单 ========== */
 .auth-form {
-  position: relative;
-  z-index: 1;
-  margin-top: 25px;
+  margin-top: 26px;
 }
 
-.auth-form :deep(.v-input + .v-input) {
-  margin-top: 16px;
+.auth-form > * + * {
+  margin-top: 14px;
 }
 
-.auth-form :deep(.v-input__details) {
-  padding-top: 5px;
-}
-
+/* 玻璃质感输入框：半透明 + 模糊，直接悬浮在封面图上 */
 .auth-form :deep(.v-field) {
   min-height: 52px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
   transition:
     border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    background var(--transition-fast);
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .auth-form :deep(.v-field--focused) {
-  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(140, 196, 255, 0.65);
+  background: rgba(255, 255, 255, 0.16);
   box-shadow:
-    0 0 0 4px var(--auth-focus-ring),
-    0 8px 20px rgba(55, 77, 103, 0.08);
+    0 0 0 4px rgba(87, 166, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
-.auth-form :deep(.v-field__prepend-inner) {
-  color: var(--auth-accent);
-  opacity: 0.84;
-}
-
-.auth-form :deep(.v-field__outline) {
-  --v-field-border-opacity: 0.2;
+.auth-form :deep(.v-field__prepend-inner),
+.auth-form :deep(.v-field__append-inner) {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .auth-form :deep(.v-label) {
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.72);
   opacity: 1;
 }
 
 .auth-form :deep(.v-field--focused .v-label) {
-  color: var(--auth-accent);
+  color: #ffffff;
+}
+
+.auth-form :deep(input) {
+  color: #ffffff;
+}
+
+.auth-form :deep(input)::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+  opacity: 1;
+}
+
+/*
+ * 浏览器自动填充（Chrome/Safari/Edge）会给输入框强加浅色底和深色文字，
+ * 破坏玻璃质感；用足够大的不透明内阴影盖掉默认底色，并保持白色文字。
+ * 颜色取玻璃底色（白 10% 叠加在深色封面上）的近似不透明值。
+ */
+.auth-form :deep(input:-webkit-autofill),
+.auth-form :deep(input:-webkit-autofill:hover),
+.auth-form :deep(input:-webkit-autofill:focus),
+.auth-form :deep(input:-webkit-autofill:active),
+.auth-form :deep(input:autofill),
+.auth-form :deep(input:autofill:hover),
+.auth-form :deep(input:autofill:focus) {
+  -webkit-text-fill-color: #ffffff;
+  caret-color: #ffffff;
+  -webkit-box-shadow: 0 0 0 1000px #202a44 inset;
+  box-shadow: 0 0 0 1000px #202a44 inset;
+  transition: background-color 9999s ease-out;
+}
+
+.auth-form :deep(.v-field--focused input:-webkit-autofill),
+.auth-form :deep(.v-field--focused input:autofill) {
+  -webkit-box-shadow: 0 0 0 1000px #273352 inset;
+  box-shadow: 0 0 0 1000px #273352 inset;
+}
+
+.auth-form :deep(.v-alert) {
+  backdrop-filter: blur(12px);
 }
 
 .auth-form-row {
   display: flex;
   justify-content: flex-end;
-  min-height: 28px;
-  margin-top: 8px;
+  align-items: center;
+  min-height: 24px;
+  margin-top: 4px;
+}
+
+.auth-inline-link {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  cursor: pointer;
+  padding: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.auth-inline-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .code-wrapper {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 122px;
-  gap: 11px;
-  align-items: start;
+  gap: 12px;
+  align-items: stretch;
+  margin-top: 14px;
 }
 
 .code-btn {
   min-height: 52px;
-  border-radius: 8px !important;
-  font-weight: 800;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(18px);
+  color: #ffffff !important;
+  font-weight: 700;
   box-shadow: none !important;
 }
 
+.code-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+/* 主按钮：品牌蓝渐变 */
 .auth-submit {
-  margin-top: 19px;
+  margin-top: 18px;
   min-height: 52px;
-  border-radius: 8px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #3a9bff 0%, #1e6fd9 55%, #1558a6 100%) !important;
+  color: #ffffff !important;
   font-weight: 800;
-  letter-spacing: 0;
-  background: linear-gradient(135deg, var(--auth-accent), var(--auth-accent-strong)) !important;
-  color: #fff !important;
+  letter-spacing: 0.06em;
   box-shadow:
-    0 13px 26px color-mix(in srgb, var(--auth-accent) 26%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+    0 14px 30px rgba(21, 111, 217, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
   transition:
     box-shadow var(--transition-fast),
     transform var(--transition-fast),
     filter var(--transition-fast);
 }
 
-.auth-submit:hover {
+.auth-submit:hover:not(:disabled) {
   transform: translateY(-1px);
-  filter: saturate(1.06);
+  filter: brightness(1.06);
 }
 
 .auth-submit:focus-visible {
-  outline: 3px solid var(--auth-focus-ring);
+  outline: 3px solid rgba(125, 186, 255, 0.5);
   outline-offset: 3px;
 }
 
+/* ========== 社交登录 ========== */
 .auth-social {
-  position: relative;
-  z-index: 1;
-  margin-top: 23px;
+  margin-top: 26px;
 }
 
 .auth-social-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--text-secondary);
-  font-size: 13px;
-  text-align: center;
+  gap: 14px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12.5px;
 }
 
 .auth-social-title::before,
@@ -1038,41 +1143,39 @@ onBeforeUnmount(() => {
   content: '';
   height: 1px;
   flex: 1;
-  background: var(--surface-border);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
 }
 
 .auth-social-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 11px;
-  margin-top: 14px;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .auth-social-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 42px;
+  min-height: 44px;
   gap: 8px;
-  border: 1px solid var(--auth-card-border);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  color: rgba(255, 255, 255, 0.92);
   cursor: pointer;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
   transition:
     background var(--transition-fast),
     border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
     transform var(--transition-fast);
 }
 
 .auth-social-btn:hover {
-  border-color: color-mix(in srgb, var(--auth-accent) 42%, var(--auth-card-border));
-  background: var(--surface-base);
-  box-shadow:
-    0 10px 22px rgba(55, 77, 103, 0.11),
-    0 0 0 4px var(--auth-accent-soft);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.16);
   transform: translateY(-1px);
 }
 
@@ -1080,99 +1183,80 @@ onBeforeUnmount(() => {
   font-size: 22px;
 }
 
+/* 底部跳转 */
 .auth-footer-note {
-  position: relative;
-  z-index: 1;
-  margin-top: 19px;
-  color: var(--text-secondary);
+  margin-top: 22px;
+  color: rgba(255, 255, 255, 0.68);
   font-size: 14px;
   text-align: center;
 }
 
-.auth-inline-link {
-  border: 0;
-  background: transparent;
-  color: var(--auth-accent);
-  cursor: pointer;
+/* ========== 底部数据与备案 ========== */
+.auth-bottom {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-stats {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  margin: 0;
+  padding: 10px 28px;
+  list-style: none;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(14px);
+}
+
+.auth-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.auth-stat-value {
+  font-size: 17px;
   font-weight: 800;
-  padding: 0;
-  text-decoration: none;
 }
 
-.auth-inline-link:hover {
-  color: var(--auth-accent-strong);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.auth-stat-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
 }
 
+.auth-beian {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ========== 表单切换动画 ========== */
 .auth-form-fade-enter-active,
 .auth-form-fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.22s ease, transform 0.22s ease;
 }
 
 .auth-form-fade-enter-from,
 .auth-form-fade-leave-to {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(10px);
 }
 
-:global(.dark) .auth-screen {
-  --auth-card-border: rgba(186, 200, 224, 0.2);
-  --auth-card-bg:
-    linear-gradient(180deg, rgba(35, 43, 58, 0.98), rgba(20, 25, 35, 0.98));
-  --auth-screen-bg:
-    linear-gradient(135deg, rgba(31, 118, 210, 0.12) 0%, rgba(10, 15, 24, 0) 36%),
-    linear-gradient(225deg, rgba(20, 184, 166, 0.09) 0%, rgba(10, 15, 24, 0) 34%),
-    linear-gradient(180deg, #111720 0%, #0e141d 100%);
-}
-
-:global(.dark) .auth-screen::before {
-  background-image:
-    linear-gradient(rgba(186, 200, 224, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(186, 200, 224, 0.05) 1px, transparent 1px);
-}
-
-:global(.dark) .auth-card {
-  background: var(--auth-card-bg) !important;
-  box-shadow:
-    0 30px 72px rgba(0, 0, 0, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
-}
-
-:global(.dark) .auth-card::after {
-  background:
-    linear-gradient(180deg, var(--auth-accent-soft), rgba(20, 25, 35, 0)),
-    linear-gradient(90deg, rgba(20, 25, 35, 0), var(--auth-teal-soft));
-}
-
-:global(.dark) .auth-brand-avatar {
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(17, 22, 31, 0.88);
-}
-
-:global(.dark) .auth-mode-symbol,
-:global(.dark) .auth-social-btn,
-:global(.dark) .auth-form :deep(.v-field) {
-  background: rgba(17, 22, 31, 0.58);
-}
-
-:global(.dark) .auth-tabs {
-  background: rgba(12, 17, 25, 0.52);
-}
-
-:global(.dark) .auth-tab-active {
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 8px 18px rgba(0, 0, 0, 0.18),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-
-:global(.dark) .auth-form :deep(.v-field--focused) {
-  background: rgba(22, 29, 41, 0.92);
-}
-
+/* ========== 动效偏好 ========== */
 @media (prefers-reduced-motion: reduce) {
-  .auth-tab,
+  .auth-orb,
+  .auth-body {
+    animation: none;
+  }
+
+  .auth-tab::after,
   .auth-submit,
   .auth-social-btn,
   .auth-form-fade-enter-active,
@@ -1180,33 +1264,24 @@ onBeforeUnmount(() => {
     transition: none;
   }
 
-  .auth-submit:hover,
+  .auth-submit:hover:not(:disabled),
   .auth-social-btn:hover {
     transform: none;
   }
 }
 
+/* ========== 响应式 ========== */
 @media (max-width: 640px) {
   .auth-screen {
-    align-items: flex-start;
-    padding: 14px 12px;
-    overflow-y: auto;
-  }
-
-  .auth-card {
-    width: calc(100vw - 32px);
-    max-width: calc(100vw - 32px);
-    padding: 22px 18px;
-  }
-
-  .auth-card-title {
-    font-size: 24px;
+    padding: 20px 16px 18px;
   }
 
   .auth-tabs {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 3px;
-    padding: 4px;
+    gap: 24px;
+  }
+
+  .auth-tab {
+    font-size: 15px;
   }
 
   .auth-social-list,
@@ -1214,23 +1289,23 @@ onBeforeUnmount(() => {
     grid-template-columns: 1fr;
   }
 
-  .auth-tab {
-    min-height: 34px;
-    padding: 0 4px;
-    overflow: hidden;
-    font-size: 11px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .code-btn {
+    min-height: 46px;
   }
 
-  .auth-mode-symbol {
-    width: 34px;
-    height: 34px;
+  .auth-stats {
+    gap: 22px;
+    padding: 8px 18px;
+  }
+}
+
+@media (max-height: 720px) {
+  .auth-bottom {
+    display: none;
   }
 
-  .code-btn,
-  .auth-submit {
-    min-height: 50px;
+  .auth-body {
+    padding: 16px 0;
   }
 }
 </style>

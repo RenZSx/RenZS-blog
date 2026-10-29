@@ -32,27 +32,27 @@ export const authNavItems: ReadonlyArray<{ key: AuthMode; label: string }> = [
 // 每个认证模式对应的卡片文案，避免模板里堆叠条件表达式。
 const authModeContent: Record<AuthMode, AuthModeContent> = {
   login: {
-    kicker: 'Renzs Blog',
-    title: '登录你的博客身份',
-    subtitle: '继续阅读、评论、收藏，并同步你的互动状态。',
+    kicker: 'Welcome Back',
+    title: '欢迎回来',
+    subtitle: '登录你的博客身份，继续阅读、评论与收藏。',
     actionLabel: '登录',
     footerLead: '还没有账号？',
     footerAction: '创建账号',
     footerTarget: 'register'
   },
   register: {
-    kicker: 'New Account',
-    title: '创建新的博客身份',
-    subtitle: '完成邮箱验证后，就能拥有自己的互动身份。',
+    kicker: 'Join Us',
+    title: '加入这个博客',
+    subtitle: '使用邮箱验证码完成注册，只需几分钟。',
     actionLabel: '创建账号',
     footerLead: '已经有账号？',
     footerAction: '返回登录',
     footerTarget: 'login'
   },
   'forgot-password': {
-    kicker: 'Recovery',
-    title: '重设登录密码',
-    subtitle: '通过邮箱验证码确认身份，然后设置一个新密码。',
+    kicker: 'Password Recovery',
+    title: '找回你的密码',
+    subtitle: '通过注册邮箱验证身份，然后设置一个新密码。',
     actionLabel: '重置密码',
     footerLead: '想起密码了？',
     footerAction: '返回登录',

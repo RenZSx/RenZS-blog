@@ -1,5 +1,6 @@
 <template>
   <v-app-bar
+    v-if="!isAuthPage"
     :class="[
       navClass,
       {
@@ -234,6 +235,8 @@ const noticeBadgeText = computed(() => {
  * 用 startsWith 是为了同时覆盖相册主页和单相册详情页两种场景。
  */
 const isAlbumsPage = computed(() => route.path.startsWith('/albums'))
+// 认证页（登录/注册/找回密码）采用全屏沉浸式布局，不渲染顶部导航条。
+const isAuthPage = computed(() => route.meta.layout === 'auth')
 const isLovePage = computed(() => route.path.startsWith('/love'))
 const isLetterPage = computed(() => route.path.startsWith('/letter'))
 const isAboutPage = computed(() => route.path === '/about')
