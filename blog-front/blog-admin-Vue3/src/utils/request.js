@@ -153,7 +153,7 @@ export function download(url, params, filename, config) {
     } else {
       const resText = await data.text()
       const rspObj = JSON.parse(resText)
-      const errMsg = errorCode[rspObj.code] || rspObj.msg || errorCode['default']
+      const errMsg = errorCode[rspObj.code] || rspObj.message || rspObj.msg || errorCode['default']
       ElMessage.error(errMsg)
     }
     downloadLoadingInstance.close()

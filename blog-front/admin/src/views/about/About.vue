@@ -39,11 +39,7 @@ export default {
       var formdata = new FormData();
       if (file.size / 1024 < this.config.UPLOAD_SIZE) {
         formdata.append("file", file);
-        this.axios
-          .post("/api/admin/articles/images", formdata)
-          .then(({ data }) => {
-            this.$refs.md.$img2Url(pos, data.data);
-          });
+        this.sendEditorImage(pos, formdata);
       } else {
         // 压缩到200KB,这里的200就是要压缩的大小,可自定义
         imageConversion
@@ -53,13 +49,24 @@ export default {
               "file",
               new window.File([res], file.name, { type: file.type })
             );
-            this.axios
-              .post("/api/admin/articles/images", formdata)
-              .then(({ data }) => {
-                this.$refs.md.$img2Url(pos, data.data);
-              });
+            this.sendEditorImage(pos, formdata);
           });
       }
+    },
+    // 后端统一返回 { flag, code, message, data }，失败时提示并避免插入空图片
+    sendEditorImage(pos, formdata) {
+      this.axios
+        .post("/api/admin/articles/images", formdata)
+        .then(({ data }) => {
+          if (!data.flag) {
+            this.$message.error(data.message || "图片上传失败");
+            return;
+          }
+          this.$refs.md.$img2Url(pos, data.data);
+        })
+        .catch(() => {
+          this.$message.error("图片上传失败");
+        });
     },
     updateAbout() {
       this.axios

@@ -171,6 +171,10 @@ export default {
       this.addOrEdit = false;
     },
     uploadCover(response) {
+      if (!response.flag) {
+        this.$message.error(response.message || "上传封面失败");
+        return;
+      }
       this.pageForum.pageCover = response.data;
     },
     beforeUpload(file) {

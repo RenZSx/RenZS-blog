@@ -208,6 +208,10 @@ export default {
      * 背景图上传成功后回填地址。
      */
     handleBackgroundSuccess(response) {
+      if (!response.flag) {
+        this.$message.error(response.message || "上传背景图失败");
+        return;
+      }
       this.loveConfigForm.background = response.data;
     },
     /**

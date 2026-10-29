@@ -113,13 +113,24 @@ const handleFileRemove = (file, fileList) => {
   selectedFile.value = null
 }
 
-// 上传成功
+// 上传结果处理
+// 博客后端统一响应: { flag, code: 20000, message, data }, 不再是若依的 { code, msg }
 function handleSuccess(response) {
   visible.value = false
   isUploading.value = false
   selectedFile.value = null
   uploadRef.value?.clearFiles()
-  proxy.$alert("<div style='overflow:auto;overflow-x:hidden;max-height:70vh;padding:10px 20px 0;'>" + response.msg + '</div>', '导入结果', { dangerouslyUseHTMLString: true })
+
+  if (!response || response.flag === false) {
+    proxy.$modal.msgError((response && (response.message || response.msg)) || '导入失败')
+    return
+  }
+
+  const data = response.data
+  const result = data === null || data === undefined || data === ''
+    ? (response.message || '导入成功')
+    : (typeof data === 'object' ? JSON.stringify(data) : data)
+  proxy.$alert("<div style='overflow:auto;overflow-x:hidden;max-height:70vh;padding:10px 20px 0;'>" + result + '</div>', '导入结果', { dangerouslyUseHTMLString: true })
   emit('success')
 }
 

@@ -483,22 +483,30 @@ export default {
       console.log(tab);
     },
     handleWebsiteAvatarSuccess(response) {
-      this.websiteConfigForm.websiteAvatar = response.data;
+      this.setWebsiteImage("websiteAvatar", response);
     },
     handleUserAvatarSuccess(response) {
-      this.websiteConfigForm.userAvatar = response.data;
+      this.setWebsiteImage("userAvatar", response);
     },
     handleArticleCoverSuccess(response) {
-      this.websiteConfigForm.articleCover = response.data;
+      this.setWebsiteImage("articleCover", response);
     },
     handleTouristAvatarSuccess(response) {
-      this.websiteConfigForm.touristAvatar = response.data;
+      this.setWebsiteImage("touristAvatar", response);
     },
     handleWeiXinSuccess(response) {
-      this.websiteConfigForm.weiXinQRCode = response.data;
+      this.setWebsiteImage("weiXinQRCode", response);
     },
     handleAlipaySuccess(response) {
-      this.websiteConfigForm.alipayQRCode = response.data;
+      this.setWebsiteImage("alipayQRCode", response);
+    },
+    // 后端统一返回 { flag, code, message, data }，失败时不要静默写入空地址
+    setWebsiteImage(field, response) {
+      if (!response.flag) {
+        this.$message.error(response.message || "上传图片失败");
+        return;
+      }
+      this.websiteConfigForm[field] = response.data;
     },
     updateWebsiteConfig() {
       this.axios

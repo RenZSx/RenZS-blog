@@ -170,18 +170,40 @@ function handleExceed() {
   proxy.$modal.msgError(`上传文件数量不能超过 ${props.limit} 个!`)
 }
 
+// 解析上传接口返回的图片地址
+// 博客后端统一响应: { flag: true, code: 20000, message: '操作成功', data: '图片地址' }
+// 同时兼容 code 200 + fileName/url 的旧格式
+function resolveUploadUrl(res) {
+  if (!res) return ""
+  if (res.flag === false) return ""
+  if (res.flag === true) {
+    if (typeof res.data === "string") return res.data
+    if (res.data && typeof res.data === "object") {
+      return res.data.url || res.data.fileName || ""
+    }
+    return res.fileName || res.url || ""
+  }
+  if (res.code === 20000 || res.code === 200) {
+    if (typeof res.data === "string") return res.data
+    return res.fileName || res.url || ""
+  }
+  return ""
+}
+
 // 上传成功回调
 function handleUploadSuccess(res, file) {
-  if (res.code === 200) {
-    uploadList.value.push({ name: res.fileName, url: res.fileName })
+  const url = resolveUploadUrl(res)
+  if (url) {
+    uploadList.value.push({ name: url, url })
     uploadedSuccessfully()
-  } else {
-    number.value--
-    proxy.$modal.closeLoading()
-    proxy.$modal.msgError(res.msg)
-    proxy.$refs.imageUpload.handleRemove(file)
-    uploadedSuccessfully()
+    return
   }
+  // 后端已明确失败(或返回体不符合预期): 提示真实原因并回滚本次上传
+  number.value--
+  proxy.$modal.closeLoading()
+  proxy.$modal.msgError(res.message || res.msg || "图片上传失败")
+  proxy.$refs.imageUpload.handleRemove(file)
+  uploadedSuccessfully()
 }
 
 // 删除图片

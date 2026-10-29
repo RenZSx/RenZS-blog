@@ -162,6 +162,10 @@ export default {
       });
     },
     upload(response) {
+      if (!response.flag) {
+        this.$message.error(response.message || "上传图片失败");
+        return;
+      }
       this.uploadList.push({ url: response.data });
     },
     beforeUpload(file) {
