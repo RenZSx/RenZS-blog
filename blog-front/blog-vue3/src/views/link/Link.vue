@@ -110,19 +110,19 @@
               <div class="link-apply-form-grid">
                 <label class="link-apply-field">
                   <span>网站名称</span>
-                  <input v-model="applyForm.linkName" type="text" placeholder="请输入网站名称" />
+                  <input v-model="applyForm.linkName" type="text" maxlength="20" placeholder="请输入网站名称" />
                 </label>
                 <label class="link-apply-field">
                   <span>网站链接</span>
-                  <input v-model="applyForm.linkAddress" type="url" placeholder="https://example.com" />
+                  <input v-model="applyForm.linkAddress" type="url" maxlength="50" placeholder="https://example.com" />
                 </label>
                 <label class="link-apply-field">
                   <span>网站封面</span>
-                  <input v-model="applyForm.linkCover" type="url" placeholder="https://example.com/cover.png" />
+                  <input v-model="applyForm.linkCover" type="url" maxlength="255" placeholder="https://example.com/cover.png" />
                 </label>
                 <label class="link-apply-field link-apply-field-wide">
                   <span>网站简介</span>
-                  <textarea v-model="applyForm.linkIntro" rows="3" placeholder="用一句话介绍你的网站" />
+                  <textarea v-model="applyForm.linkIntro" rows="3" maxlength="100" placeholder="用一句话介绍你的网站" />
                 </label>
               </div>
               <div class="link-apply-form-actions">
@@ -290,6 +290,8 @@ function resetApplyForm() {
 /**
  * 校验申请表单，避免空数据进入后台审核列表。
  *
+ * <p>长度上限与后端字段校验、数据库列宽保持一致，避免提交后才发现超长。
+ *
  * @returns 表单是否可提交。
  */
 function validateApplyForm() {
@@ -298,16 +300,32 @@ function validateApplyForm() {
     useToast({ type: 'error', message: '请填写网站名称' })
     return false
   }
+  if (form.linkName.trim().length > 20) {
+    useToast({ type: 'error', message: '网站名称不能超过20个字符' })
+    return false
+  }
   if (!form.linkAddress.trim()) {
     useToast({ type: 'error', message: '请填写网站链接' })
+    return false
+  }
+  if (form.linkAddress.trim().length > 50) {
+    useToast({ type: 'error', message: '网站链接不能超过50个字符' })
     return false
   }
   if (!form.linkCover.trim()) {
     useToast({ type: 'error', message: '请填写网站封面' })
     return false
   }
+  if (form.linkCover.trim().length > 255) {
+    useToast({ type: 'error', message: '网站封面地址不能超过255个字符' })
+    return false
+  }
   if (!form.linkIntro.trim()) {
     useToast({ type: 'error', message: '请填写网站简介' })
+    return false
+  }
+  if (form.linkIntro.trim().length > 100) {
+    useToast({ type: 'error', message: '网站简介不能超过100个字符' })
     return false
   }
   return true
@@ -315,6 +333,9 @@ function validateApplyForm() {
 
 /**
  * 提交友链申请，后端会将新记录设置为待审核。
+ *
+ * <p>后端业务异常同样以 HTTP 200 返回，必须按 {@code flag} 判断，
+ * 否则申请失败时仍会提示成功并清空表单。
  *
  * @returns Promise<void> 提交完成后给出用户反馈。
  */
@@ -324,12 +345,17 @@ async function submitFriendLinkApply() {
   try {
     applyLoading.value = true
     const form = applyForm.value
-    await sendFriendLinkApply({
+    const { data } = await sendFriendLinkApply({
       linkName: form.linkName.trim(),
       linkAddress: form.linkAddress.trim(),
       linkCover: form.linkCover.trim(),
       linkIntro: form.linkIntro.trim()
     })
+    if (!data?.flag) {
+      // 保留用户已填内容，只提示后端给出的失败原因，便于稍后直接重试。
+      useToast({ type: 'error', message: data?.message || '提交失败，请稍后再试' })
+      return
+    }
     useToast({ type: 'success', message: '友链申请已提交，等待审核' })
     resetApplyForm()
     applyGalaxyDialog.value = false

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 /**
  * 友链VO
@@ -31,6 +32,7 @@ public class FriendLinkVO {
      * 链接名
      */
     @NotBlank(message = "链接名不能为空")
+    @Size(max = 20, message = "链接名不能超过20个字符")
     @ApiModelProperty(name = "linkName", value = "友链名", dataType = "String", required = true)
     private String linkName;
 
@@ -38,6 +40,7 @@ public class FriendLinkVO {
      * 链接封面
      */
     @NotBlank(message = "链接封面不能为空")
+    @Size(max = 255, message = "链接封面地址不能超过255个字符")
     @ApiModelProperty(name = "linkCover", value = "友链封面", dataType = "String", required = true)
     private String linkCover;
 
@@ -45,6 +48,7 @@ public class FriendLinkVO {
      * 链接地址
      */
     @NotBlank(message = "链接地址不能为空")
+    @Size(max = 50, message = "链接地址不能超过50个字符")
     @ApiModelProperty(name = "linkAddress", value = "友链地址", dataType = "String", required = true)
     private String linkAddress;
 
@@ -52,6 +56,7 @@ public class FriendLinkVO {
      * 介绍
      */
     @NotBlank(message = "链接介绍不能为空")
+    @Size(max = 100, message = "链接介绍不能超过100个字符")
     @ApiModelProperty(name = "linkIntro", value = "友链介绍", dataType = "String", required = true)
     private String linkIntro;
 
