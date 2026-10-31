@@ -81,9 +81,8 @@ public class SaTokenConfig implements WebMvcConfigurer {
                         "/register",
                         "/users/code",
                         "/users/oauth/**",
-                        // 友链申请是面向访客的公开提交入口，后端自身只写入待审核状态，
-                        // 不能因为 tb_resource 中存在同名资源配置而对匿名访客返回 40001。
-                        "/links/apply",
+                        // 友链申请由数据库资源配置控制访问权限，不再固定放行。
+                        // "/links/apply",
                         "/actuator/**",
                         "/error",
                         "/v2/api-docs",
